@@ -1,0 +1,6 @@
+{
+  "name": "Dubai Desert Safari, Dune Buggy & Quad Bike Tours | The Phoenix",
+  "description": "Book official DTCM-licensed Dubai desert safari tours from AED 120. Experience Lahbab red dune bashing, Can-Am Maverick buggy rentals, quad biking, BBQ dinner camp & VIP convoys.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
