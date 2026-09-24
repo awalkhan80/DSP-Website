@@ -18,7 +18,7 @@ export interface KeywordTarget {
     | 'Audience-Specific';
   targetUrl: string;
   targetSectionId: string;
-  searchIntent: 'Commercial' | 'Transactional' | 'Informational' | 'Navigational';
+  searchIntent: 'Commercial' | 'Transactional' | 'Informational' | 'Navigational' | 'Local Intent';
   primaryHeadingTarget: string;
   estimatedVolumeTier: 'High' | 'Medium' | 'Niche';
 }

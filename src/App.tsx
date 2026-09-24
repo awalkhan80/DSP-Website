@@ -23,10 +23,16 @@ import { ReviewModal } from './components/ReviewModal';
 import { WhatsAppDrawer } from './components/WhatsAppDrawer';
 import { InfoModal } from './components/InfoModal';
 import { AdminDashboard, CMSConfig } from './components/admin/AdminDashboard';
+import { AdminLoginModal } from './components/admin/AdminLoginModal';
+import { getStoredAdminSession, clearAdminSession, AdminSession } from './utils/adminAuth';
 
 export default function App() {
   // Navigation View State: 'storefront' or 'admin'
   const [currentView, setCurrentView] = useState<'storefront' | 'admin'>('storefront');
+
+  // Admin Authentication State
+  const [adminSession, setAdminSession] = useState<AdminSession | null>(() => getStoredAdminSession());
+  const [adminLoginModalOpen, setAdminLoginModalOpen] = useState(false);
 
   const [currency, setCurrency] = useState<Currency>('AED');
   const [activeSection, setActiveSection] = useState<string>('desert-safaris');
@@ -124,8 +130,43 @@ export default function App() {
     setExperiences((prev) => prev.filter((exp) => exp.id !== id));
   };
 
-  // If in Admin Dashboard view, render the Admin Portal
+  // Admin Authentication Actions
+  const handleOpenAdmin = () => {
+    if (adminSession) {
+      setCurrentView('admin');
+    } else {
+      setAdminLoginModalOpen(true);
+    }
+  };
+
+  const handleAdminLoginSuccess = (session: AdminSession) => {
+    setAdminSession(session);
+    setAdminLoginModalOpen(false);
+    setCurrentView('admin');
+    showToast(`Access Granted. Welcome, ${session.name} (${session.email})`);
+  };
+
+  const handleAdminSignOut = () => {
+    clearAdminSession();
+    setAdminSession(null);
+    setCurrentView('storefront');
+    showToast('Signed out of Operator Admin. Portal locked.');
+  };
+
+  // If in Admin Dashboard view, render the Admin Portal (gated by auth)
   if (currentView === 'admin') {
+    if (!adminSession) {
+      return (
+        <div className="bg-[#181514] min-h-screen flex items-center justify-center p-4">
+          <AdminLoginModal
+            isOpen={true}
+            onClose={() => setCurrentView('storefront')}
+            onSuccess={handleAdminLoginSuccess}
+          />
+        </div>
+      );
+    }
+
     return (
       <AdminDashboard
         cmsConfig={cmsConfig}
@@ -135,6 +176,8 @@ export default function App() {
         onAddExperience={handleAddExperience}
         onDeleteExperience={handleDeleteExperience}
         onSwitchToStorefront={() => setCurrentView('storefront')}
+        adminSession={adminSession}
+        onSignOut={handleAdminSignOut}
       />
     );
   }
@@ -160,15 +203,15 @@ export default function App() {
       <div className="fixed bottom-6 left-6 z-40">
         <button
           type="button"
-          onClick={() => setCurrentView('admin')}
+          onClick={handleOpenAdmin}
           className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-stone-900/90 hover:bg-stone-900 text-amber-300 hover:text-white text-xs font-bold shadow-2xl border border-amber-500/40 backdrop-blur-md transition-all cursor-pointer hover:scale-105 active:scale-95 group"
-          title="Switch to Operator Admin Dashboard & Tour CMS"
+          title={adminSession ? "Operator Admin Dashboard (Authenticated)" : "Secure Operator Admin Login"}
         >
           <span className="material-symbols-outlined text-[18px] text-amber-400 group-hover:rotate-12 transition-transform">
-            admin_panel_settings
+            {adminSession ? 'admin_panel_settings' : 'lock'}
           </span>
-          <span>Admin Portal</span>
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-0.5"></span>
+          <span>{adminSession ? 'Admin Portal' : 'Admin Login'}</span>
+          <span className={`w-2 h-2 rounded-full ${adminSession ? 'bg-emerald-400' : 'bg-amber-400'} animate-pulse ml-0.5`}></span>
         </button>
       </div>
 
@@ -180,7 +223,8 @@ export default function App() {
         onOpenWhatsApp={() => setWhatsAppOpen(true)}
         activeSection={activeSection}
         onNavigate={scrollToSection}
-        onOpenAdmin={() => setCurrentView('admin')}
+        onOpenAdmin={handleOpenAdmin}
+        isAdminLoggedIn={!!adminSession}
         announcementText={cmsConfig.announcementTicker}
         showAnnouncement={cmsConfig.showAnnouncement}
       />
@@ -232,7 +276,7 @@ export default function App() {
       <Footer
         onSelectExperience={(id) => handleViewItinerary(id)}
         onOpenPrivacy={(topic) => setInfoModalTopic(topic as 'privacy' | 'terms' | 'safety')}
-        onOpenAdmin={() => setCurrentView('admin')}
+        onOpenAdmin={handleOpenAdmin}
       />
 
       {/* Booking Checkout Modal */}
@@ -282,6 +326,13 @@ export default function App() {
           onClose={() => setInfoModalTopic(null)}
         />
       )}
+
+      {/* Secure Operator Admin Login Modal */}
+      <AdminLoginModal
+        isOpen={adminLoginModalOpen}
+        onClose={() => setAdminLoginModalOpen(false)}
+        onSuccess={handleAdminLoginSuccess}
+      />
     </div>
   );
 }

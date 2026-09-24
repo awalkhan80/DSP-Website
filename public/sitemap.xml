@@ -54,6 +54,22 @@
     <priority>0.7</priority>
   </url>
 
+  <!-- Desert Safari Travel Guides & Knowledge Base -->
+  <url>
+    <loc>https://desertsafaridxbpro.com/#travel-guides</loc>
+    <lastmod>2025-05-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- High-Intent Frequently Asked Questions -->
+  <url>
+    <loc>https://desertsafaridxbpro.com/#faqs</loc>
+    <lastmod>2025-05-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Guest Reviews & Testimonials -->
   <url>
     <loc>https://desertsafaridxbpro.com/#reviews</loc>

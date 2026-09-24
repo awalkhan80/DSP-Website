@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Experience } from '../../types';
+import { SeoAuditDashboard } from './SeoAuditDashboard';
+import { AdminSession } from '../../utils/adminAuth';
 
 export interface CMSConfig {
   heroTitle: string;
@@ -39,6 +41,8 @@ interface AdminDashboardProps {
   onAddExperience: (newExp: Experience) => void;
   onDeleteExperience: (id: string) => void;
   onSwitchToStorefront: () => void;
+  adminSession?: AdminSession | null;
+  onSignOut?: () => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -49,11 +53,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onAddExperience,
   onDeleteExperience,
   onSwitchToStorefront,
+  adminSession,
+  onSignOut,
 }) => {
   // Navigation tabs
   const [activeNav, setActiveNav] = useState<
-    'overview-analytics' | 'homepage-cms' | 'tour-catalog-pricing' | 'bookings-convoys' | 'customer-inquiries-whatsapp' | 'settings'
-  >('homepage-cms');
+    'overview-analytics' | 'homepage-cms' | 'tour-catalog-pricing' | 'bookings-convoys' | 'customer-inquiries-whatsapp' | 'seo-audit' | 'settings'
+  >('seo-audit');
 
   // Search & Filters for Tour Table
   const [searchQuery, setSearchQuery] = useState('');
@@ -449,6 +455,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </button>
 
             <button
+              onClick={() => setActiveNav('seo-audit')}
+              className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
+                activeNav === 'seo-audit'
+                  ? 'bg-[#8D4B00] text-white shadow-sm'
+                  : 'text-[#554336] hover:bg-[#EFE6E4] hover:text-[#1E1B1A]'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-[20px]">travel_explore</span>
+                <span>SEO &amp; Search Audit</span>
+              </div>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                activeNav === 'seo-audit' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
+              }`}>
+                98%
+              </span>
+            </button>
+
+            <button
               onClick={() => setActiveNav('settings')}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
                 activeNav === 'settings'
@@ -462,8 +487,47 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </nav>
         </div>
 
-        {/* Sidebar Footer: Fleet Operations */}
+        {/* Sidebar Footer: Fleet Operations & Operator Session */}
         <div className="flex flex-col gap-3 px-3">
+          {/* Authenticated Admin Operator Card */}
+          <div className="p-3 rounded-xl bg-stone-900 text-white flex flex-col gap-1.5 shadow-md border border-amber-500/30">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                Operator Auth
+              </span>
+              <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-mono font-bold">DTCM-PRO</span>
+            </div>
+            <div className="text-xs font-semibold text-stone-200 truncate" title={adminSession?.email || 'awalgsm@gmail.com'}>
+              {adminSession?.email || 'awalgsm@gmail.com'}
+            </div>
+            <div className="text-[10px] text-stone-400 flex items-center justify-between">
+              <span>Super Administrator</span>
+              <span className="text-emerald-400 font-medium">Verified Active</span>
+            </div>
+            <div className="pt-2 border-t border-stone-800 flex items-center gap-2 mt-1">
+              <button
+                type="button"
+                onClick={onSwitchToStorefront}
+                className="flex-1 py-1.5 rounded bg-stone-800 hover:bg-stone-700 text-stone-200 text-[11px] font-semibold text-center transition-colors cursor-pointer"
+                title="View customer storefront"
+              >
+                Storefront
+              </button>
+              {onSignOut && (
+                <button
+                  type="button"
+                  onClick={onSignOut}
+                  className="flex-1 py-1.5 rounded bg-red-950/80 hover:bg-red-900 text-red-200 border border-red-800/40 text-[11px] font-semibold text-center transition-colors cursor-pointer flex items-center justify-center gap-1"
+                  title="Lock and sign out of admin session"
+                >
+                  <span className="material-symbols-outlined text-[13px]">lock</span>
+                  <span>Sign Out</span>
+                </button>
+              )}
+            </div>
+          </div>
+
           <div className="p-3 rounded-xl bg-[#F5ECEA] border border-[#E9E1DF] flex flex-col gap-1.5 shadow-xs">
             <span className="text-[10px] font-bold text-[#554336] uppercase tracking-wider">Fleet Operations</span>
             <div className="flex items-center justify-between text-[#1E1B1A] text-xs">
@@ -530,15 +594,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#EA580C]"></span>
               </button>
 
-              {/* Profile Chip */}
+              {/* Profile Chip & Sign Out */}
               <div className="flex items-center gap-3 pl-2 border-l border-[#DBC2B0]/40">
                 <div className="flex flex-col text-right hidden sm:flex">
-                  <span className="text-xs font-bold text-[#1E1B1A]">Tariq Al-Maktoum</span>
-                  <span className="text-[11px] text-[#554336]">Head of Operations</span>
+                  <span className="text-xs font-bold text-[#1E1B1A]">
+                    {adminSession?.name || 'Awal'}
+                  </span>
+                  <span className="text-[10px] text-[#8D4B00] font-semibold truncate max-w-[150px]" title={adminSession?.email || 'awalgsm@gmail.com'}>
+                    {adminSession?.email || 'awalgsm@gmail.com'}
+                  </span>
                 </div>
-                <div className="w-8 h-8 rounded-full bg-[#8D4B00] text-white flex items-center justify-center shadow-xs">
-                  <span className="material-symbols-outlined text-[18px]">person</span>
+                <div className="w-8 h-8 rounded-full bg-[#8D4B00] text-white flex items-center justify-center shadow-xs font-bold text-xs" title="Super Admin">
+                  A
                 </div>
+                {onSignOut && (
+                  <button
+                    type="button"
+                    onClick={onSignOut}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-stone-100 hover:bg-red-50 text-stone-700 hover:text-red-700 border border-stone-200 text-xs font-semibold transition-colors cursor-pointer ml-1"
+                    title="Sign Out of Admin Portal"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">logout</span>
+                    <span className="hidden lg:inline">Sign Out</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -565,6 +644,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     ? 'WhatsApp & Inquiries Desk'
                     : activeNav === 'overview-analytics'
                     ? 'Operations & Revenue Analytics'
+                    : activeNav === 'seo-audit'
+                    ? 'SEO Audit & Search Engine Dominance'
                     : 'System & DTCM Settings'}
                 </span>
               </div>
@@ -579,6 +660,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   ? 'Guest WhatsApp Concierge Desk'
                   : activeNav === 'overview-analytics'
                   ? 'Daily Revenue & Performance Metrics'
+                  : activeNav === 'seo-audit'
+                  ? 'Live Technical SEO Audit & Competitor Intelligence'
                   : 'Company Profile & Compliance Settings'}
               </h1>
             </div>
@@ -1489,7 +1572,53 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-[#E9E1DF] flex justify-end">
+              {/* Admin Security & Authentication Panel */}
+              <div className="mt-8 pt-6 border-t border-[#E9E1DF]">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[20px] text-[#8D4B00]">security</span>
+                    <h4 className="text-sm font-bold text-[#1E1B1A]">Administrator Security &amp; Credentials</h4>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                    SSL 256-Bit Encrypted
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-[#FBF2F0] p-4 rounded-xl border border-[#E9E1DF]">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-[#554336]">Active Admin Account</span>
+                    <div className="text-xs font-bold text-[#1E1B1A] mt-0.5">{adminSession?.email || 'awalgsm@gmail.com'}</div>
+                    <div className="text-[11px] text-[#8D4B00] font-medium">Role: Super Administrator (Direct Operator)</div>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-[#554336]">Authentication Security</span>
+                    <div className="text-xs font-bold text-emerald-700 mt-0.5 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">verified_user</span>
+                      Protected by Brute-Force Rate Limiting (5 Attempts)
+                    </div>
+                    <div className="text-[11px] text-stone-500">Session Token Active &bull; Remember Me Enabled</div>
+                  </div>
+                </div>
+
+                {onSignOut && (
+                  <div className="mt-4 flex items-center justify-between">
+                    <p className="text-xs text-[#554336]">
+                      Need to terminate your administrative session on this workstation?
+                    </p>
+                    <button
+                      type="button"
+                      onClick={onSignOut}
+                      className="px-4 py-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-800 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">lock</span>
+                      <span>Lock &amp; Sign Out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-6 border-t border-[#E9E1DF] flex justify-end">
                 <button
                   onClick={() => showToast('Settings saved and synchronized with DTCM gateway.')}
                   className="px-5 py-2.5 rounded-lg bg-[#8D4B00] text-white text-xs font-bold uppercase tracking-wider cursor-pointer"
@@ -1499,6 +1628,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
             </div>
           )}
+
+          {/* VIEW TAB 7: SEO & SEARCH DOMINANCE AUDIT */}
+          {activeNav === 'seo-audit' && <SeoAuditDashboard />}
         </main>
       </div>
 

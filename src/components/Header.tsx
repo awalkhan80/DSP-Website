@@ -10,6 +10,7 @@ interface HeaderProps {
   activeSection: string;
   onNavigate: (sectionId: string) => void;
   onOpenAdmin?: () => void;
+  isAdminLoggedIn?: boolean;
   announcementText?: string;
   showAnnouncement?: boolean;
 }
@@ -22,6 +23,7 @@ export const Header: React.FC<HeaderProps> = ({
   activeSection,
   onNavigate,
   onOpenAdmin,
+  isAdminLoggedIn = false,
   announcementText,
   showAnnouncement = true,
 }) => {
@@ -77,11 +79,14 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   onClick={onOpenAdmin}
-                  className="flex items-center gap-1 bg-black/25 hover:bg-black/40 px-2.5 py-0.5 rounded text-[11px] font-bold text-amber-200 hover:text-white transition-colors cursor-pointer border border-amber-300/30 shadow-xs"
-                  title="Switch to Operator Admin Dashboard"
+                  className="flex items-center gap-1.5 bg-black/25 hover:bg-black/40 px-2.5 py-0.5 rounded text-[11px] font-bold text-amber-200 hover:text-white transition-colors cursor-pointer border border-amber-300/30 shadow-xs"
+                  title={isAdminLoggedIn ? "Operator Admin Dashboard (Logged In)" : "Secure Operator Admin Login"}
                 >
-                  <span className="material-symbols-outlined text-[14px]">admin_panel_settings</span>
-                  <span>Admin Portal</span>
+                  <span className="material-symbols-outlined text-[14px]">
+                    {isAdminLoggedIn ? 'admin_panel_settings' : 'lock'}
+                  </span>
+                  <span>{isAdminLoggedIn ? 'Admin Portal' : 'Admin Login'}</span>
+                  <span className={`w-1.5 h-1.5 rounded-full ${isAdminLoggedIn ? 'bg-emerald-400' : 'bg-amber-400'} animate-pulse`}></span>
                 </button>
               )}
 
@@ -170,6 +175,19 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="material-symbols-outlined text-[#EA580C] text-[18px]">call</span>
             <span>056 150 5270</span>
           </a>
+
+          {/* SEO Audit & Admin Portal Link */}
+          {onOpenAdmin && (
+            <button
+              type="button"
+              onClick={onOpenAdmin}
+              title="Open Live SEO Audit & Management Console"
+              className="hidden sm:flex items-center gap-1 px-3 py-2 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-stone-800 text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[#8D4B00] text-[16px]">travel_explore</span>
+              <span>SEO Audit</span>
+            </button>
+          )}
 
           {/* Book Adventure CTA */}
           <button
@@ -262,8 +280,10 @@ export const Header: React.FC<HeaderProps> = ({
                 }}
                 className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-[#8D4B00] hover:bg-[#B15F00] text-white font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
-                <span>Operator Admin Portal</span>
+                <span className="material-symbols-outlined text-[18px]">
+                  {isAdminLoggedIn ? 'admin_panel_settings' : 'lock'}
+                </span>
+                <span>{isAdminLoggedIn ? 'Operator Admin Portal' : 'Secure Admin Login'}</span>
               </button>
             )}
           </div>
