@@ -1,0 +1,112 @@
+{
+  "source": "src/data/safaris.ts at 9f8e7cf8c2314d7d9b4428ebad283bb88b75ad14; review rates, units, pickup and terms before enabling. Changes in the browser CMS do not update this file.",
+  "tours": [
+    {
+      "id": "evening-desert-safari",
+      "title": "Evening Desert Safari",
+      "priceAED": 120,
+      "priceUnit": "From",
+      "unit": "adult",
+      "maxGuests": 20,
+      "enabled": false
+    },
+    {
+      "id": "morning-desert-safari",
+      "title": "Morning Desert Safari",
+      "priceAED": 450,
+      "priceUnit": "From",
+      "unit": "adult",
+      "maxGuests": 20,
+      "enabled": false
+    },
+    {
+      "id": "private-vip-safari",
+      "title": "Private Desert Safari VIP",
+      "priceAED": 850,
+      "priceUnit": "Car Price",
+      "unit": "car",
+      "maxGuests": 6,
+      "enabled": false
+    },
+    {
+      "id": "quad-bike-atv",
+      "title": "Quad Bike ATV Rental",
+      "priceAED": 150,
+      "priceUnit": "/ Session",
+      "unit": "adult",
+      "maxGuests": 20,
+      "enabled": false
+    },
+    {
+      "id": "can-am-buggy-safari",
+      "title": "Can-Am Dune Buggy Safari",
+      "priceAED": 1000,
+      "priceUnit": "/ Buggy",
+      "unit": "adult",
+      "maxGuests": 20,
+      "enabled": false
+    },
+    {
+      "id": "dubai-half-day-city-tour",
+      "title": "Dubai Half-Day City Tour",
+      "priceAED": 75,
+      "priceUnit": "From",
+      "unit": "adult",
+      "maxGuests": 20,
+      "enabled": false
+    },
+    {
+      "id": "abu-dhabi-tour-from-dubai",
+      "title": "Abu Dhabi Tour from Dubai",
+      "priceAED": 150,
+      "priceUnit": "From",
+      "unit": "adult",
+      "maxGuests": 20,
+      "enabled": false
+    },
+    {
+      "id": "marina-luxury-dhow-cruise",
+      "title": "Marina Luxury Dhow Cruise",
+      "priceAED": 110,
+      "priceUnit": "From",
+      "unit": "adult",
+      "maxGuests": 20,
+      "enabled": false
+    }
+  ],
+  "faq": [
+    {
+      "questions": [
+        "What is your website?"
+      ],
+      "answer": "Our website is https://desertsafaridxbpro.com."
+    },
+    {
+      "questions": [
+        "How can I pay?",
+        "Do I pay on arrival?"
+      ],
+      "answer": "This booking flow uses payment on arrival. Type HUMAN for payment questions or other arrangements."
+    },
+    {
+      "questions": [
+        "How do I book?"
+      ],
+      "answer": "Choose a tour number, date, guest count, name and pickup request. Review the total, then reply CONFIRM. Only dates opened by our reservations team can be confirmed automatically."
+    },
+    {
+      "questions": [
+        "How can I cancel?",
+        "What is the refund policy?"
+      ],
+      "answer": "Type HUMAN to request a change or cancellation. Your booking remains active until our team confirms the change."
+    },
+    {
+      "questions": [
+        "Is my pickup time confirmed?",
+        "When is pickup?"
+      ],
+      "answer": "Our team arranges the exact pickup time and verifies your pickup address after booking. Type HUMAN for help."
+    }
+  ]
+}
