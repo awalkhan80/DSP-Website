@@ -1,12 +1,30 @@
 import React from 'react';
+import { Experience } from '../types';
 
 interface FooterProps {
   onSelectExperience: (experienceId: string) => void;
   onOpenPrivacy: (topic: string) => void;
   onOpenAdmin?: () => void;
+  cmsConfig?: {
+    directPhone?: string;
+    headquarters?: string;
+  };
+  experiences?: Experience[];
 }
 
-export const Footer: React.FC<FooterProps> = ({ onSelectExperience, onOpenPrivacy, onOpenAdmin }) => {
+export const Footer: React.FC<FooterProps> = ({
+  onSelectExperience,
+  onOpenPrivacy,
+  onOpenAdmin,
+  cmsConfig,
+  experiences,
+}) => {
+  const phone = cmsConfig?.directPhone || '+971 56 150 5270';
+  const cleanPhone = phone.replace(/\s+/g, '');
+  const address =
+    cmsConfig?.headquarters || 'DAMAC XL Tower, Business Bay, Dubai, United Arab Emirates';
+
+  const toursList = experiences && experiences.length > 0 ? experiences.slice(0, 5) : [];
   return (
     <footer className="w-full bg-[#EDE3D2] border-t border-amber-200/80 text-stone-700 pt-16 pb-8">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16">
@@ -52,51 +70,58 @@ export const Footer: React.FC<FooterProps> = ({ onSelectExperience, onOpenPrivac
           <div className="space-y-4">
             <h3 className="text-lg text-stone-900 font-bold font-serif">Experiences</h3>
             <ul className="space-y-2 text-xs text-stone-700">
-              <li>
-                <button
-                  type="button"
-                  onClick={() => onSelectExperience('evening-desert-safari')}
-                  className="hover:text-[#EA580C] transition-colors cursor-pointer text-left"
-                >
-                  VIP Evening Desert Safari
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => onSelectExperience('morning-desert-safari')}
-                  className="hover:text-[#EA580C] transition-colors cursor-pointer text-left"
-                >
-                  Private Royal Sunrise Dune Tour
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => onSelectExperience('can-am-buggy-safari')}
-                  className="hover:text-[#EA580C] transition-colors cursor-pointer text-left"
-                >
-                  Quad Biking &amp; Dune Buggy 1000cc
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => onSelectExperience('private-vip-safari')}
-                  className="hover:text-[#EA580C] transition-colors cursor-pointer text-left"
-                >
-                  Overnight Bedouin Stargazing
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => onSelectExperience('dubai-half-day-city-tour')}
-                  className="hover:text-[#EA580C] transition-colors cursor-pointer text-left"
-                >
-                  Dubai Exclusive City Sightseeing
-                </button>
-              </li>
+              {toursList.length > 0 ? (
+                toursList.map((tour) => (
+                  <li key={tour.id}>
+                    <button
+                      type="button"
+                      onClick={() => onSelectExperience(tour.id)}
+                      className="hover:text-[#EA580C] transition-colors cursor-pointer text-left truncate max-w-full"
+                    >
+                      {tour.title}
+                    </button>
+                  </li>
+                ))
+              ) : (
+                <>
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() => onSelectExperience('evening-desert-safari')}
+                      className="hover:text-[#EA580C] transition-colors cursor-pointer text-left"
+                    >
+                      VIP Evening Desert Safari
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() => onSelectExperience('morning-desert-safari')}
+                      className="hover:text-[#EA580C] transition-colors cursor-pointer text-left"
+                    >
+                      Private Royal Sunrise Dune Tour
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() => onSelectExperience('quad-bike-atv-rental')}
+                      className="hover:text-[#EA580C] transition-colors cursor-pointer text-left"
+                    >
+                      Quad Biking &amp; Dune Buggy 1000cc
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() => onSelectExperience('private-desert-safari')}
+                      className="hover:text-[#EA580C] transition-colors cursor-pointer text-left"
+                    >
+                      Overnight Bedouin Stargazing
+                    </button>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
 
@@ -108,14 +133,14 @@ export const Footer: React.FC<FooterProps> = ({ onSelectExperience, onOpenPrivac
                 <span className="material-symbols-outlined text-[#EA580C] shrink-0 text-[18px]">
                   location_on
                 </span>
-                <span>DAMAC XL Tower, Business Bay, Dubai, United Arab Emirates</span>
+                <span>{address}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-[#EA580C] shrink-0 text-[18px]">
                   call
                 </span>
-                <a href="tel:0561505270" className="text-stone-900 font-bold hover:text-[#EA580C]">
-                  056 150 5270 (Call &amp; WhatsApp)
+                <a href={`tel:${cleanPhone}`} className="text-stone-900 font-bold hover:text-[#EA580C]">
+                  {phone} (Call &amp; WhatsApp)
                 </a>
               </div>
               <div className="flex items-center gap-2">

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Experience } from '../types';
 import { EXPERIENCES } from '../data/safaris';
 
 interface HeroProps {
@@ -12,6 +13,9 @@ interface HeroProps {
   heroTitle?: string;
   heroSubtitle?: string;
   heroImage?: string;
+  experiences?: Experience[];
+  phone?: string;
+  announcementText?: string;
 }
 
 export const Hero: React.FC<HeroProps> = ({
@@ -20,14 +24,19 @@ export const Hero: React.FC<HeroProps> = ({
   heroTitle,
   heroSubtitle,
   heroImage,
+  experiences,
+  phone = '+971 56 150 5270',
+  announcementText,
 }) => {
   // Category tabs
   const [activeTab, setActiveTab] = useState<'desert-safaris' | 'city-tours' | 'buggies' | 'private-convoys'>(
     'desert-safaris'
   );
 
+  const allExperiences = experiences && experiences.length > 0 ? experiences : EXPERIENCES;
+
   // Filter experiences by active tab
-  const filteredExperiences = EXPERIENCES.filter((exp) => exp.category === activeTab);
+  const filteredExperiences = allExperiences.filter((exp) => exp.category === activeTab);
   const [selectedExperienceId, setSelectedExperienceId] = useState<string>(
     filteredExperiences[0]?.id || 'evening-desert-safari'
   );
@@ -35,7 +44,7 @@ export const Hero: React.FC<HeroProps> = ({
   // Update selected experience when tab changes
   const handleTabChange = (tab: 'desert-safaris' | 'city-tours' | 'buggies' | 'private-convoys') => {
     setActiveTab(tab);
-    const matches = EXPERIENCES.filter((exp) => exp.category === tab);
+    const matches = allExperiences.filter((exp) => exp.category === tab);
     if (matches.length > 0) {
       setSelectedExperienceId(matches[0].id);
     }
@@ -70,13 +79,17 @@ export const Hero: React.FC<HeroProps> = ({
     });
   };
 
+  const bgImageUrl =
+    heroImage ||
+    'https://lh3.googleusercontent.com/aida/AEtjO1XhYTIm6i_lgiqgiHMctjmM6WOhkzihEl1WR6AUT1AvGVtCpbttGjyrmbnYUegujMEQtDFsUaCvXxB7QPFlPXRFkznTeSdPeoLy40cUupg_ikW7Sqrlnc_ZTVDnvk-KdFd-3YUT2NPnjB1X_6Bzy1CSvT8faI-OBIsGG8vnvWeTvGcvqGR_lyk-212F0dmwNcb04VN71vxKCLC2Oafz9CkYbjvweLjwOesvIjIceQnU4Mvz5TMS1bqwYsE0';
+
   return (
     <section className="relative w-full min-h-[942px] flex flex-col justify-end -mt-20 overflow-hidden bg-[#FFF9F2]">
       {/* Desert Cinematic Background with warm sunlit amber overlay */}
       <div
-        className="absolute inset-0 w-full h-full bg-cover bg-center"
+        className="absolute inset-0 w-full h-full bg-cover bg-center transition-all duration-700"
         style={{
-          backgroundImage: `url('https://lh3.googleusercontent.com/aida/AEtjO1XhYTIm6i_lgiqgiHMctjmM6WOhkzihEl1WR6AUT1AvGVtCpbttGjyrmbnYUegujMEQtDFsUaCvXxB7QPFlPXRFkznTeSdPeoLy40cUupg_ikW7Sqrlnc_ZTVDnvk-KdFd-3YUT2NPnjB1X_6Bzy1CSvT8faI-OBIsGG8vnvWeTvGcvqGR_lyk-212F0dmwNcb04VN71vxKCLC2Oafz9CkYbjvweLjwOesvIjIceQnU4Mvz5TMS1bqwYsE0')`,
+          backgroundImage: `url('${bgImageUrl}')`,
         }}
       >
         {/* Sunlit warm radiant overlays for pristine readability */}
@@ -92,7 +105,7 @@ export const Hero: React.FC<HeroProps> = ({
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300/80 shadow-sm backdrop-blur-md">
             <span className="material-symbols-outlined text-[16px] text-[#EA580C]">stars</span>
             <span className="text-[11px] uppercase tracking-widest font-bold">
-              DTCM Licensed Operator • Business Bay, Dubai
+              {announcementText || 'DTCM Licensed Operator • Free Home & Hotel Pickup Across Dubai'}
             </span>
           </span>
           <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-sm backdrop-blur-md">
@@ -117,7 +130,7 @@ export const Hero: React.FC<HeroProps> = ({
           </h1>
           <p className="text-base sm:text-lg text-stone-700 leading-relaxed max-w-3xl">
             {heroSubtitle ||
-              'Phoenix Desert Safari is a Dubai tour operator offering desert experiences and UAE sightseeing tours. Services include evening and morning desert safaris, private desert safaris, quad biking, dune bashing, camel rides, sandboarding, Dubai city tours, Abu Dhabi city tours and dhow cruises.'}
+              'Phoenix Desert Safari is a Dubai tour operator offering authentic Bedouin desert experiences, 5-star camp hospitality, private convoys, and 1000HP dune buggies.'}
           </p>
         </div>
 
@@ -173,7 +186,7 @@ export const Hero: React.FC<HeroProps> = ({
               <span className="text-xs text-stone-900 font-bold truncate group-hover:text-[#EA580C] transition-colors">
                 24/7 VIP Concierge
               </span>
-              <span className="text-xs text-stone-600 truncate">Call &amp; WhatsApp: 056 150 5270</span>
+              <span className="text-xs text-stone-600 truncate">Call &amp; WhatsApp: {phone}</span>
             </div>
           </div>
         </div>
@@ -202,7 +215,7 @@ export const Hero: React.FC<HeroProps> = ({
               }`}
               type="button"
             >
-              City Sightseeing
+              City Tours
             </button>
             <button
               onClick={() => handleTabChange('buggies')}
@@ -213,7 +226,7 @@ export const Hero: React.FC<HeroProps> = ({
               }`}
               type="button"
             >
-              Buggies &amp; Quad Biking
+              Buggies &amp; ATVs
             </button>
             <button
               onClick={() => handleTabChange('private-convoys')}
@@ -224,85 +237,73 @@ export const Hero: React.FC<HeroProps> = ({
               }`}
               type="button"
             >
-              Private Royal Convoys
+              Private VIP Convoys
             </button>
           </div>
 
-          {/* Form Selectors Row */}
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-            {/* Experience Choice */}
-            <div className="flex flex-col gap-1 bg-[#FAF6F0] border border-amber-200/70 px-4 py-2 rounded-xl focus-within:border-[#EA580C] transition-colors">
-              <label className="text-[11px] text-[#C2410C] font-bold uppercase tracking-wider">
-                Select Experience
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Experience Selector */}
+            <div className="flex flex-col">
+              <label htmlFor="experience" className="text-[11px] font-bold text-stone-600 uppercase mb-1">
+                Select Tour
               </label>
-              <div className="flex items-center justify-between">
+              <div className="relative">
                 <select
+                  id="experience"
                   value={selectedExperienceId}
                   onChange={(e) => setSelectedExperienceId(e.target.value)}
-                  className="bg-transparent text-stone-900 text-sm font-medium outline-none cursor-pointer w-full"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-3 text-xs sm:text-sm font-semibold text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#EA580C] appearance-none cursor-pointer"
                 >
                   {filteredExperiences.map((exp) => (
                     <option key={exp.id} value={exp.id}>
-                      {exp.title} {exp.badge ? `(${exp.badge})` : ''}
+                      {exp.title} (AED {exp.priceAED})
                     </option>
                   ))}
-                  {/* Also show all other experiences grouped */}
-                  <optgroup label="All Experiences">
-                    {EXPERIENCES.map((exp) => (
-                      <option key={`all-${exp.id}`} value={exp.id}>
-                        {exp.title} (AED {exp.priceAED})
-                      </option>
-                    ))}
-                  </optgroup>
+                  {filteredExperiences.length === 0 && (
+                    <option value="evening-desert-safari">Evening Desert Safari (AED 120)</option>
+                  )}
                 </select>
+                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 pointer-events-none text-[20px]">
+                  expand_more
+                </span>
               </div>
             </div>
 
-            {/* Date Picker */}
-            <div className="flex flex-col gap-1 bg-[#FAF6F0] border border-amber-200/70 px-4 py-2 rounded-xl focus-within:border-[#EA580C] transition-colors">
-              <label className="text-[11px] text-[#C2410C] font-bold uppercase tracking-wider">
+            {/* Date Selector */}
+            <div className="flex flex-col">
+              <label htmlFor="safari-date" className="text-[11px] font-bold text-stone-600 uppercase mb-1">
                 Safari Date
               </label>
-              <div className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-[#EA580C] text-[18px]">
-                  calendar_month
-                </span>
-                <input
-                  className="bg-transparent text-stone-900 text-sm font-medium outline-none cursor-pointer w-full"
-                  type="date"
-                  value={safariDate}
-                  min={new Date().toISOString().split('T')[0]}
-                  onChange={(e) => setSafariDate(e.target.value)}
-                />
-              </div>
+              <input
+                type="date"
+                id="safari-date"
+                value={safariDate}
+                min={new Date().toISOString().split('T')[0]}
+                onChange={(e) => setSafariDate(e.target.value)}
+                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-3 text-xs sm:text-sm font-semibold text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#EA580C] cursor-pointer"
+              />
             </div>
 
             {/* Guests Counter */}
-            <div className="flex flex-col gap-1 bg-[#FAF6F0] border border-amber-200/70 px-4 py-2 rounded-xl">
-              <label className="text-[11px] text-[#C2410C] font-bold uppercase tracking-wider">
-                Guests &amp; Convoy
-              </label>
-              <div className="flex items-center justify-between">
+            <div className="flex flex-col">
+              <label className="text-[11px] font-bold text-stone-600 uppercase mb-1">Guests</label>
+              <div className="flex items-center justify-between bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2">
+                <span className="text-xs sm:text-sm font-semibold text-stone-900">
+                  {adults} {adults === 1 ? 'Adult' : 'Adults'}
+                  {children > 0 && `, ${children} ${children === 1 ? 'Child' : 'Children'}`}
+                </span>
                 <div className="flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[#EA580C] text-[18px]">group</span>
-                  <span className="text-sm text-stone-900 font-medium">
-                    {adults} Adult{adults > 1 ? 's' : ''}, {children} Kid{children !== 1 ? 's' : ''}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
                   <button
-                    className="w-6 h-6 rounded bg-amber-100 flex items-center justify-center text-amber-900 hover:bg-[#EA580C] hover:text-white text-xs font-bold transition-colors cursor-pointer"
-                    onClick={handleMinus}
                     type="button"
-                    aria-label="Decrease adults"
+                    onClick={handleMinus}
+                    className="w-7 h-7 rounded-lg bg-stone-200 hover:bg-stone-300 text-stone-800 flex items-center justify-center font-bold text-sm transition-colors cursor-pointer"
                   >
                     -
                   </button>
                   <button
-                    className="w-6 h-6 rounded bg-amber-100 flex items-center justify-center text-amber-900 hover:bg-[#EA580C] hover:text-white text-xs font-bold transition-colors cursor-pointer"
-                    onClick={handlePlus}
                     type="button"
-                    aria-label="Increase adults"
+                    onClick={handlePlus}
+                    className="w-7 h-7 rounded-lg bg-[#EA580C] hover:bg-[#C2410C] text-white flex items-center justify-center font-bold text-sm transition-colors cursor-pointer"
                   >
                     +
                   </button>
@@ -310,14 +311,14 @@ export const Hero: React.FC<HeroProps> = ({
               </div>
             </div>
 
-            {/* Action CTA Button */}
-            <div className="h-full flex items-center">
+            {/* Check Rates / Book CTA */}
+            <div className="flex flex-col justify-end">
               <button
                 type="submit"
-                className="w-full h-full min-h-[52px] rounded-xl bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#D97706] hover:from-[#C2410C] hover:to-[#EA580C] text-white flex items-center justify-center gap-2 text-sm uppercase tracking-wider font-bold shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all cursor-pointer active:scale-98"
+                className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#EA580C] via-[#D97706] to-[#C2410C] text-white text-xs sm:text-sm uppercase tracking-wider font-extrabold shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:brightness-105 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[20px]">explore</span>
                 <span>Check Live Rates</span>
+                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
               </button>
             </div>
           </form>
@@ -326,3 +327,4 @@ export const Hero: React.FC<HeroProps> = ({
     </section>
   );
 };
+

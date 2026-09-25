@@ -7,6 +7,7 @@ interface ItineraryModalProps {
   currency: Currency;
   onClose: () => void;
   onBookNow: (experienceId: string) => void;
+  experiences?: Experience[];
 }
 
 export const ItineraryModal: React.FC<ItineraryModalProps> = ({
@@ -14,9 +15,11 @@ export const ItineraryModal: React.FC<ItineraryModalProps> = ({
   currency,
   onClose,
   onBookNow,
+  experiences,
 }) => {
+  const allExperiences = experiences && experiences.length > 0 ? experiences : EXPERIENCES;
   const experience: Experience =
-    EXPERIENCES.find((e) => e.id === experienceId) || EXPERIENCES[0];
+    allExperiences.find((e) => e.id === experienceId) || allExperiences[0] || EXPERIENCES[0];
 
   const rateInfo = CURRENCY_RATES[currency];
   const converted = Math.round(experience.priceAED * rateInfo.rate);

@@ -2,9 +2,21 @@ import React from 'react';
 
 interface DirectOperatorSectionProps {
   onOpenWhatsApp: () => void;
+  cmsConfig?: {
+    directPhone?: string;
+    headquarters?: string;
+  };
 }
 
-export const DirectOperatorSection: React.FC<DirectOperatorSectionProps> = ({ onOpenWhatsApp }) => {
+export const DirectOperatorSection: React.FC<DirectOperatorSectionProps> = ({
+  onOpenWhatsApp,
+  cmsConfig,
+}) => {
+  const phone = cmsConfig?.directPhone || '+971 56 150 5270';
+  const cleanPhone = phone.replace(/\s+/g, '');
+  const address =
+    cmsConfig?.headquarters || 'DAMAC XL Tower, Business Bay, Dubai, United Arab Emirates';
+
   return (
     <section id="direct-advantage" className="w-full py-16 bg-[#FAF6F0] scroll-mt-24">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16">
@@ -91,7 +103,7 @@ export const DirectOperatorSection: React.FC<DirectOperatorSectionProps> = ({ on
                     apartment
                   </span>
                   <span className="leading-snug">
-                    DAMAC XL Tower, Business Bay, Dubai, United Arab Emirates
+                    {address}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -105,10 +117,10 @@ export const DirectOperatorSection: React.FC<DirectOperatorSectionProps> = ({ on
                     call
                   </span>
                   <a
-                    href="tel:0561505270"
+                    href={`tel:${cleanPhone}`}
                     className="text-[#EA580C] font-extrabold text-sm hover:underline"
                   >
-                    Direct Line: 056 150 5270
+                    Direct Line: {phone}
                   </a>
                 </div>
               </div>
@@ -116,7 +128,7 @@ export const DirectOperatorSection: React.FC<DirectOperatorSectionProps> = ({ on
               <div className="pt-2 flex flex-col sm:flex-row gap-3">
                 <a
                   className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#EA580C] to-[#D97706] text-white text-xs uppercase tracking-wider font-bold text-center flex items-center justify-center gap-2 hover:brightness-105 shadow-md shadow-orange-500/20 transition-all"
-                  href="tel:0561505270"
+                  href={`tel:${cleanPhone}`}
                 >
                   <span className="material-symbols-outlined text-[18px]">call</span>
                   <span>Call Concierge</span>
@@ -137,3 +149,4 @@ export const DirectOperatorSection: React.FC<DirectOperatorSectionProps> = ({ on
     </section>
   );
 };
+

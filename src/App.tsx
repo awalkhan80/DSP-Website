@@ -80,6 +80,9 @@ export default function App() {
     date?: string;
     adults?: number;
     children?: number;
+    duration?: '30m' | '60m';
+    machine?: string;
+    timeSlot?: string;
   }>({});
 
   const [itineraryModalOpen, setItineraryModalOpen] = useState(false);
@@ -99,8 +102,11 @@ export default function App() {
     }, 4500);
   };
 
-  const handleOpenBooking = (experienceId?: string) => {
-    setBookingModalParams({ experienceId });
+  const handleOpenBooking = (
+    experienceId?: string,
+    params?: { duration?: '30m' | '60m'; machine?: string; timeSlot?: string; date?: string; adults?: number; children?: number }
+  ) => {
+    setBookingModalParams({ experienceId, ...params });
     setBookingModalOpen(true);
   };
 
@@ -109,6 +115,9 @@ export default function App() {
     date: string;
     adults: number;
     children: number;
+    duration?: '30m' | '60m';
+    machine?: string;
+    timeSlot?: string;
   }) => {
     setBookingModalParams(params);
     setBookingModalOpen(true);
@@ -278,6 +287,7 @@ export default function App() {
         isAdminLoggedIn={!!adminSession}
         announcementText={cmsConfig.announcementTicker}
         showAnnouncement={cmsConfig.showAnnouncement}
+        phone={cmsConfig.directPhone}
       />
 
       {/* Main Content Sections */}
@@ -288,6 +298,9 @@ export default function App() {
           heroTitle={cmsConfig.heroTitle}
           heroSubtitle={cmsConfig.heroSubtitle}
           heroImage={cmsConfig.heroImage}
+          experiences={experiences}
+          phone={cmsConfig.directPhone}
+          announcementText={cmsConfig.announcementTicker}
         />
 
         <SignatureExpeditions
@@ -299,14 +312,16 @@ export default function App() {
 
         <AdrenalineBuggySection
           currency={currency}
-          onBookExperience={(id) => handleOpenBooking(id)}
+          onBookExperience={(id, params) => handleOpenBooking(id, params)}
           onViewItinerary={handleViewItinerary}
+          experiences={experiences}
         />
 
         <CityToursSection
           currency={currency}
           onViewItinerary={handleViewItinerary}
           onBookExperience={(id) => handleOpenBooking(id)}
+          experiences={experiences}
         />
 
         <TravelGuidesSection />
@@ -318,7 +333,10 @@ export default function App() {
           onOpenWriteReview={() => setReviewModalOpen(true)}
         />
 
-        <DirectOperatorSection onOpenWhatsApp={() => setWhatsAppOpen(true)} />
+        <DirectOperatorSection
+          onOpenWhatsApp={() => setWhatsAppOpen(true)}
+          cmsConfig={cmsConfig}
+        />
       </main>
 
       <JsonLdStructuredData />
@@ -328,6 +346,8 @@ export default function App() {
         onSelectExperience={(id) => handleViewItinerary(id)}
         onOpenPrivacy={(topic) => setInfoModalTopic(topic as 'privacy' | 'terms' | 'safety')}
         onOpenAdmin={handleOpenAdmin}
+        cmsConfig={cmsConfig}
+        experiences={experiences}
       />
 
       {/* Booking Checkout Modal */}
@@ -337,8 +357,12 @@ export default function App() {
           initialDate={bookingModalParams.date}
           initialAdults={bookingModalParams.adults}
           initialChildren={bookingModalParams.children}
+          initialDuration={bookingModalParams.duration}
+          initialMachine={bookingModalParams.machine}
+          initialTimeSlot={bookingModalParams.timeSlot}
           currency={currency}
           onClose={() => setBookingModalOpen(false)}
+          experiences={experiences}
         />
       )}
 
@@ -352,6 +376,7 @@ export default function App() {
             setItineraryModalOpen(false);
             handleOpenBooking(id);
           }}
+          experiences={experiences}
         />
       )}
 

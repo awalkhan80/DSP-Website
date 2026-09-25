@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Experience } from '../../types';
 import { EXPERIENCES } from '../../data/safaris';
 import { SeoAuditDashboard } from './SeoAuditDashboard';
@@ -107,6 +107,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [phoneText, setPhoneText] = useState(cmsConfig.directPhone);
   const [hqText, setHqText] = useState(cmsConfig.headquarters);
   const [editingHq, setEditingHq] = useState(false);
+
+  // Synchronize local states if cmsConfig prop is restored or updated externally
+  useEffect(() => {
+    setHeroH1(cmsConfig.heroTitle);
+    setHeroSub(cmsConfig.heroSubtitle);
+    setAnnouncementText(cmsConfig.announcementTicker);
+    setAnnouncementActive(cmsConfig.showAnnouncement);
+    setPhoneText(cmsConfig.directPhone);
+    setHqText(cmsConfig.headquarters);
+  }, [cmsConfig]);
 
   // Drawer modal state for editing or creating a tour
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -540,7 +550,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setDrawerCategory(tour.category);
     setDrawerDuration(tour.duration);
     setDrawerTiming(tour.departureTime || '02:30 PM - 09:30 PM');
-    setDrawerPickup(tour.hotelPickup ? 'DAMAC XL Tower, Business Bay / Hotel Lobby' : 'Desert Base Camp Meeting Point');
+    setDrawerPickup(tour.hotelPickup ? 'Doorstep Home & Hotel Pickup across Dubai & Sharjah' : 'Desert Base Camp Meeting Point');
     setDrawerFeatured(tour.featured ?? true);
     setIsDrawerOpen(true);
   };
@@ -558,7 +568,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setDrawerCategory('desert-safaris');
     setDrawerDuration('4 Hours');
     setDrawerTiming('03:30 PM - 07:30 PM');
-    setDrawerPickup('DAMAC XL Tower, Business Bay / Hotel Lobby');
+    setDrawerPickup('Doorstep Home & Hotel Pickup across Dubai & Sharjah');
     setDrawerFeatured(true);
     setIsDrawerOpen(true);
   };
@@ -1494,6 +1504,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             <span className="text-xs font-bold text-[#1E1B1A]">AED, USD, EUR, GBP (Active)</span>
                           </div>
                           <span className="h-2.5 w-2.5 rounded-full bg-[#8D4B00]"></span>
+                        </div>
+                      </div>
+
+                      {/* Direct Save & Publish Action Bar */}
+                      <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#E9E1DF]">
+                        <div className="flex items-center gap-2 text-xs text-[#554336]">
+                          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                          <span>Changes auto-saved locally. Click Publish to update live storefront.</span>
+                        </div>
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                          <button
+                            type="button"
+                            onClick={handlePublishCMS}
+                            className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#8D4B00] to-[#EA580C] text-white text-xs font-bold uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-98"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">publish</span>
+                            <span>Save &amp; Publish Changes</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={onSwitchToStorefront}
+                            className="px-3 py-2.5 rounded-lg bg-[#F5ECEA] hover:bg-[#EFE6E4] text-[#1E1B1A] text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                            title="View customer homepage"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">open_in_new</span>
+                            <span className="hidden sm:inline">View Site</span>
+                          </button>
                         </div>
                       </div>
                     </div>

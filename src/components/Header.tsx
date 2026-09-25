@@ -13,6 +13,7 @@ interface HeaderProps {
   isAdminLoggedIn?: boolean;
   announcementText?: string;
   showAnnouncement?: boolean;
+  phone?: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -26,9 +27,11 @@ export const Header: React.FC<HeaderProps> = ({
   isAdminLoggedIn = false,
   announcementText,
   showAnnouncement = true,
+  phone = '+971 56 150 5270',
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
+  const cleanPhone = phone.replace(/\s+/g, '');
 
   const navItems = [
     { id: 'desert-safaris', label: 'Desert Safaris' },
@@ -54,10 +57,10 @@ export const Header: React.FC<HeaderProps> = ({
                   <>
                     Open 24 Hours • Call &amp; WhatsApp Direct Booking:{' '}
                     <a
-                      href="tel:0561505270"
+                      href={`tel:${cleanPhone}`}
                       className="text-amber-200 font-extrabold underline underline-offset-2 hover:text-white transition-colors"
                     >
-                      056 150 5270
+                      {phone}
                     </a>{' '}
                     • Located at DAMAC XL Tower, Business Bay, Dubai
                   </>
@@ -170,10 +173,10 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Direct Phone */}
           <a
             className="hidden xl:flex items-center gap-1.5 text-stone-800 hover:text-[#EA580C] transition-colors text-[13px] font-semibold"
-            href="tel:0561505270"
+            href={`tel:${cleanPhone}`}
           >
             <span className="material-symbols-outlined text-[#EA580C] text-[18px]">call</span>
-            <span>056 150 5270</span>
+            <span>{phone}</span>
           </a>
 
           {/* SEO Audit & Admin Portal Link */}

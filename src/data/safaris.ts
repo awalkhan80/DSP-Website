@@ -30,12 +30,12 @@ export const EXPERIENCES: Experience[] = [
     featured: true,
     vehicleType: 'Toyota Land Cruiser 4x4',
     itinerary: [
-      { time: '03:00 PM', title: 'Hotel Chauffeur Pickup', description: 'Air-conditioned 4x4 Land Cruiser picks you up directly from your Dubai hotel lobby or residence.' },
+      { time: '03:00 PM', title: 'Home & Hotel Chauffeur Pickup', description: 'Air-conditioned 4x4 Land Cruiser picks you up directly from your Dubai home villa, apartment, or hotel lobby.' },
       { time: '04:15 PM', title: 'Red Lahbab High Dune Bashing', description: 'Experience 45 minutes of adrenaline-filled roller-coaster dune driving with DTCM certified desert marshals.' },
       { time: '05:30 PM', title: 'Golden Sunset & Sandboarding', description: 'Capture panoramic golden-hour photographs and glide down towering silky sand dunes on custom boards.' },
       { time: '06:30 PM', title: 'Bedouin Oasis Camp Welcome', description: 'Traditional Arabic coffee (Gahwa), sweet dates, complimentary henna hand painting, and camel rides.' },
       { time: '07:30 PM', title: '5-Star Live BBQ Buffet & Shows', description: 'Gourmet grilled meats, vegetarian delicacies, live Tanoura whirling dervish, and thrilling fire dancer show.' },
-      { time: '09:15 PM', title: 'Starlit Convoy Return', description: 'Relaxed return drive dropping you comfortably back at your hotel door.' }
+      { time: '09:15 PM', title: 'Starlit Convoy Return', description: 'Relaxed return drive dropping you comfortably back at your home or hotel doorstep.' }
     ]
   },
   {
