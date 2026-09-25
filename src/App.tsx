@@ -39,23 +39,39 @@ export default function App() {
   const [reviewsList, setReviewsList] = useState<Review[]>(REVIEWS);
 
   // Dynamic CMS Configuration
-  const [cmsConfig, setCmsConfig] = useState<CMSConfig>({
-    heroTitle: "Experience the Untamed Spirit of Dubai's Golden Dunes",
-    heroSubtitle:
-      'Phoenix Desert Safari is a Dubai tour operator offering authentic Bedouin desert experiences, 5-star camp hospitality, private convoys, and 1000HP dune buggies.',
-    heroImage:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuCwh3IxGfRyabThS2IkAAkO8dgF-efStfsRxJ1OeVcgXu3uJ4GtgqV_Ma90tHpmLrmvedQGkOkh0VKcZlNh8e5DBmZy2TtfVPWAKzOJ2cZlwKwdVahe2FQVZ-BwAqh3Pi2Cpg_Y--XbSM36LrxiBL5HqQ55NT_aE_KkRfbdCo1qqbXXXhkZNoiG6yGKjm_Dzi9nmdUz_ADZ9vR_MmbdmkTNoWUG5oPjljsrmRK8AUVCrFZWyKzGs4vZ_A',
-    announcementTicker:
-      'DTCM Licensed Operator • Business Bay, Dubai | Instant Voucher Confirmation',
-    showAnnouncement: true,
-    defaultBookingExperience: 'evening-desert-safari',
-    directPhone: '+971 56 150 5270',
-    headquarters: 'DAMAC XL Tower - Business Bay, Dubai',
-    whatsappWebhook: 'UltraMsg v2.4 (Active Webhook)',
+  const [cmsConfig, setCmsConfig] = useState<CMSConfig>(() => {
+    try {
+      const saved = localStorage.getItem('phoenix_cms_config');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn('Error reading stored cmsConfig', e);
+    }
+    return {
+      heroTitle: "Experience the Untamed Spirit of Dubai's Golden Dunes",
+      heroSubtitle:
+        'Phoenix Desert Safari is a Dubai tour operator offering authentic Bedouin desert experiences, 5-star camp hospitality, private convoys, and 1000HP dune buggies.',
+      heroImage:
+        'https://lh3.googleusercontent.com/aida-public/AB6AXuCwh3IxGfRyabThS2IkAAkO8dgF-efStfsRxJ1OeVcgXu3uJ4GtgqV_Ma90tHpmLrmvedQGkOkh0VKcZlNh8e5DBmZy2TtfVPWAKzOJ2cZlwKwdVahe2FQVZ-BwAqh3Pi2Cpg_Y--XbSM36LrxiBL5HqQ55NT_aE_KkRfbdCo1qqbXXXhkZNoiG6yGKjm_Dzi9nmdUz_ADZ9vR_MmbdmkTNoWUG5oPjljsrmRK8AUVCrFZWyKzGs4vZ_A',
+      announcementTicker:
+        'DTCM Licensed Operator • Business Bay, Dubai | Instant Voucher Confirmation',
+      showAnnouncement: true,
+      defaultBookingExperience: 'evening-desert-safari',
+      directPhone: '+971 56 150 5270',
+      headquarters: 'DAMAC XL Tower - Business Bay, Dubai',
+      whatsappWebhook: 'UltraMsg v2.4 (Active Webhook)',
+    };
   });
 
   // Dynamic Tours Catalog
-  const [experiences, setExperiences] = useState<Experience[]>(EXPERIENCES);
+  const [experiences, setExperiences] = useState<Experience[]>(() => {
+    try {
+      const saved = localStorage.getItem('phoenix_experiences');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn('Error reading stored experiences', e);
+    }
+    return EXPERIENCES;
+  });
 
   // Modal States
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
@@ -119,15 +135,49 @@ export default function App() {
 
   // Experience Mutations for Admin CMS
   const handleUpdateExperience = (updated: Experience) => {
-    setExperiences((prev) => prev.map((exp) => (exp.id === updated.id ? updated : exp)));
+    setExperiences((prev) => {
+      const next = prev.map((exp) => (exp.id === updated.id ? updated : exp));
+      try {
+        localStorage.setItem('phoenix_experiences', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
   };
 
   const handleAddExperience = (newExp: Experience) => {
-    setExperiences((prev) => [newExp, ...prev]);
+    setExperiences((prev) => {
+      const next = [newExp, ...prev];
+      try {
+        localStorage.setItem('phoenix_experiences', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
   };
 
   const handleDeleteExperience = (id: string) => {
-    setExperiences((prev) => prev.filter((exp) => exp.id !== id));
+    setExperiences((prev) => {
+      const next = prev.filter((exp) => exp.id !== id);
+      try {
+        localStorage.setItem('phoenix_experiences', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  const handleUpdateCmsConfig = (updated: CMSConfig) => {
+    setCmsConfig(updated);
+    try {
+      localStorage.setItem('phoenix_cms_config', JSON.stringify(updated));
+    } catch {}
+  };
+
+  const handleRestoreAll = (newCms: CMSConfig, newExp: Experience[]) => {
+    setCmsConfig(newCms);
+    setExperiences(newExp);
+    try {
+      localStorage.setItem('phoenix_cms_config', JSON.stringify(newCms));
+      localStorage.setItem('phoenix_experiences', JSON.stringify(newExp));
+    } catch {}
   };
 
   // Admin Authentication Actions
@@ -170,7 +220,7 @@ export default function App() {
     return (
       <AdminDashboard
         cmsConfig={cmsConfig}
-        onUpdateCmsConfig={setCmsConfig}
+        onUpdateCmsConfig={handleUpdateCmsConfig}
         experiences={experiences}
         onUpdateExperience={handleUpdateExperience}
         onAddExperience={handleAddExperience}
@@ -178,6 +228,7 @@ export default function App() {
         onSwitchToStorefront={() => setCurrentView('storefront')}
         adminSession={adminSession}
         onSignOut={handleAdminSignOut}
+        onRestoreAll={handleRestoreAll}
       />
     );
   }

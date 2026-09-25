@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Experience } from '../../types';
+import { EXPERIENCES } from '../../data/safaris';
 import { SeoAuditDashboard } from './SeoAuditDashboard';
 import { AdminSession } from '../../utils/adminAuth';
 
@@ -33,7 +34,34 @@ export interface AdminBooking {
   paymentStatus: 'Paid Online' | 'Cash on Pickup';
 }
 
-interface AdminDashboardProps {
+export interface SiteBackupData {
+  version: string;
+  exportedAt: string;
+  exportedBy: string;
+  appletTitle: string;
+  dtcmLicense: string;
+  cmsConfig: CMSConfig;
+  experiences: Experience[];
+  capacities?: Record<string, { booked: number; max: number }>;
+  bookings?: AdminBooking[];
+  metadata?: {
+    platform: string;
+    totalTours: number;
+    headquarters: string;
+  };
+}
+
+export interface BackupSnapshot {
+  id: string;
+  timestamp: string;
+  label: string;
+  exportedBy: string;
+  toursCount: number;
+  data: SiteBackupData;
+  type: 'manual' | 'auto-pre-restore' | 'baseline';
+}
+
+export interface AdminDashboardProps {
   cmsConfig: CMSConfig;
   onUpdateCmsConfig: (updated: CMSConfig) => void;
   experiences: Experience[];
@@ -43,6 +71,7 @@ interface AdminDashboardProps {
   onSwitchToStorefront: () => void;
   adminSession?: AdminSession | null;
   onSignOut?: () => void;
+  onRestoreAll?: (newCmsConfig: CMSConfig, newExperiences: Experience[]) => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -55,10 +84,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onSwitchToStorefront,
   adminSession,
   onSignOut,
+  onRestoreAll,
 }) => {
   // Navigation tabs
   const [activeNav, setActiveNav] = useState<
-    'overview-analytics' | 'homepage-cms' | 'tour-catalog-pricing' | 'bookings-convoys' | 'customer-inquiries-whatsapp' | 'seo-audit' | 'settings'
+    'overview-analytics' | 'homepage-cms' | 'tour-catalog-pricing' | 'bookings-convoys' | 'customer-inquiries-whatsapp' | 'seo-audit' | 'backup-restore' | 'settings'
   >('seo-audit');
 
   // Mobile navigation drawer state
@@ -207,6 +237,294 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setTimeout(() => {
       setToastMessage(null);
     }, 3800);
+  };
+
+  // --- BACKUP & RESTORE RECOVERY ENGINE ---
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [localSnapshots, setLocalSnapshots] = useState<BackupSnapshot[]>(() => {
+    try {
+      const stored = localStorage.getItem('phoenix_backup_snapshots');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.warn('Error reading stored backup snapshots', e);
+    }
+    return [
+      {
+        id: 'baseline-gold-master',
+        timestamp: '2026-09-24T12:00:00.000Z',
+        label: 'DTCM Factory Gold Baseline Master',
+        exportedBy: 'system@phoenixdesertsafari.com',
+        toursCount: 8,
+        type: 'baseline',
+        data: {
+          version: '1.0.0',
+          exportedAt: '2026-09-24T12:00:00.000Z',
+          exportedBy: 'system@phoenixdesertsafari.com',
+          appletTitle: 'The Phoenix Desert Safari Dubai',
+          dtcmLicense: 'EXP-2024-8849',
+          cmsConfig: { ...cmsConfig },
+          experiences: EXPERIENCES,
+        },
+      },
+    ];
+  });
+
+  const [pendingRestore, setPendingRestore] = useState<SiteBackupData | null>(null);
+  const [autoBackupBeforeRestore, setAutoBackupBeforeRestore] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
+  const [manualSnapshotName, setManualSnapshotName] = useState('');
+  const [showManualSnapshotModal, setShowManualSnapshotModal] = useState(false);
+  const [showFactoryResetModal, setShowFactoryResetModal] = useState(false);
+  const [selectedSnapshotForDetails, setSelectedSnapshotForDetails] = useState<BackupSnapshot | null>(null);
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
+
+  // Construct current point-in-time backup object
+  const createCurrentBackupPayload = (label?: string): SiteBackupData => {
+    return {
+      version: '1.2.0',
+      exportedAt: new Date().toISOString(),
+      exportedBy: adminSession?.email || 'awalgsm@gmail.com',
+      appletTitle: 'The Phoenix Desert Safari Dubai',
+      dtcmLicense: 'EXP-2024-8849',
+      cmsConfig: {
+        ...cmsConfig,
+        heroTitle: heroH1,
+        heroSubtitle: heroSub,
+        announcementTicker: announcementText,
+        showAnnouncement: announcementActive,
+        directPhone: phoneText,
+        headquarters: hqText,
+      },
+      experiences: experiences,
+      capacities: capacities,
+      bookings: bookings,
+      metadata: {
+        platform: 'Vite React AI Studio SPA',
+        totalTours: experiences.length,
+        headquarters: hqText,
+      },
+    };
+  };
+
+  // Save snapshot to browser local storage
+  const saveLocalSnapshot = (
+    backup: SiteBackupData,
+    label: string,
+    type: 'manual' | 'auto-pre-restore' | 'baseline' = 'manual'
+  ) => {
+    try {
+      const snap: BackupSnapshot = {
+        id: `snap-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        label,
+        exportedBy: backup.exportedBy,
+        toursCount: backup.experiences.length,
+        data: backup,
+        type,
+      };
+      const updated = [snap, ...localSnapshots.filter((s) => s.id !== snap.id)].slice(0, 15);
+      setLocalSnapshots(updated);
+      localStorage.setItem('phoenix_backup_snapshots', JSON.stringify(updated));
+      return snap;
+    } catch (e) {
+      console.warn('Failed saving local snapshot', e);
+      return null;
+    }
+  };
+
+  // Remove a local rollback snapshot
+  const deleteLocalSnapshot = (id: string) => {
+    if (id === 'baseline-gold-master') {
+      showToast('The DTCM Factory Baseline cannot be deleted.');
+      return;
+    }
+    const updated = localSnapshots.filter((s) => s.id !== id);
+    setLocalSnapshots(updated);
+    try {
+      localStorage.setItem('phoenix_backup_snapshots', JSON.stringify(updated));
+    } catch {}
+    showToast('Snapshot removed from local storage.');
+  };
+
+  // Export and download full JSON backup file
+  const handleExportBackup = (label?: string) => {
+    setIsExporting(true);
+    try {
+      const payload = createCurrentBackupPayload(label);
+      const jsonStr = JSON.stringify(payload, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const datePart = new Date().toISOString().slice(0, 10);
+      const timePart = new Date().toTimeString().slice(0, 5).replace(':', '');
+      a.href = url;
+      a.download = `phoenix-safari-backup-${datePart}-${timePart}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      saveLocalSnapshot(payload, label || `Manual JSON Export (${datePart})`, 'manual');
+      showToast('Backup file downloaded & saved to local recovery points.');
+    } catch (err) {
+      showToast('Failed to export backup. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Take a local manual snapshot point
+  const handleCreateManualSnapshot = () => {
+    const label =
+      manualSnapshotName.trim() ||
+      `Manual Snapshot (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
+    const payload = createCurrentBackupPayload(label);
+    saveLocalSnapshot(payload, label, 'manual');
+    setShowManualSnapshotModal(false);
+    setManualSnapshotName('');
+    showToast(`Snapshot "${label}" created successfully.`);
+  };
+
+  // Parse and validate uploaded backup JSON file
+  const processBackupFile = (file: File) => {
+    if (!file.name.endsWith('.json') && file.type !== 'application/json') {
+      showToast('Please upload a valid JSON backup file.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        const parsed = JSON.parse(text);
+
+        if (!parsed || typeof parsed !== 'object') {
+          throw new Error('Root must be an object');
+        }
+
+        if (!parsed.cmsConfig && !parsed.experiences) {
+          throw new Error('Backup must contain either cmsConfig or experiences.');
+        }
+
+        if (parsed.experiences && !Array.isArray(parsed.experiences)) {
+          throw new Error('experiences must be an array.');
+        }
+
+        const normalized: SiteBackupData = {
+          version: parsed.version || '1.0.0',
+          exportedAt: parsed.exportedAt || new Date().toISOString(),
+          exportedBy: parsed.exportedBy || 'Unknown Administrator',
+          appletTitle: parsed.appletTitle || 'The Phoenix Desert Safari Dubai',
+          dtcmLicense: parsed.dtcmLicense || 'EXP-2024-8849',
+          cmsConfig: parsed.cmsConfig || { ...cmsConfig },
+          experiences: Array.isArray(parsed.experiences) ? parsed.experiences : experiences,
+          capacities: parsed.capacities || capacities,
+          bookings: Array.isArray(parsed.bookings) ? parsed.bookings : bookings,
+          metadata: parsed.metadata,
+        };
+
+        setPendingRestore(normalized);
+        showToast('Backup verified! Please review snapshot details to confirm restore.');
+      } catch (err: any) {
+        showToast(`Corrupted or invalid backup file: ${err.message || 'Check JSON format'}`);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    processBackupFile(file);
+    e.target.value = '';
+  };
+
+  // Execute confirmation of restore
+  const handleConfirmRestore = () => {
+    if (!pendingRestore) return;
+
+    try {
+      if (autoBackupBeforeRestore) {
+        const currentPayload = createCurrentBackupPayload('Auto-Snapshot Before Restore');
+        saveLocalSnapshot(currentPayload, 'Auto-Snapshot Before Restore', 'auto-pre-restore');
+      }
+
+      // Update CMS config
+      if (pendingRestore.cmsConfig) {
+        onUpdateCmsConfig(pendingRestore.cmsConfig);
+        setHeroH1(pendingRestore.cmsConfig.heroTitle || heroH1);
+        setHeroSub(pendingRestore.cmsConfig.heroSubtitle || heroSub);
+        setAnnouncementText(pendingRestore.cmsConfig.announcementTicker || announcementText);
+        setAnnouncementActive(pendingRestore.cmsConfig.showAnnouncement ?? announcementActive);
+        setPhoneText(pendingRestore.cmsConfig.directPhone || phoneText);
+        setHqText(pendingRestore.cmsConfig.headquarters || hqText);
+      }
+
+      // Update experiences catalog
+      if (pendingRestore.experiences && Array.isArray(pendingRestore.experiences)) {
+        if (onRestoreAll && pendingRestore.cmsConfig) {
+          onRestoreAll(pendingRestore.cmsConfig, pendingRestore.experiences);
+        } else {
+          pendingRestore.experiences.forEach((exp) => onUpdateExperience(exp));
+        }
+      }
+
+      if (pendingRestore.capacities) {
+        setCapacities(pendingRestore.capacities);
+      }
+
+      if (pendingRestore.bookings && Array.isArray(pendingRestore.bookings)) {
+        setBookings(pendingRestore.bookings);
+      }
+
+      const tourCount = pendingRestore.experiences?.length || experiences.length;
+      showToast(`Website restored! ${tourCount} tours & CMS settings now active.`);
+      setPendingRestore(null);
+    } catch (e: any) {
+      showToast(`Error restoring backup: ${e.message}`);
+    }
+  };
+
+  // Factory reset back to standard baseline
+  const handleFactoryReset = () => {
+    const currentPayload = createCurrentBackupPayload('Auto-Snapshot Before Factory Reset');
+    saveLocalSnapshot(currentPayload, 'Auto-Snapshot Before Factory Reset', 'auto-pre-restore');
+
+    const defaultCms: CMSConfig = {
+      heroTitle: "Experience the Untamed Spirit of Dubai's Golden Dunes",
+      heroSubtitle:
+        'Phoenix Desert Safari is a Dubai tour operator offering authentic Bedouin desert experiences, 5-star camp hospitality, private convoys, and 1000HP dune buggies.',
+      heroImage:
+        'https://lh3.googleusercontent.com/aida-public/AB6AXuCwh3IxGfRyabThS2IkAAkO8dgF-efStfsRxJ1OeVcgXu3uJ4GtgqV_Ma90tHpmLrmvedQGkOkh0VKcZlNh8e5DBmZy2TtfVPWAKzOJ2cZlwKwdVahe2FQVZ-BwAqh3Pi2Cpg_Y--XbSM36LrxiBL5HqQ55NT_aE_KkRfbdCo1qqbXXXhkZNoiG6yGKjm_Dzi9nmdUz_ADZ9vR_MmbdmkTNoWUG5oPjljsrmRK8AUVCrFZWyKzGs4vZ_A',
+      announcementTicker:
+        'DTCM Licensed Operator • Business Bay, Dubai | Instant Voucher Confirmation',
+      showAnnouncement: true,
+      defaultBookingExperience: 'evening-desert-safari',
+      directPhone: '+971 56 150 5270',
+      headquarters: 'DAMAC XL Tower - Business Bay, Dubai',
+      whatsappWebhook: 'UltraMsg v2.4 (Active Webhook)',
+    };
+
+    if (onRestoreAll) {
+      onRestoreAll(defaultCms, EXPERIENCES);
+    } else {
+      onUpdateCmsConfig(defaultCms);
+      EXPERIENCES.forEach((e) => onUpdateExperience(e));
+    }
+
+    setHeroH1(defaultCms.heroTitle);
+    setHeroSub(defaultCms.heroSubtitle);
+    setAnnouncementText(defaultCms.announcementTicker);
+    setAnnouncementActive(defaultCms.showAnnouncement);
+    setPhoneText(defaultCms.directPhone);
+    setHqText(defaultCms.headquarters);
+
+    setShowFactoryResetModal(false);
+    showToast('Factory baseline restored. Original 8 DTCM tours & settings active.');
   };
 
   // Open Edit Drawer for an existing tour
@@ -437,6 +755,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   { id: 'tour-catalog-pricing', label: 'Tour Pricing & Slots', icon: 'explore', badge: `${experiences.length} Tours` },
                   { id: 'bookings-convoys', label: 'Bookings & Convoys', icon: 'directions_car', badge: '18 Active' },
                   { id: 'seo-audit', label: 'Technical SEO Audit', icon: 'travel_explore', badge: '98/100' },
+                  { id: 'backup-restore', label: 'Backup & Restore Vault', icon: 'settings_backup_restore', badge: 'Safe' },
                   { id: 'overview-analytics', label: 'Overview & Analytics', icon: 'analytics', badge: null },
                   { id: 'customer-inquiries-whatsapp', label: 'WhatsApp Inquiries Desk', icon: 'chat', badge: 'Bot Active' },
                   { id: 'settings', label: 'Settings & Security', icon: 'settings', badge: null },
@@ -623,6 +942,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </button>
 
             <button
+              onClick={() => setActiveNav('backup-restore')}
+              className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
+                activeNav === 'backup-restore'
+                  ? 'bg-[#8D4B00] text-white shadow-sm'
+                  : 'text-[#554336] hover:bg-[#EFE6E4] hover:text-[#1E1B1A]'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-[20px]">settings_backup_restore</span>
+                <span>Backup &amp; Restore</span>
+              </div>
+              <span
+                className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                  activeNav === 'backup-restore' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
+                }`}
+              >
+                Safe
+              </span>
+            </button>
+
+            <button
               onClick={() => setActiveNav('settings')}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
                 activeNav === 'settings'
@@ -725,6 +1065,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       ? 'Bookings'
                       : activeNav === 'seo-audit'
                       ? 'SEO Audit'
+                      : activeNav === 'backup-restore'
+                      ? 'Backup & Restore'
                       : activeNav === 'overview-analytics'
                       ? 'Analytics'
                       : 'Admin'}
@@ -857,6 +1199,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     ? 'Operations & Revenue Analytics'
                     : activeNav === 'seo-audit'
                     ? 'SEO Audit & Search Engine Dominance'
+                    : activeNav === 'backup-restore'
+                    ? 'System Backup & Disaster Recovery'
                     : 'System & DTCM Settings'}
                 </span>
               </div>
@@ -873,6 +1217,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   ? 'Daily Revenue & Performance Metrics'
                   : activeNav === 'seo-audit'
                   ? 'Live Technical SEO Audit & Competitor Intelligence'
+                  : activeNav === 'backup-restore'
+                  ? 'System Backup & Disaster Recovery Vault'
                   : 'Company Profile & Compliance Settings'}
               </h1>
             </div>
@@ -883,6 +1229,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <span className="material-symbols-outlined text-[16px] text-[#8D4B00]">verified_user</span>
                 <span>DTCM Permit #EXP-2024-8849</span>
               </div>
+
+              {/* Quick Backup Action */}
+              <button
+                type="button"
+                onClick={() => handleExportBackup('Quick Header Export')}
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-white border border-[#E9E1DF] text-[#1E1B1A] text-xs font-bold uppercase tracking-wider shadow-xs hover:bg-[#F5ECEA] transition-all cursor-pointer"
+                title="Download full site JSON backup"
+              >
+                <span className="material-symbols-outlined text-[16px] text-[#8D4B00]">download</span>
+                <span>Backup</span>
+              </button>
+
+              {/* Quick Restore Vault Action */}
+              <button
+                type="button"
+                onClick={() => setActiveNav('backup-restore')}
+                className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider shadow-xs transition-all cursor-pointer ${
+                  activeNav === 'backup-restore'
+                    ? 'bg-[#8D4B00] text-white'
+                    : 'bg-white border border-[#E9E1DF] text-[#1E1B1A] hover:bg-[#F5ECEA]'
+                }`}
+                title="Open Backup & Restore Recovery Vault"
+              >
+                <span className="material-symbols-outlined text-[16px]">settings_backup_restore</span>
+                <span>Restore Vault</span>
+              </button>
 
               {/* Toggle to Live Storefront */}
               <button
@@ -1984,6 +2356,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </button>
                   </div>
                 )}
+
+                {/* System Backup & Data Recovery Card in Settings */}
+                <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-[#FFDCC3]/40 to-[#F5ECEA] border border-[#8D4B00]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#8D4B00] text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <span className="material-symbols-outlined text-[22px]">settings_backup_restore</span>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-[#1E1B1A]">Disaster Recovery &amp; System Backup</h4>
+                      <p className="text-xs text-[#554336] mt-0.5">
+                        Download full JSON snapshots, roll back to prior versions, or restore from external files.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveNav('backup-restore')}
+                    className="px-4 py-2 rounded-lg bg-[#8D4B00] text-white text-xs font-bold whitespace-nowrap hover:bg-[#B15F00] transition-colors cursor-pointer self-start sm:self-auto flex items-center gap-1.5"
+                  >
+                    <span>Open Backup Hub</span>
+                    <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                  </button>
+                </div>
               </div>
 
               <div className="pt-6 border-t border-[#E9E1DF] flex justify-end">
@@ -1999,6 +2394,354 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           {/* VIEW TAB 7: SEO & SEARCH DOMINANCE AUDIT */}
           {activeNav === 'seo-audit' && <SeoAuditDashboard />}
+
+          {/* VIEW TAB 8: BACKUP & RESTORE RECOVERY VAULT */}
+          {activeNav === 'backup-restore' && (
+            <div className="space-y-6">
+              {/* Vault Overview Card */}
+              <div className="bg-white p-6 rounded-2xl border border-[#E9E1DF] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-start gap-3.5">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FFDCC3] to-[#FFDBCE] text-[#8D4B00] flex items-center justify-center shrink-0 shadow-xs">
+                    <span className="material-symbols-outlined text-[28px]">settings_backup_restore</span>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-serif font-bold text-xl text-[#1E1B1A]">Disaster Recovery &amp; System Backup Vault</h3>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                        DTCM Vault Active
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#554336] mt-1 max-w-2xl">
+                      Download full offline JSON backups of your website (all tours, pricing tiers, descriptions, CMS hero copy, quotas, and bookings), or roll back to historical recovery points with one click.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowManualSnapshotModal(true)}
+                    className="px-3.5 py-2.5 rounded-lg bg-[#F5ECEA] hover:bg-[#EFE6E4] text-[#1E1B1A] text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                  >
+                    <span className="material-symbols-outlined text-[16px] text-[#8D4B00]">add_circle</span>
+                    <span>Create Snapshot</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleExportBackup('Full Vault Export')}
+                    disabled={isExporting}
+                    className="px-4 py-2.5 rounded-lg bg-[#8D4B00] hover:bg-[#B15F00] text-white text-xs font-bold uppercase tracking-wider shadow-sm transition-all cursor-pointer flex items-center gap-1.5 active:scale-98 disabled:opacity-50"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">download</span>
+                    <span>{isExporting ? 'Exporting...' : 'Export JSON Backup'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Two Primary Action Pillars: Download vs Restore File */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Pillar 1: Download Full Backup */}
+                <div className="p-6 rounded-2xl bg-white border border-[#E9E1DF] shadow-xs flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-10 h-10 rounded-xl bg-amber-50 text-[#8D4B00] border border-amber-200 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-[22px]">file_download</span>
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-base text-[#1E1B1A]">Download Complete Site Snapshot</h4>
+                          <span className="text-[11px] text-[#554336]">Encrypted Point-in-Time JSON Archive</span>
+                        </div>
+                      </div>
+                      <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
+                        Ready
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-[#554336] leading-relaxed">
+                      Exports every single asset and parameter of your live environment into a standardized, portable JSON format. You can archive it on your local drive, email it to your operations team, or transfer it to another domain.
+                    </p>
+
+                    {/* What's Included Pills */}
+                    <div className="p-3.5 rounded-xl bg-[#FBF2F0] border border-[#E9E1DF] space-y-2">
+                      <span className="text-[10px] font-bold text-[#8D4B00] uppercase tracking-wider block">
+                        Included in this snapshot:
+                      </span>
+                      <div className="grid grid-cols-2 gap-2 text-xs text-[#1E1B1A]">
+                        <div className="flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-[15px] text-emerald-600">check_circle</span>
+                          <span>{experiences.length} Tour Packages</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-[15px] text-emerald-600">check_circle</span>
+                          <span>All Pricing &amp; Durations</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-[15px] text-emerald-600">check_circle</span>
+                          <span>Hero H1 &amp; Subtitles</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-[15px] text-emerald-600">check_circle</span>
+                          <span>4K Images &amp; Badges</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-[15px] text-emerald-600">check_circle</span>
+                          <span>Slot Quotas ({Object.keys(capacities).length} tours)</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-[15px] text-emerald-600">check_circle</span>
+                          <span>DTCM #EXP-2024-8849</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-5 mt-4 border-t border-[#E9E1DF]">
+                    <button
+                      type="button"
+                      onClick={() => handleExportBackup('Full Manual Backup')}
+                      disabled={isExporting}
+                      className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#8D4B00] to-[#EA580C] hover:opacity-95 text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">download</span>
+                      <span>Download JSON Backup File</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Pillar 2: Restore from Backup File */}
+                <div className="p-6 rounded-2xl bg-white border border-[#E9E1DF] shadow-xs flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#006194] border border-blue-200 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-[22px]">upload_file</span>
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-base text-[#1E1B1A]">Restore from Backup File</h4>
+                          <span className="text-[11px] text-[#554336]">Upload &amp; Replace Site State</span>
+                        </div>
+                      </div>
+                      <span className="text-xs font-bold text-[#006194] bg-blue-50 px-2.5 py-1 rounded-full">
+                        JSON Format
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-[#554336] leading-relaxed">
+                      Select a previous `.json` backup file from your computer. Our integrity validator checks file syntax and tour configurations before applying, and automatically takes a safety rollback snapshot of your current state first.
+                    </p>
+
+                    {/* Interactive Dropzone */}
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsDraggingFile(true);
+                      }}
+                      onDragLeave={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsDraggingFile(false);
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsDraggingFile(false);
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) processBackupFile(file);
+                      }}
+                      className={`p-6 rounded-xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2 group ${
+                        isDraggingFile
+                          ? 'border-[#8D4B00] bg-[#FFDCC3]/40 scale-[1.01]'
+                          : 'border-[#DBC2B0] hover:border-[#8D4B00] bg-[#FBF2F0] hover:bg-[#F5ECEA]'
+                      }`}
+                    >
+                      <div className="w-12 h-12 rounded-full bg-white shadow-2xs flex items-center justify-center text-[#8D4B00] group-hover:scale-110 transition-transform">
+                        <span className="material-symbols-outlined text-[24px]">
+                          {isDraggingFile ? 'file_download' : 'cloud_upload'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-[#1E1B1A] block">
+                          {isDraggingFile ? 'Drop your JSON backup file here' : 'Click to browse backup file or drag & drop'}
+                        </span>
+                        <span className="text-[11px] text-[#554336] mt-0.5 block">
+                          Supports .json backup snapshots exported from The Phoenix Admin
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-5 mt-4 border-t border-[#E9E1DF] flex items-center justify-between gap-3">
+                    <span className="text-[11px] text-[#554336] flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[15px] text-emerald-600">shield</span>
+                      Automatic pre-restore rollback enabled
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-4 py-2.5 rounded-xl bg-white border border-[#E9E1DF] hover:bg-[#F5ECEA] text-[#1E1B1A] font-bold text-xs uppercase tracking-wider shadow-2xs transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">folder_open</span>
+                      <span>Select File</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Local Point-in-Time Rollback Points (Time Machine) */}
+              <div className="bg-white p-6 rounded-2xl border border-[#E9E1DF] shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E9E1DF]">
+                  <div>
+                    <h4 className="font-bold text-base text-[#1E1B1A] flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[20px] text-[#8D4B00]">history</span>
+                      <span>Local Point-in-Time Rollback Snapshots ({localSnapshots.length})</span>
+                    </h4>
+                    <p className="text-xs text-[#554336] mt-0.5">
+                      Fast 1-click browser recovery points. Revert to any prior snapshot without uploading an external file.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowManualSnapshotModal(true)}
+                    className="px-3.5 py-1.5 rounded-lg bg-[#8D4B00] hover:bg-[#B15F00] text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1 self-start sm:self-auto shadow-2xs"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">add</span>
+                    <span>Snapshot Current State</span>
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {localSnapshots.map((snap) => (
+                    <div
+                      key={snap.id}
+                      className="p-4 rounded-xl bg-[#FBF2F0] hover:bg-[#F5ECEA] border border-[#E9E1DF] transition-colors flex flex-col md:flex-row md:items-center justify-between gap-3"
+                    >
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div
+                          className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                            snap.type === 'baseline'
+                              ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                              : snap.type === 'auto-pre-restore'
+                              ? 'bg-blue-100 text-blue-900'
+                              : 'bg-stone-200 text-stone-800'
+                          }`}
+                        >
+                          <span className="material-symbols-outlined text-[18px]">
+                            {snap.type === 'baseline' ? 'stars' : snap.type === 'auto-pre-restore' ? 'restore' : 'bookmark'}
+                          </span>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-xs text-[#1E1B1A] truncate">{snap.label}</span>
+                            <span
+                              className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                                snap.type === 'baseline'
+                                  ? 'bg-[#FFDCC3] text-[#2F1500]'
+                                  : snap.type === 'auto-pre-restore'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : 'bg-stone-200 text-stone-700'
+                              }`}
+                            >
+                              {snap.type === 'baseline' ? 'Gold Master' : snap.type === 'auto-pre-restore' ? 'Auto Rollback' : 'Manual'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-[11px] text-[#554336] mt-1 flex-wrap">
+                            <span>{new Date(snap.timestamp).toLocaleString()}</span>
+                            <span>&bull;</span>
+                            <span className="font-semibold text-[#8D4B00]">{snap.toursCount} Tours</span>
+                            <span>&bull;</span>
+                            <span className="truncate max-w-xs">{snap.exportedBy}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-end md:self-auto shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedSnapshotForDetails(snap)}
+                          className="px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-semibold text-[#554336] hover:text-[#1E1B1A] shadow-2xs transition-colors cursor-pointer flex items-center gap-1"
+                          title="Inspect snapshot content and tours"
+                        >
+                          <span className="material-symbols-outlined text-[15px] text-[#8D4B00]">visibility</span>
+                          <span className="hidden sm:inline">Inspect</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const blob = new Blob([JSON.stringify(snap.data, null, 2)], { type: 'application/json' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `phoenix-snapshot-${snap.id}.json`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-semibold text-[#554336] hover:text-[#1E1B1A] shadow-2xs transition-colors cursor-pointer flex items-center gap-1"
+                          title="Download this snapshot as JSON"
+                        >
+                          <span className="material-symbols-outlined text-[15px]">download</span>
+                          <span className="hidden sm:inline">JSON</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPendingRestore(snap.data)}
+                          className="px-3 py-1.5 rounded-lg bg-[#8D4B00] hover:bg-[#B15F00] text-white text-xs font-bold shadow-2xs transition-colors cursor-pointer flex items-center gap-1"
+                        >
+                          <span className="material-symbols-outlined text-[15px]">settings_backup_restore</span>
+                          <span>Restore</span>
+                        </button>
+                        {snap.type !== 'baseline' && (
+                          <button
+                            type="button"
+                            onClick={() => deleteLocalSnapshot(snap.id)}
+                            className="p-1.5 rounded-lg text-stone-400 hover:text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
+                            title="Delete snapshot"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">delete</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Danger Zone: Factory Reset */}
+              <div className="p-5 rounded-2xl bg-red-50/70 border border-red-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-red-100 text-red-700 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[22px]">warning</span>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-red-950">Factory Baseline Emergency Reset</h4>
+                    <p className="text-xs text-red-800/80 mt-0.5">
+                      Reverts all tours, pricing, and CMS texts to the original pristine DTCM baseline (8 verified Dubai tours). An automatic safety snapshot will be stored before resetting.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowFactoryResetModal(true)}
+                  className="px-4 py-2 rounded-lg bg-red-700 hover:bg-red-800 text-white text-xs font-bold whitespace-nowrap transition-colors cursor-pointer self-start sm:self-auto shadow-xs"
+                >
+                  Factory Reset
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Hidden file input for backup JSON upload */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            accept=".json,application/json"
+            className="hidden"
+          />
         </main>
       </div>
 
@@ -2369,6 +3112,487 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </button>
         </div>
       </div>
+
+      {/* ======================================================== */}
+      {/* BACKUP & RESTORE MODALS: RESTORE AUDIT, SNAPSHOT, RESET */}
+      {/* ======================================================== */}
+
+      {/* 1. RESTORE VERIFICATION & PREVIEW MODAL */}
+      {pendingRestore && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-2xl w-full border border-[#E9E1DF] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="p-5 sm:p-6 bg-gradient-to-r from-[#FBF2F0] to-[#FFF8F6] border-b border-[#E9E1DF] flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 text-[#8D4B00] border border-amber-300 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[24px]">settings_backup_restore</span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-serif font-bold text-lg sm:text-xl text-[#1E1B1A]">
+                      Confirm Site Restore
+                    </h3>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 uppercase tracking-wider">
+                      Verified
+                    </span>
+                  </div>
+                  <span className="text-xs text-[#554336] mt-0.5 block">
+                    Review backup contents before applying to live environment
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPendingRestore(null)}
+                className="w-8 h-8 rounded-lg bg-[#EFE6E4] hover:bg-[#E9E1DF] flex items-center justify-center text-[#554336] hover:text-[#1E1B1A] transition-colors cursor-pointer"
+                aria-label="Close dialog"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            {/* Modal Body: Scrollable Snapshot Inspection */}
+            <div className="p-5 sm:p-6 overflow-y-auto space-y-4 text-xs">
+              {/* Snapshot Metadata Pill Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div className="p-3 rounded-xl bg-[#FBF2F0] border border-[#E9E1DF]">
+                  <span className="text-[10px] text-[#554336] block font-semibold">Tours Count</span>
+                  <span className="font-serif font-bold text-base text-[#8D4B00]">
+                    {pendingRestore.experiences?.length || 0} Experiences
+                  </span>
+                </div>
+                <div className="p-3 rounded-xl bg-[#FBF2F0] border border-[#E9E1DF]">
+                  <span className="text-[10px] text-[#554336] block font-semibold">DTCM License</span>
+                  <span className="font-bold text-xs text-[#1E1B1A]">
+                    {pendingRestore.dtcmLicense || 'EXP-2024-8849'}
+                  </span>
+                </div>
+                <div className="p-3 rounded-xl bg-[#FBF2F0] border border-[#E9E1DF]">
+                  <span className="text-[10px] text-[#554336] block font-semibold">Export Date</span>
+                  <span className="font-bold text-xs text-[#1E1B1A] truncate block">
+                    {new Date(pendingRestore.exportedAt).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="p-3 rounded-xl bg-[#FBF2F0] border border-[#E9E1DF]">
+                  <span className="text-[10px] text-[#554336] block font-semibold">Exported By</span>
+                  <span className="font-bold text-xs text-[#1E1B1A] truncate block" title={pendingRestore.exportedBy}>
+                    {pendingRestore.exportedBy?.split('@')[0] || 'Operator'}
+                  </span>
+                </div>
+              </div>
+
+              {/* CMS Hero Preview Card */}
+              {pendingRestore.cmsConfig && (
+                <div className="p-3.5 rounded-xl bg-amber-50/60 border border-amber-200 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-[#8D4B00] uppercase tracking-wider flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">view_quilt</span>
+                      CMS Hero Headlines Inside Backup
+                    </span>
+                    <span className="text-[10px] font-semibold text-stone-500">Live text replacement</span>
+                  </div>
+                  <div className="font-serif font-bold text-sm text-[#1E1B1A]">
+                    "{pendingRestore.cmsConfig.heroTitle}"
+                  </div>
+                  <p className="text-[11px] text-[#554336] line-clamp-2">
+                    {pendingRestore.cmsConfig.heroSubtitle}
+                  </p>
+                  {pendingRestore.cmsConfig.announcementTicker && (
+                    <div className="text-[10px] font-mono text-[#8D4B00] bg-white/80 px-2 py-1 rounded border border-amber-200/60 truncate">
+                      Ticker: {pendingRestore.cmsConfig.announcementTicker}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Tours Catalog Inside Backup */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#1E1B1A] uppercase tracking-wider">
+                    Tours Catalog to be Restored ({pendingRestore.experiences?.length || 0})
+                  </span>
+                  <span className="text-[10px] text-[#554336]">Will update live pricing &amp; descriptions</span>
+                </div>
+
+                <div className="max-h-48 overflow-y-auto space-y-2 pr-1 border border-[#E9E1DF] rounded-xl p-2 bg-[#FBF2F0]/50">
+                  {pendingRestore.experiences?.map((tour, idx) => (
+                    <div
+                      key={tour.id || idx}
+                      className="p-2.5 rounded-lg bg-white border border-[#E9E1DF] flex items-center justify-between gap-3 shadow-2xs"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        {tour.image ? (
+                          <img
+                            src={tour.image}
+                            alt=""
+                            className="w-10 h-10 rounded-md object-cover shrink-0 border border-[#E9E1DF]"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).src =
+                                'https://lh3.googleusercontent.com/aida-public/AB6AXuD-WGzdpK8MS1oA3hauA_Ygx6gWG9_iDxkJhAkQyV5wuzUwmRq0ijeyHwq3h7p9z02MkR7BZE-vSYaLQwFsvp5MExNqXcROyPeCHHjDrUvM9bx70FlWEd_J2KOTqNcG-z7by7k8TKZvYm4gqz_sNTzbUj2XGT9NwvAOEI1l-7xTYTLJklG39UiXhzFbHysO08Qy-SRI5J9bPEztGnzm3Z-UC7hqAcsV6QYDodQ8Ykn4iQ3n7OPoPVohXg';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-md bg-[#F5ECEA] flex items-center justify-center text-[#8D4B00] shrink-0">
+                            <span className="material-symbols-outlined text-[18px]">explore</span>
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <span className="font-bold text-xs text-[#1E1B1A] truncate block">{tour.title}</span>
+                          <div className="flex items-center gap-1.5 text-[10px] text-[#554336] mt-0.5">
+                            <span className="capitalize">{tour.category}</span>
+                            <span>&bull;</span>
+                            <span>{tour.duration}</span>
+                            {tour.badge && (
+                              <>
+                                <span>&bull;</span>
+                                <span className="text-[#8D4B00] font-semibold">{tour.badge}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <span className="font-serif font-bold text-xs text-[#8D4B00] shrink-0 bg-amber-50 px-2 py-1 rounded border border-amber-200/60">
+                        AED {tour.priceAED}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Automatic Rollback Checkbox */}
+              <div className="p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id="autoRollbackCheck"
+                  checked={autoBackupBeforeRestore}
+                  onChange={(e) => setAutoBackupBeforeRestore(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded text-[#006194] focus:ring-[#006194] accent-[#006194] cursor-pointer"
+                />
+                <label htmlFor="autoRollbackCheck" className="text-xs text-[#1E1B1A] cursor-pointer">
+                  <span className="font-bold text-[#006194] block">Safety Rollback Protection (Recommended)</span>
+                  <span className="text-[11px] text-[#554336]">
+                    Automatically save a snapshot of the current live website before applying changes. You can revert back at any time.
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {/* Modal Footer Actions */}
+            <div className="p-4 sm:p-5 bg-[#FBF2F0] border-t border-[#E9E1DF] flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setPendingRestore(null)}
+                className="px-4 py-2.5 rounded-xl bg-white border border-[#E9E1DF] hover:bg-[#F5ECEA] text-xs font-bold uppercase tracking-wider text-[#1E1B1A] transition-colors cursor-pointer shadow-2xs"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmRestore}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#8D4B00] to-[#EA580C] hover:opacity-95 text-white text-xs font-bold uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center gap-2 active:scale-98"
+              >
+                <span className="material-symbols-outlined text-[18px]">settings_backup_restore</span>
+                <span>Confirm &amp; Execute Restore</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. CREATE MANUAL SNAPSHOT MODAL */}
+      {showManualSnapshotModal && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-md w-full border border-[#E9E1DF] shadow-2xl overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="p-5 bg-gradient-to-r from-[#FBF2F0] to-[#FFF8F6] border-b border-[#E9E1DF] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-[#8D4B00] text-white flex items-center justify-center shadow-xs">
+                  <span className="material-symbols-outlined text-[20px]">bookmark</span>
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-base sm:text-lg text-[#1E1B1A]">
+                    Create Point-in-Time Snapshot
+                  </h3>
+                  <span className="text-[11px] text-[#554336] block">Save local browser rollback checkpoint</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowManualSnapshotModal(false);
+                  setManualSnapshotName('');
+                }}
+                className="w-8 h-8 rounded-lg bg-[#EFE6E4] hover:bg-[#E9E1DF] flex items-center justify-center text-[#554336] hover:text-[#1E1B1A] transition-colors cursor-pointer"
+                aria-label="Close dialog"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-5 space-y-4 text-xs">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-[#1E1B1A]">Snapshot Label / Description</label>
+                <input
+                  type="text"
+                  autoFocus
+                  value={manualSnapshotName}
+                  onChange={(e) => setManualSnapshotName(e.target.value)}
+                  placeholder="e.g. Pre-Weekend Update or Eid Campaign"
+                  className="w-full px-3.5 py-2.5 rounded-lg bg-[#F5ECEA] text-xs font-semibold text-[#1E1B1A] focus:outline-none focus:ring-2 focus:ring-[#8D4B00] border border-[#E9E1DF]"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleCreateManualSnapshot();
+                  }}
+                />
+              </div>
+
+              {/* Quick Preset Buttons */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold text-[#554336] uppercase tracking-wider block">
+                  Quick Name Suggestions
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    'Pre-Weekend Rates Update',
+                    'Seasonal Campaign Launch',
+                    'Catalog Pricing Revision',
+                    'Before Hero Content Change',
+                  ].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setManualSnapshotName(preset)}
+                      className="px-2.5 py-1 rounded-full bg-[#F5ECEA] hover:bg-[#EFE6E4] text-[#8D4B00] text-[10px] font-semibold transition-colors cursor-pointer border border-[#E9E1DF]"
+                    >
+                      + {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Snapshot State Summary */}
+              <div className="p-3.5 rounded-xl bg-[#FBF2F0] border border-[#E9E1DF] space-y-1 text-[#554336]">
+                <div className="text-[10px] font-bold text-[#8D4B00] uppercase tracking-wider">
+                  Live Snapshot Contents
+                </div>
+                <div className="flex items-center justify-between text-xs text-[#1E1B1A]">
+                  <span>Total Tour Experiences:</span>
+                  <span className="font-bold text-[#8D4B00]">{experiences.length} Active Tours</span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-[#1E1B1A]">
+                  <span>Hero Headline:</span>
+                  <span className="font-bold truncate max-w-[200px]">{heroH1}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-[#1E1B1A]">
+                  <span>Operator:</span>
+                  <span className="font-mono text-[11px] truncate max-w-[180px]">
+                    {adminSession?.email || 'awalgsm@gmail.com'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 bg-[#FBF2F0] border-t border-[#E9E1DF] flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowManualSnapshotModal(false);
+                  setManualSnapshotName('');
+                }}
+                className="px-4 py-2 rounded-xl bg-white border border-[#E9E1DF] text-xs font-bold uppercase tracking-wider text-[#1E1B1A] hover:bg-[#F5ECEA] transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateManualSnapshot}
+                className="px-4 py-2 rounded-xl bg-[#8D4B00] hover:bg-[#B15F00] text-white text-xs font-bold uppercase tracking-wider shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[16px]">save</span>
+                <span>Save Snapshot</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. FACTORY BASELINE RESET CONFIRMATION MODAL */}
+      {showFactoryResetModal && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-md w-full border border-red-200 shadow-2xl overflow-hidden flex flex-col">
+            <div className="p-5 bg-red-50 border-b border-red-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-red-100 text-red-700 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[24px]">warning</span>
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-red-950">Factory Baseline Reset?</h3>
+                  <span className="text-[11px] text-red-800 block">DTCM Official Baseline Reversion</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowFactoryResetModal(false)}
+                className="w-8 h-8 rounded-lg bg-red-100/70 hover:bg-red-200 flex items-center justify-center text-red-800 transition-colors cursor-pointer"
+                aria-label="Close dialog"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            <div className="p-5 space-y-3.5 text-xs text-[#554336] leading-relaxed">
+              <p>
+                This action will restore the pristine factory catalog of <strong>8 official DTCM Dubai safari packages</strong> and default hero headlines.
+              </p>
+
+              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-[#1E1B1A] space-y-1">
+                <div className="flex items-center gap-1.5 font-bold text-[#8D4B00] text-[11px]">
+                  <span className="material-symbols-outlined text-[16px]">shield</span>
+                  <span>Safety Auto-Snapshot Enabled</span>
+                </div>
+                <p className="text-[11px] text-[#554336]">
+                  A rollback snapshot of your current site will automatically be saved to your local recovery points before resetting, so no work is permanently lost.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-4 bg-stone-50 border-t border-[#E9E1DF] flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setShowFactoryResetModal(false)}
+                className="px-4 py-2 rounded-xl bg-white border border-[#E9E1DF] text-xs font-bold uppercase tracking-wider text-[#1E1B1A] hover:bg-[#F5ECEA] transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleFactoryReset}
+                className="px-4 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-white text-xs font-bold uppercase tracking-wider shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[16px]">restart_alt</span>
+                <span>Restore Baseline</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. SNAPSHOT DETAILS INSPECTION MODAL */}
+      {selectedSnapshotForDetails && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-xl w-full border border-[#E9E1DF] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            {/* Header */}
+            <div className="p-5 bg-gradient-to-r from-[#FBF2F0] to-[#FFF8F6] border-b border-[#E9E1DF] flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#8D4B00] text-white flex items-center justify-center shrink-0 shadow-xs">
+                  <span className="material-symbols-outlined text-[22px]">history</span>
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-base sm:text-lg text-[#1E1B1A]">
+                    {selectedSnapshotForDetails.label}
+                  </h3>
+                  <div className="flex items-center gap-2 text-[11px] text-[#554336]">
+                    <span>{new Date(selectedSnapshotForDetails.timestamp).toLocaleString()}</span>
+                    <span>&bull;</span>
+                    <span className="font-bold text-[#8D4B00] uppercase">
+                      {selectedSnapshotForDetails.type}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedSnapshotForDetails(null)}
+                className="w-8 h-8 rounded-lg bg-[#EFE6E4] hover:bg-[#E9E1DF] flex items-center justify-center text-[#554336] hover:text-[#1E1B1A] transition-colors cursor-pointer"
+                aria-label="Close dialog"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-5 overflow-y-auto space-y-3.5 text-xs">
+              <div className="p-3 rounded-xl bg-[#FBF2F0] border border-[#E9E1DF] space-y-1">
+                <span className="text-[10px] font-bold text-[#8D4B00] uppercase tracking-wider block">
+                  Snapshot Hero Copy
+                </span>
+                <div className="font-serif font-bold text-xs text-[#1E1B1A]">
+                  "{selectedSnapshotForDetails.data.cmsConfig?.heroTitle}"
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold text-[#554336] uppercase tracking-wider block">
+                  Tours in Snapshot ({selectedSnapshotForDetails.data.experiences?.length || 0})
+                </span>
+                <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1 border border-[#E9E1DF] rounded-xl p-2 bg-[#FBF2F0]/50">
+                  {selectedSnapshotForDetails.data.experiences?.map((tour, i) => (
+                    <div
+                      key={tour.id || i}
+                      className="p-2 rounded-lg bg-white border border-[#E9E1DF] flex items-center justify-between text-xs"
+                    >
+                      <div className="min-w-0 pr-2">
+                        <span className="font-bold text-[#1E1B1A] truncate block">{tour.title}</span>
+                        <span className="text-[10px] text-[#554336]">{tour.duration} &bull; {tour.category}</span>
+                      </div>
+                      <span className="font-serif font-bold text-xs text-[#8D4B00] shrink-0">
+                        AED {tour.priceAED}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 bg-[#FBF2F0] border-t border-[#E9E1DF] flex items-center justify-between gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  const blob = new Blob([JSON.stringify(selectedSnapshotForDetails.data, null, 2)], {
+                    type: 'application/json',
+                  });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `phoenix-snapshot-${selectedSnapshotForDetails.id}.json`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }}
+                className="px-3 py-2 rounded-xl bg-white border border-[#E9E1DF] text-xs font-bold text-[#554336] hover:text-[#1E1B1A] transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+              >
+                <span className="material-symbols-outlined text-[16px]">download</span>
+                <span>Download JSON</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedSnapshotForDetails(null)}
+                  className="px-3.5 py-2 rounded-xl bg-white border border-[#E9E1DF] text-xs font-bold uppercase tracking-wider text-[#1E1B1A] hover:bg-[#F5ECEA] transition-colors cursor-pointer"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const snapData = selectedSnapshotForDetails.data;
+                    setSelectedSnapshotForDetails(null);
+                    setPendingRestore(snapData);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-[#8D4B00] hover:bg-[#B15F00] text-white text-xs font-bold uppercase tracking-wider shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[16px]">settings_backup_restore</span>
+                  <span>Restore This Snapshot</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* MOBILE FIXED BOTTOM NAVIGATION BAR (< lg) */}
       <nav
