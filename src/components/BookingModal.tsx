@@ -40,11 +40,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [timeSlot, setTimeSlot] = useState<string>(
     initialTimeSlot || '03:30 PM (Golden Sunset)'
   );
-  const [transferType, setTransferType] = useState<'shared' | 'private_4x4'>('shared');
+  const [transferType, setTransferType] = useState<'shared' | 'private_4x4' | 'meeting_point'>('shared');
 
   // Adrenaline/Off-Road Specific Customization
   const [duration, setDuration] = useState<'30m' | '60m'>(initialDuration);
-  const [quadEngine, setQuadEngine] = useState<'220cc' | '350cc' | '700cc'>('220cc');
+  const [quadEngine, setQuadEngine] = useState<'220cc' | '350cc'>('220cc');
   const [buggySeater, setBuggySeater] = useState<'2-seater' | '4-seater'>('2-seater');
 
   // Popular Add-ons (for standard safaris)
@@ -53,7 +53,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [addOnFalcon, setAddOnFalcon] = useState<boolean>(false);
   const [addOnVipTable, setAddOnVipTable] = useState<boolean>(false);
 
-  // Guest Details & Home/Hotel Doorstep Pickup
+  // Guest Details & Doorstep Pickup / Meeting Point
   const [guestName, setGuestName] = useState<string>('');
   const [guestPhone, setGuestPhone] = useState<string>('');
   const [guestEmail, setGuestEmail] = useState<string>('');
@@ -64,21 +64,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   const [step, setStep] = useState<'customize' | 'details' | 'confirmation'>('customize');
   const [bookingRef, setBookingRef] = useState<string>('');
-
-  // Sync initial machine props if provided
-  useEffect(() => {
-    if (initialMachine) {
-      if (initialMachine.includes('350cc')) setQuadEngine('350cc');
-      else if (initialMachine.includes('700cc')) setQuadEngine('700cc');
-      else if (initialMachine.includes('220cc')) setQuadEngine('220cc');
-
-      if (initialMachine.includes('4-seater') || initialMachine.includes('4-Seater')) {
-        setBuggySeater('4-seater');
-      } else if (initialMachine.includes('2-seater') || initialMachine.includes('2-Seater')) {
-        setBuggySeater('2-seater');
-      }
-    }
-  }, [initialMachine]);
 
   const currentExperience: Experience =
     allExperiences.find((e) => e.id === selectedExperienceId) || allExperiences[0] || EXPERIENCES[0];
@@ -93,6 +78,45 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     currentExperience.id === 'can-am-dune-buggy' ||
     currentExperience.title.toLowerCase().includes('buggy');
 
+  const isDesertSafariTour =
+    (currentExperience.category === 'desert-safaris' ||
+      currentExperience.id.includes('desert-safari') ||
+      currentExperience.id === 'evening-desert-safari' ||
+      currentExperience.id === 'morning-desert-safari' ||
+      currentExperience.id === 'overnight-desert-safari' ||
+      currentExperience.id === 'private-desert-safari' ||
+      currentExperience.id === 'private-vip-safari') &&
+    !isQuadTour &&
+    !isBuggyTour &&
+    currentExperience.category !== 'city-tours';
+
+  // Automatically enforce meeting point vs private transfer for quad & buggy
+  useEffect(() => {
+    if (isQuadTour || isBuggyTour) {
+      if (transferType === 'shared') {
+        setTransferType('meeting_point');
+      }
+    } else {
+      if (transferType === 'meeting_point') {
+        setTransferType('shared');
+      }
+    }
+  }, [selectedExperienceId, isQuadTour, isBuggyTour, transferType]);
+
+  // Sync initial machine props if provided
+  useEffect(() => {
+    if (initialMachine) {
+      if (initialMachine.includes('350cc')) setQuadEngine('350cc');
+      else if (initialMachine.includes('220cc')) setQuadEngine('220cc');
+
+      if (initialMachine.includes('4-seater') || initialMachine.includes('4-Seater')) {
+        setBuggySeater('4-seater');
+      } else if (initialMachine.includes('2-seater') || initialMachine.includes('2-Seater')) {
+        setBuggySeater('2-seater');
+      }
+    }
+  }, [initialMachine]);
+
   // Dynamic Price Calculation
   let basePricePerAdult = currentExperience.priceAED;
 
@@ -100,13 +124,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     if (duration === '30m') {
       if (quadEngine === '220cc') basePricePerAdult = currentExperience.priceAED;
       else if (quadEngine === '350cc') basePricePerAdult = currentExperience.priceAED + 70;
-      else if (quadEngine === '700cc') basePricePerAdult = currentExperience.priceAED + 200;
     } else {
       // 1 Hour (60 Mins)
       const oneHrBase = Math.round(currentExperience.priceAED * 1.67);
       if (quadEngine === '220cc') basePricePerAdult = oneHrBase;
       else if (quadEngine === '350cc') basePricePerAdult = oneHrBase + 100;
-      else if (quadEngine === '700cc') basePricePerAdult = oneHrBase + 300;
     }
   } else if (isBuggyTour) {
     if (duration === '30m') {
@@ -129,21 +151,19 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     : adults * basePricePerAdult + children * basePricePerChild;
 
   // Private 4x4 surcharge if selected (AED 350 flat)
-  if (
-    transferType === 'private_4x4' &&
-    currentExperience.id !== 'private-vip-safari' &&
-    !isBuggyTour
-  ) {
+  if (transferType === 'private_4x4' && currentExperience.id !== 'private-vip-safari') {
     totalAED += 350;
   }
 
-  // Add-ons calculation
-  if (addOnQuad) {
-    const quadAddonRate = addOnQuadDuration === '30m' ? 150 : 250;
-    totalAED += quadAddonRate * adults;
+  // Add-ons calculation (Only applies to desert safari tours)
+  if (isDesertSafariTour) {
+    if (addOnQuad) {
+      const quadAddonRate = addOnQuadDuration === '30m' ? 150 : 250;
+      totalAED += quadAddonRate * adults;
+    }
+    if (addOnFalcon) totalAED += 50 * (adults + children);
+    if (addOnVipTable) totalAED += 200;
   }
-  if (addOnFalcon) totalAED += 50 * (adults + children);
-  if (addOnVipTable) totalAED += 200;
 
   const rateInfo = CURRENCY_RATES[currency];
   const convertedTotal = Math.round(totalAED * rateInfo.rate);
@@ -160,12 +180,19 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       ? `• Duration: ${duration === '30m' ? '30 Minutes' : '1 Hour (60 Mins)'} (${quadEngine} Raptor ATV)\n`
       : isBuggyTour
       ? `• Duration: ${duration === '30m' ? '30 Minutes' : '1 Hour (60 Mins)'} (Can-Am ${buggySeater})\n`
-      : addOnQuad
+      : isDesertSafariTour && addOnQuad
       ? `• Add-On Quad: ${addOnQuadDuration === '30m' ? '30 Mins' : '1 Hour'}\n`
       : '';
 
+    const transferText =
+      transferType === 'meeting_point'
+        ? `• Transfer: Direct to Desert Meeting Point (Self-Drive / Taxi to Camp)\n`
+        : transferType === 'private_4x4'
+        ? `• Transfer: Private 4x4 Luxury Transfer (+AED 350)\n• Doorstep Pickup: ${pickupAddressType === 'home' ? 'Home Residence' : 'Hotel'}: ${hotelOrHomeAddress || 'Pending Address'} ${roomOrVillaNumber ? `(${roomOrVillaNumber})` : ''}\n`
+        : `• Transfer: Shared 4x4 Home/Hotel Pickup (Included)\n• Doorstep Pickup: ${pickupAddressType === 'home' ? 'Home Residence' : 'Hotel'}: ${hotelOrHomeAddress || 'Pending Address'} ${roomOrVillaNumber ? `(${roomOrVillaNumber})` : ''}\n`;
+
     const text = encodeURIComponent(
-      `Hello Phoenix Desert Safari Concierge!\n\nI have confirmed booking *${bookingRef}* for:\n• Experience: ${currentExperience.title}\n• Date: ${safariDate}\n• Time Slot: ${timeSlot}\n${durationText}• Guests: ${adults} Adults${children > 0 ? `, ${children} Children` : ''}\n• Doorstep Pickup: ${pickupAddressType === 'home' ? 'Home Residence' : 'Hotel'}: ${hotelOrHomeAddress || 'Pending Address'} ${roomOrVillaNumber ? `(${roomOrVillaNumber})` : ''}\n• Guest Name: ${guestName || 'VIP Traveler'}\n• Mobile: ${guestPhone}\n• Total Amount: AED ${totalAED} (${currency} ${convertedTotal})\n\nPlease send me the driver pickup confirmation.`
+      `Hello Phoenix Desert Safari Concierge!\n\nI have confirmed booking *${bookingRef}* for:\n• Experience: ${currentExperience.title}\n• Date: ${safariDate}\n• Time Slot: ${timeSlot}\n${durationText}• Guests: ${adults} Adults${children > 0 ? `, ${children} Children` : ''}\n${transferText}• Guest Name: ${guestName || 'VIP Traveler'}\n• Mobile: ${guestPhone}\n• Total Amount: AED ${totalAED} (${currency} ${convertedTotal})\n\nPlease send me the booking confirmation and GPS coordinates.`
     );
     window.open(`https://wa.me/971561505270?text=${text}`, '_blank');
   };
@@ -182,7 +209,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 {step === 'confirmation' ? 'Booking Confirmed!' : 'Book Desert Expedition'}
               </h3>
               <span className="text-[11px] text-amber-200 uppercase tracking-widest font-semibold flex items-center gap-1">
-                <span>Free Home &amp; Hotel Doorstep Pickup</span>
+                {isQuadTour || isBuggyTour ? (
+                  <span>Direct Meeting Point (Free) • Private 4x4 Available</span>
+                ) : (
+                  <span>Free Home &amp; Hotel Doorstep Pickup</span>
+                )}
                 <span>•</span>
                 <span>DTCM Licensed</span>
               </span>
@@ -276,14 +307,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   </button>
                 </div>
 
-                {/* Machine Configuration Tier */}
+                {/* Machine Configuration Tier (220cc & 350cc only) */}
                 {isQuadTour && (
                   <div className="pt-2 border-t border-amber-200/70">
                     <label className="text-[11px] font-bold text-stone-700 block mb-1.5">
                       Quad Engine Capacity (Raptor ATV):
                     </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {(['220cc', '350cc', '700cc'] as const).map((cc) => (
+                    <div className="grid grid-cols-2 gap-2">
+                      {(['220cc', '350cc'] as const).map((cc) => (
                         <button
                           key={cc}
                           type="button"
@@ -294,7 +325,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                               : 'bg-white text-stone-700 border-stone-200 hover:bg-amber-50'
                           }`}
                         >
-                          {cc} {cc === '700cc' ? 'Raptor' : ''}
+                          {cc} Raptor ATV
                         </button>
                       ))}
                     </div>
@@ -437,8 +468,59 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
             )}
 
-            {/* Transfer Mode - Doorstep Home or Hotel Pickup */}
-            {currentExperience.id !== 'private-vip-safari' && !isBuggyTour && (
+            {/* Transfer Mode - Quad & Buggy (Direct Camp Meeting vs Private 4x4 Only) */}
+            {isQuadTour || isBuggyTour ? (
+              <div className="bg-white p-4 rounded-xl border border-stone-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-stone-800 block">
+                    Transportation / Arrival Mode
+                  </span>
+                  <span className="text-[10px] text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full font-bold">
+                    No Shared Pickup for Quad/Buggy
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setTransferType('meeting_point')}
+                    className={`p-3 rounded-lg border text-left flex items-start gap-2 cursor-pointer transition-colors ${
+                      transferType === 'meeting_point'
+                        ? 'border-[#EA580C] bg-orange-50/40 text-stone-900'
+                        : 'border-stone-200 hover:border-stone-300 text-stone-600'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[18px] text-[#EA580C]">
+                      location_on
+                    </span>
+                    <div>
+                      <span className="text-xs font-bold block">Direct to Desert Meeting Point</span>
+                      <span className="text-[11px] text-stone-500">
+                        Self-Drive / Taxi to Camp (Free / Included)
+                      </span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTransferType('private_4x4')}
+                    className={`p-3 rounded-lg border text-left flex items-start gap-2 cursor-pointer transition-colors ${
+                      transferType === 'private_4x4'
+                        ? 'border-[#EA580C] bg-orange-50/40 text-stone-900'
+                        : 'border-stone-200 hover:border-stone-300 text-stone-600'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[18px] text-[#EA580C]">
+                      workspace_premium
+                    </span>
+                    <div>
+                      <span className="text-xs font-bold block">Private 4x4 Luxury Transfer</span>
+                      <span className="text-[11px] text-stone-500">+AED 350 (Exclusive Chauffeur Pickup)</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            ) : currentExperience.id !== 'private-vip-safari' ? (
+              /* Regular Safari Doorstep Pickup */
               <div className="bg-white p-4 rounded-xl border border-stone-200 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-stone-800 block">
@@ -489,10 +571,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   </button>
                 </div>
               </div>
-            )}
+            ) : null}
 
-            {/* Optional Add-ons for standard safaris */}
-            {!isQuadTour && !isBuggyTour && (
+            {/* Optional Add-ons for desert safari tours only */}
+            {isDesertSafariTour && (
               <div className="bg-white p-4 rounded-xl border border-stone-200 space-y-2">
                 <span className="text-xs font-bold text-stone-800 block">Popular Add-Ons</span>
                 <div className="space-y-2.5">
@@ -611,8 +693,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 </span>
                 <span className="text-[11px] text-stone-600">
                   {safariDate} • {timeSlot}
-                  {isQuadTour && ` • ${duration === '30m' ? '30 Min' : '1 Hr'} ${quadEngine}`}
-                  {isBuggyTour && ` • ${duration === '30m' ? '30 Min' : '1 Hr'} ${buggySeater}`}
+                  {isQuadTour && ` • ${duration === '30m' ? '30 Min' : '1 Hr'} (${quadEngine})`}
+                  {isBuggyTour && ` • ${duration === '30m' ? '30 Min' : '1 Hr'} (${buggySeater})`}
+                  {' • '}
+                  {transferType === 'meeting_point'
+                    ? 'Direct Meeting Point'
+                    : transferType === 'private_4x4'
+                    ? 'Private 4x4 Transfer'
+                    : 'Shared Transfer'}
                   {' • '}
                   Total: AED {totalAED} ({currency} {convertedTotal})
                 </span>
@@ -625,6 +713,19 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 Edit
               </button>
             </div>
+
+            {/* DIRECT MEETING POINT INFO (If selected) */}
+            {transferType === 'meeting_point' && (
+              <div className="p-3.5 bg-blue-50 rounded-xl border border-blue-200 space-y-1 text-xs text-blue-950">
+                <div className="flex items-center gap-1.5 font-bold text-blue-900">
+                  <span className="material-symbols-outlined text-[18px] text-[#0284C7]">location_on</span>
+                  <span>Direct Desert Meeting Point Location:</span>
+                </div>
+                <p className="text-stone-700 leading-relaxed">
+                  <strong>Phoenix Desert Base Camp, Lahbab Red Dunes, Dubai</strong> (Approx. 45-min drive from Downtown Dubai). Free dedicated customer parking on site. Exact Google Maps pin &amp; directions sent immediately to your WhatsApp.
+                </p>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -671,79 +772,92 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 />
               </div>
 
-              {/* Pickup Type: Hotel or Home */}
-              <div>
-                <label className="text-xs font-bold text-stone-700 block mb-1">
-                  Pickup Location Type <span className="text-red-500">*</span>
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPickupAddressType('hotel')}
-                    className={`py-2 px-2 text-xs rounded-lg font-bold flex items-center justify-center gap-1 cursor-pointer border ${
+              {/* Pickup Type: Hotel or Home (Only required if chauffeur transfer is selected) */}
+              {transferType !== 'meeting_point' ? (
+                <div>
+                  <label className="text-xs font-bold text-stone-700 block mb-1">
+                    Pickup Location Type <span className="text-red-500">*</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPickupAddressType('hotel')}
+                      className={`py-2 px-2 text-xs rounded-lg font-bold flex items-center justify-center gap-1 cursor-pointer border ${
+                        pickupAddressType === 'hotel'
+                          ? 'bg-[#EA580C] text-white border-[#EA580C]'
+                          : 'bg-white text-stone-700 border-stone-200'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[16px]">apartment</span>
+                      <span>Hotel / Resort</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPickupAddressType('home')}
+                      className={`py-2 px-2 text-xs rounded-lg font-bold flex items-center justify-center gap-1 cursor-pointer border ${
+                        pickupAddressType === 'home'
+                          ? 'bg-[#EA580C] text-white border-[#EA580C]'
+                          : 'bg-white text-stone-700 border-stone-200'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[16px]">home</span>
+                      <span>Home / Villa</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="text-xs font-bold text-stone-700 block mb-1">
+                    Preferred Contact Language
+                  </label>
+                  <div className="p-2.5 rounded-lg border border-stone-200 bg-stone-50 text-xs font-semibold text-stone-700">
+                    English / Arabic / Russian / Hindi
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Doorstep Address Input (Only if Private 4x4 or Shared Pickup) */}
+            {transferType !== 'meeting_point' && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-stone-700 block mb-1">
+                    {pickupAddressType === 'hotel'
+                      ? 'Hotel / Resort Name in Dubai or Sharjah'
+                      : 'Home / Villa / Residence Address in Dubai or Sharjah'}{' '}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder={
                       pickupAddressType === 'hotel'
-                        ? 'bg-[#EA580C] text-white border-[#EA580C]'
-                        : 'bg-white text-stone-700 border-stone-200'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[16px]">apartment</span>
-                    <span>Hotel / Resort</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPickupAddressType('home')}
-                    className={`py-2 px-2 text-xs rounded-lg font-bold flex items-center justify-center gap-1 cursor-pointer border ${
-                      pickupAddressType === 'home'
-                        ? 'bg-[#EA580C] text-white border-[#EA580C]'
-                        : 'bg-white text-stone-700 border-stone-200'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[16px]">home</span>
-                    <span>Home / Villa</span>
-                  </button>
+                        ? 'e.g. Atlantis The Palm / Address Downtown'
+                        : 'e.g. Villa 24, Arabian Ranches / Downtown Dubai Apt'
+                    }
+                    value={hotelOrHomeAddress}
+                    onChange={(e) => setHotelOrHomeAddress(e.target.value)}
+                    className="w-full text-sm p-2.5 rounded-lg border border-stone-200 bg-white focus:border-[#EA580C] outline-none"
+                  />
+                  <span className="text-[11px] text-stone-500 mt-1 block">
+                    ✓ Doorstep pickup &amp; drop directly from your home address or hotel lobby.
+                  </span>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-stone-700 block mb-1">
+                    {pickupAddressType === 'hotel' ? 'Room / Suite #' : 'Villa / Flat #'} (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder={pickupAddressType === 'hotel' ? 'e.g. Rm 1402' : 'e.g. Villa 12B'}
+                    value={roomOrVillaNumber}
+                    onChange={(e) => setRoomOrVillaNumber(e.target.value)}
+                    className="w-full text-sm p-2.5 rounded-lg border border-stone-200 bg-white focus:border-[#EA580C] outline-none"
+                  />
                 </div>
               </div>
-            </div>
-
-            {/* Doorstep Address Input */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="sm:col-span-2">
-                <label className="text-xs font-bold text-stone-700 block mb-1">
-                  {pickupAddressType === 'hotel'
-                    ? 'Hotel / Resort Name in Dubai or Sharjah'
-                    : 'Home / Villa / Residence Address in Dubai or Sharjah'}{' '}
-                  <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder={
-                    pickupAddressType === 'hotel'
-                      ? 'e.g. Atlantis The Palm / Address Downtown'
-                      : 'e.g. Villa 24, Arabian Ranches / Downtown Dubai Apt'
-                  }
-                  value={hotelOrHomeAddress}
-                  onChange={(e) => setHotelOrHomeAddress(e.target.value)}
-                  className="w-full text-sm p-2.5 rounded-lg border border-stone-200 bg-white focus:border-[#EA580C] outline-none"
-                />
-                <span className="text-[11px] text-stone-500 mt-1 block">
-                  ✓ Doorstep pickup &amp; drop directly from your home address or hotel lobby.
-                </span>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-stone-700 block mb-1">
-                  {pickupAddressType === 'hotel' ? 'Room / Suite #' : 'Villa / Flat #'} (Optional)
-                </label>
-                <input
-                  type="text"
-                  placeholder={pickupAddressType === 'hotel' ? 'e.g. Rm 1402' : 'e.g. Villa 12B'}
-                  value={roomOrVillaNumber}
-                  onChange={(e) => setRoomOrVillaNumber(e.target.value)}
-                  className="w-full text-sm p-2.5 rounded-lg border border-stone-200 bg-white focus:border-[#EA580C] outline-none"
-                />
-              </div>
-            </div>
+            )}
 
             <div>
               <label className="text-xs font-bold text-stone-700 block mb-1">
@@ -766,7 +880,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               <div className="text-xs text-emerald-950">
                 <span className="font-bold block">Zero Upfront Deposit Required</span>
                 <span>
-                  Pay on pickup via Cash (AED, USD, EUR, GBP) or Credit/Debit Card directly to your safari captain.
+                  Pay on pickup/arrival via Cash (AED, USD, EUR, GBP) or Credit/Debit Card directly to your safari captain.
                 </span>
               </div>
             </div>
@@ -806,8 +920,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 Your Safari is Reserved!
               </h4>
               <p className="text-xs text-stone-600 max-w-md mx-auto mt-1">
-                A confirmation has been logged. Our operations captain will reach out via WhatsApp 2
-                hours prior to pickup with the exact driver name and vehicle license plate.
+                A confirmation has been logged. Our operations captain will reach out via WhatsApp with your booking details and driver/meeting information.
               </p>
             </div>
 
@@ -833,10 +946,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 </span>
               </div>
               <div className="flex justify-between border-b border-stone-100 pb-1.5">
-                <span className="text-stone-500">Doorstep Pickup:</span>
+                <span className="text-stone-500">Transportation / Pickup:</span>
                 <span className="font-bold text-stone-900">
-                  {pickupAddressType === 'home' ? 'Home' : 'Hotel'}: {hotelOrHomeAddress || 'Pending Address'}{' '}
-                  {roomOrVillaNumber ? `(${roomOrVillaNumber})` : ''}
+                  {transferType === 'meeting_point'
+                    ? 'Direct to Desert Camp (Lahbab Red Dunes GPS Pin)'
+                    : transferType === 'private_4x4'
+                    ? `Private 4x4 Luxury Pickup: ${hotelOrHomeAddress || 'Pending Address'}`
+                    : `Shared 4x4 Pickup: ${hotelOrHomeAddress || 'Pending Address'}`}
                 </span>
               </div>
               <div className="flex justify-between border-b border-stone-100 pb-1.5">
@@ -844,7 +960,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <span className="font-bold text-stone-900">{guestName || 'VIP Traveler'}</span>
               </div>
               <div className="flex justify-between pt-1 text-sm font-bold">
-                <span className="text-stone-900">Total Due on Pickup:</span>
+                <span className="text-stone-900">Total Due on Pickup / Arrival:</span>
                 <span className="text-[#EA580C]">
                   {currency} {convertedTotal.toLocaleString()} (AED {totalAED})
                 </span>

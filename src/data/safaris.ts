@@ -119,19 +119,19 @@ export const EXPERIENCES: Experience[] = [
     duration: 'Session',
     priceAED: 150,
     priceUnit: '/ Session',
-    description: 'Conquer open desert dunes on high-performance 220cc to 700cc Raptor ATVs. Full freedom in designated tracks or deep guided dune fields with complete safety gears provided.',
+    description: 'Conquer open desert dunes on high-performance 220cc to 350cc Raptor ATVs. Full freedom in open desert dunes with helmet, goggles, and safety guide escort. Direct desert meeting point (free) or private 4x4 luxury transfer available.',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD3cf4jPrAC-DN5Da2vJ3_AGbHbR6Yx83Fa8N81kJ0Fe0oD87a2N_uLVWQbZW2Io8MdPi1Es_1bU7roSmN9lCjyb1fdk2uGtp0bKsod3-IPm9wxDqwXqvCZrgiEsYThx1JacNiHRBxVqp-EGOmKVV_iunEJuG04GQ9ta38QwMXXZBq_-KSto8HJDqypGth8xvt_T1PEBAqCFfEc9mE_AXABwf3Xc1lWLQKokQycJqqd6cGJtc6buc96jg',
     altText: 'An ATV rider powering a high-speed quad bike through Dubai red dunes carving sand trails during sunny daylight with protective helmet and gear',
     highlights: [
-      '220cc - 700cc Raptor ATVs',
+      '220cc & 350cc Raptor ATVs',
       'Helmet & Goggles Included',
-      'Desert Trail Leader',
-      'Comprehensive Safety Brief',
-      'Automatic Transmission',
-      'Red Dune Perimeter Access'
+      'Direct Meeting Point (Free)',
+      'Private 4x4 Chauffeur Option',
+      'Lead Desert Marshall',
+      'Comprehensive Safety Brief'
     ],
-    hotelPickup: true,
-    vehicleType: 'Yamaha Raptor / Polaris ATV',
+    hotelPickup: false,
+    vehicleType: 'Yamaha Raptor ATV (220cc / 350cc)',
     itinerary: [
       { time: '0-15 Min', title: 'Gear Fitting & Safety Brief', description: 'Professional briefing on throttle, brakes, body weight shifting and safety perimeter.' },
       { time: '15-45 Min', title: 'Open Dune Riding', description: 'Ride through sweeping open red sand tracks with a lead marshall guiding you along safe, thrilling lines.' },
@@ -148,18 +148,18 @@ export const EXPERIENCES: Experience[] = [
     duration: 'Buggy',
     priceAED: 1000,
     priceUnit: '/ Buggy',
-    description: 'Drive 2-seater or 4-seater Can-Am Maverick X3 Turbo buggies with roll cages, 4-point harnesses, and desert guides. Maximum power to scale the tallest Dubai dunes with ease.',
+    description: 'Drive 2-seater or 4-seater Can-Am Maverick X3 Turbo buggies with roll cages, 4-point harnesses, and desert guides. Direct meeting point at Lahbab camp or private 4x4 luxury transfer available.',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBmUuhU2zvZss3m2z-biFjAJWSc-FFBbo1m6ZnN3dfwWCVNQG6SnfV_9_rKM4lG_4ZxVczonwj4fFA8ROhBmd3wkntbAFTYyWk5iVKcvLmfug4xiWYsSITDwsR4KLWVGBghcaRz5lIZ-3lZl4hKk4yEG5pD_1nxWvvUe2jR7HOnv1ZMSUb2WelPbcAkCKqeglh2mmFr64taMzfh-Z42tEhCHT2lzyKMiOgMV3-AEgDrmDbgWeGZEJmFPw',
     altText: 'A customized high-performance Can-Am Maverick dune buggy racing over the crest of high desert dunes near Dubai kicking up sand with passengers wearing protective helmets',
     highlights: [
       'Can-Am Maverick X3 Turbo',
       '2-Seater & 4-Seater Options',
+      'Direct Meeting Point (Free)',
+      'Private 4x4 Chauffeur Option',
       'Roll-Cage & Race Harness',
-      'Lead Marshall Escort Car',
-      'Full Tank High-Octane Fuel',
-      'GoPro Mount Ready'
+      'Full Tank High-Octane Fuel'
     ],
-    hotelPickup: true,
+    hotelPickup: false,
     vehicleType: 'Can-Am Maverick X3 Turbo 1000cc',
     itinerary: [
       { time: 'Arrival', title: 'Race Suit & Harness Adjustment', description: 'Fitted with professional helmets, dust goggles, and secure 4-point seatbelt harness.' },

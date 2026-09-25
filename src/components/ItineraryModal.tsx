@@ -84,7 +84,9 @@ export const ItineraryModal: React.FC<ItineraryModalProps> = ({
             )}
             <span className="px-3 py-1 bg-white border border-stone-200 rounded-full font-semibold text-stone-800 flex items-center gap-1.5 shadow-2xs">
               <span className="material-symbols-outlined text-[16px] text-emerald-600">done_all</span>
-              Hotel Pick &amp; Drop: Included
+              {experience.hotelPickup
+                ? 'Home & Hotel Pick & Drop: Included'
+                : 'Direct Meeting Point (Free) • Private 4x4 Available'}
             </span>
           </div>
 

@@ -17,7 +17,7 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
 }) => {
   // Quad Bike State
   const [selectedAtvDuration, setSelectedAtvDuration] = useState<'30m' | '60m'>('30m');
-  const [selectedAtvCc, setSelectedAtvCc] = useState<'220cc' | '350cc' | '700cc'>('220cc');
+  const [selectedAtvCc, setSelectedAtvCc] = useState<'220cc' | '350cc'>('220cc');
   const [selectedAtvSlot, setSelectedAtvSlot] = useState<string>('04:30 PM (Sunset Slot)');
 
   // Can-Am Buggy State
@@ -44,13 +44,11 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
     if (selectedAtvDuration === '30m') {
       if (selectedAtvCc === '220cc') return base;
       if (selectedAtvCc === '350cc') return base + 70;
-      if (selectedAtvCc === '700cc') return base + 200;
     } else {
       // 1 Hour (60 Mins)
       const oneHourBase = Math.round(base * 1.67);
       if (selectedAtvCc === '220cc') return oneHourBase;
       if (selectedAtvCc === '350cc') return oneHourBase + 100;
-      if (selectedAtvCc === '700cc') return oneHourBase + 300;
     }
     return base;
   };
@@ -82,8 +80,8 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
             <span className="text-[11px] uppercase tracking-widest text-[#C2410C] font-bold">
               Adrenaline &amp; High-Horsepower • Self-Drive Red Dune Expeditions
             </span>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-              Home &amp; Hotel Pickup Available
+            <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold">
+              Direct Meeting Point (Free) • Private 4x4 Available
             </span>
           </div>
           <h2 className="text-3xl sm:text-4xl text-stone-900 font-semibold font-serif">
@@ -91,7 +89,7 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
           </h2>
           <p className="text-base text-stone-600">
             Command 1000cc Can-Am Maverick X3 Turbo buggies and Raptor ATVs across soaring open red sand
-            dunes in Lahbab. Choose between 30-minute and 1-hour high-octane sessions with DTCM safety marshals.
+            dunes in Lahbab. Choose between 30-minute and 1-hour high-octane sessions. Direct arrival to desert camp with free parking or optional private 4x4 chauffeur transfer (no shared pickup).
           </p>
         </div>
 
@@ -118,7 +116,7 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
                   {atvTour?.title || 'Quad Bike ATV Rental'}
                 </h3>
                 <p className="text-sm text-stone-600 leading-relaxed mt-1">
-                  Conquer open desert dunes on high-performance 220cc to 700cc Raptor ATVs. Full
+                  Conquer open desert dunes on high-performance 220cc or 350cc Raptor ATVs. Full
                   freedom in open desert dunes with helmet, goggles, and safety guide escort.
                 </p>
               </div>
@@ -166,7 +164,7 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
               <div className="flex items-center justify-between gap-2 pt-1 pb-1">
                 <span className="text-xs text-stone-500 font-semibold">Engine Tier:</span>
                 <div className="flex items-center gap-1.5">
-                  {(['220cc', '350cc', '700cc'] as const).map((cc) => (
+                  {(['220cc', '350cc'] as const).map((cc) => (
                     <button
                       key={cc}
                       type="button"
@@ -212,10 +210,10 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
                 </div>
                 <div className="p-2 bg-[#FAF6F0] rounded-xl border border-stone-200/70 flex items-center gap-2">
                   <span className="material-symbols-outlined text-[#EA580C] text-[18px]">
-                    home
+                    location_on
                   </span>
                   <span className="text-xs text-stone-800 font-semibold truncate">
-                    Home &amp; Hotel Pickup
+                    Camp Meeting / Private 4x4
                   </span>
                 </div>
               </div>
@@ -367,10 +365,10 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
                 </div>
                 <div className="p-2 bg-[#FAF6F0] rounded-xl border border-stone-200/70 flex items-center gap-2">
                   <span className="material-symbols-outlined text-[#EA580C] text-[18px]">
-                    home
+                    location_on
                   </span>
                   <span className="text-xs text-stone-800 font-semibold truncate">
-                    Home &amp; Hotel Pickup
+                    Camp Meeting / Private 4x4
                   </span>
                 </div>
               </div>
