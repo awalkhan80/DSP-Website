@@ -61,6 +61,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     'overview-analytics' | 'homepage-cms' | 'tour-catalog-pricing' | 'bookings-convoys' | 'customer-inquiries-whatsapp' | 'seo-audit' | 'settings'
   >('seo-audit');
 
+  // Mobile navigation drawer state
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   // Search & Filters for Tour Table
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -82,6 +85,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Drawer form fields
   const [drawerTitle, setDrawerTitle] = useState('');
+  const [drawerSubtitle, setDrawerSubtitle] = useState('');
+  const [drawerDescription, setDrawerDescription] = useState('');
+  const [drawerImage, setDrawerImage] = useState('');
   const [drawerPrice, setDrawerPrice] = useState<number>(120);
   const [drawerBadge, setDrawerBadge] = useState('');
   const [drawerCategory, setDrawerCategory] = useState<'desert-safaris' | 'city-tours' | 'buggies' | 'private-convoys'>('desert-safaris');
@@ -208,6 +214,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setSelectedTour(tour);
     setDrawerMode('edit');
     setDrawerTitle(tour.title);
+    setDrawerSubtitle(tour.subtitle || '');
+    setDrawerDescription(tour.description || '');
+    setDrawerImage(tour.image || '');
     setDrawerPrice(tour.priceAED);
     setDrawerBadge(tour.badge);
     setDrawerCategory(tour.category);
@@ -223,6 +232,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setSelectedTour(null);
     setDrawerMode('create');
     setDrawerTitle('');
+    setDrawerSubtitle('Curated Phoenix Dubai Experience');
+    setDrawerDescription('Experience the pinnacle of Arabian desert heritage, sunset dune bashing, and authentic Bedouin 5-star camp hospitality in the Dubai Desert Conservation Reserve.');
+    setDrawerImage('https://lh3.googleusercontent.com/aida-public/AB6AXuD-WGzdpK8MS1oA3hauA_Ygx6gWG9_iDxkJhAkQyV5wuzUwmRq0ijeyHwq3h7p9z02MkR7BZE-vSYaLQwFsvp5MExNqXcROyPeCHHjDrUvM9bx70FlWEd_J2KOTqNcG-z7by7k8TKZvYm4gqz_sNTzbUj2XGT9NwvAOEI1l-7xTYTLJklG39UiXhzFbHysO08Qy-SRI5J9bPEztGnzm3Z-UC7hqAcsV6QYDodQ8Ykn4iQ3n7OPoPVohXg');
     setDrawerPrice(250);
     setDrawerBadge('New Experience');
     setDrawerCategory('desert-safaris');
@@ -244,6 +256,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       const updated: Experience = {
         ...selectedTour,
         title: drawerTitle,
+        subtitle: drawerSubtitle.trim() || selectedTour.subtitle,
+        description: drawerDescription.trim() || selectedTour.description,
+        image: drawerImage.trim() || selectedTour.image,
+        altText: drawerTitle,
         priceAED: Number(drawerPrice),
         badge: drawerBadge,
         category: drawerCategory,
@@ -258,7 +274,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       const newExp: Experience = {
         id: newId,
         title: drawerTitle,
-        subtitle: 'Curated Phoenix Dubai Experience',
+        subtitle: drawerSubtitle.trim() || 'Curated Phoenix Dubai Experience',
         category: drawerCategory,
         categoryLabel:
           drawerCategory === 'desert-safaris'
@@ -272,10 +288,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         duration: drawerDuration,
         priceAED: Number(drawerPrice),
         priceUnit: 'From',
-        description: 'Exclusive desert adventure crafted to the highest DTCM Dubai luxury standards.',
+        description: drawerDescription.trim() || 'Exclusive desert adventure crafted to the highest DTCM Dubai luxury standards.',
         image:
-          selectedTour?.image ||
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuAnHfQ_xD50mSdKpb_AX87krGRMEnUDwIXco_BEGwEs4j-EpVpiuGkmIUB5RwaW2iC42DL2UjCqzYVjEnvSEtZA-pMdChCLUsegIFFlflTsUd2y3BvsvfP5Q2Qunr7sWjRY9BCYTi9ANBMbBZ2SZ2Ps4ve8rYtJGe19JPv4az0YV1li5eXxA6Qd7PkZWZ3hpkfjU0G-jePPYEo66vWaKMQgeOdgBW4H_xBquYIVqQu8oHMDw6l00wWd8g',
+          drawerImage.trim() ||
+          'https://lh3.googleusercontent.com/aida-public/AB6AXuD-WGzdpK8MS1oA3hauA_Ygx6gWG9_iDxkJhAkQyV5wuzUwmRq0ijeyHwq3h7p9z02MkR7BZE-vSYaLQwFsvp5MExNqXcROyPeCHHjDrUvM9bx70FlWEd_J2KOTqNcG-z7by7k8TKZvYm4gqz_sNTzbUj2XGT9NwvAOEI1l-7xTYTLJklG39UiXhzFbHysO08Qy-SRI5J9bPEztGnzm3Z-UC7hqAcsV6QYDodQ8Ykn4iQ3n7OPoPVohXg',
         altText: drawerTitle,
         highlights: ['Desert Safari Convoy', 'Hotel Chauffeur', '5-Star Hospitality'],
         departureTime: drawerTiming,
@@ -372,8 +388,141 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
       )}
 
-      {/* FIXED SIDEBAR (W-72) */}
-      <aside className="fixed left-0 top-0 h-full w-72 bg-[#FBF2F0] border-r border-[#E9E1DF] z-50 flex flex-col justify-between py-6 px-4 shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+      {/* MOBILE SLIDE-OUT MENU DRAWER (Mobile & Tablet) */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            onClick={() => setIsMobileMenuOpen(false)}
+          ></div>
+
+          {/* Drawer Canvas */}
+          <div className="relative w-80 max-w-[85vw] bg-[#FBF2F0] h-full shadow-2xl z-10 flex flex-col justify-between py-5 px-4 overflow-y-auto animate-in slide-in-from-left duration-300">
+            <div className="flex flex-col gap-4">
+              {/* Header with Brand & Close Button */}
+              <div className="flex items-center justify-between pb-3 border-b border-[#DBC2B0]/40">
+                <div
+                  className="flex items-center gap-2.5 cursor-pointer"
+                  onClick={() => {
+                    onSwitchToStorefront();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  title="Switch to Storefront"
+                >
+                  <img
+                    alt="The Phoenix Desert Safari Dubai"
+                    className="h-8 w-auto object-contain"
+                    src="https://lh3.googleusercontent.com/aida/AEtjO1WMOvN0UE4dKOt2_C2Bu_0t6NHzbp2rJE9uqBBHV2kORBDSkbxPnV1hCrfcGuBGlprkOTzW4ojdptdQ955bvogDjBpQfSwWSDgZhQS-G2RdCUY9KHTKGAsBavdkzOx5ZzWuoeqPzD--gQcwnTSQ_-uDS0DutDuPQMSR-cWsuzYU8xjSXxAR3Lk0Au4-2UzfCS9DfoA4Jx_mLcvFHnfGrnoA0OBdJmoUEpGX9OB0yF0PrZWxKaEZYmqBxrd0"
+                  />
+                  <div className="flex flex-col">
+                    <span className="font-serif font-bold text-base text-[#1E1B1A] leading-tight">The Phoenix</span>
+                    <span className="text-[9px] text-[#8D4B00] font-bold uppercase tracking-wider">Desert Safari Dubai</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-8 h-8 rounded-lg bg-[#EFE6E4] flex items-center justify-center text-[#554336] hover:text-[#1E1B1A]"
+                  aria-label="Close menu drawer"
+                >
+                  <span className="material-symbols-outlined text-[20px]">close</span>
+                </button>
+              </div>
+
+              {/* Navigation Links */}
+              <nav className="flex flex-col gap-1">
+                {[
+                  { id: 'homepage-cms', label: 'Homepage CMS & Showcase', icon: 'view_quilt', badge: 'Live' },
+                  { id: 'tour-catalog-pricing', label: 'Tour Pricing & Slots', icon: 'explore', badge: `${experiences.length} Tours` },
+                  { id: 'bookings-convoys', label: 'Bookings & Convoys', icon: 'directions_car', badge: '18 Active' },
+                  { id: 'seo-audit', label: 'Technical SEO Audit', icon: 'travel_explore', badge: '98/100' },
+                  { id: 'overview-analytics', label: 'Overview & Analytics', icon: 'analytics', badge: null },
+                  { id: 'customer-inquiries-whatsapp', label: 'WhatsApp Inquiries Desk', icon: 'chat', badge: 'Bot Active' },
+                  { id: 'settings', label: 'Settings & Security', icon: 'settings', badge: null },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveNav(item.id as any);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`flex items-center justify-between px-3.5 py-3 rounded-lg text-xs font-semibold transition-all text-left cursor-pointer ${
+                      activeNav === item.id
+                        ? 'bg-[#8D4B00] text-white shadow-sm'
+                        : 'text-[#554336] hover:bg-[#EFE6E4] hover:text-[#1E1B1A]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="material-symbols-outlined text-[19px]">{item.icon}</span>
+                      <span>{item.label}</span>
+                    </div>
+                    {item.badge && (
+                      <span
+                        className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
+                          activeNav === item.id ? 'bg-white/20 text-white' : 'bg-[#EFE6E4] text-[#8D4B00]'
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            {/* Mobile Drawer Footer with Operator Session & Quick Actions */}
+            <div className="flex flex-col gap-2.5 pt-3 border-t border-[#DBC2B0]/40">
+              <div className="p-3 rounded-xl bg-stone-900 text-white flex flex-col gap-1 shadow-md border border-amber-500/30">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Operator Auth
+                  </span>
+                  <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-mono font-bold">DTCM-PRO</span>
+                </div>
+                <div className="text-xs font-semibold text-stone-200 truncate" title={adminSession?.email || 'awalgsm@gmail.com'}>
+                  {adminSession?.email || 'awalgsm@gmail.com'}
+                </div>
+                <div className="text-[10px] text-stone-400 flex items-center justify-between">
+                  <span>Super Administrator</span>
+                  <span className="text-emerald-400 font-medium">Verified Active</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSwitchToStorefront();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="py-2.5 rounded-lg bg-white border border-[#E9E1DF] text-[#1E1B1A] text-xs font-bold text-center hover:bg-[#F5ECEA] transition-colors cursor-pointer flex items-center justify-center gap-1 shadow-2xs"
+                >
+                  <span className="material-symbols-outlined text-[16px] text-[#006194]">open_in_new</span>
+                  <span>Storefront</span>
+                </button>
+                {onSignOut && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSignOut();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="py-2.5 rounded-lg bg-red-950/80 hover:bg-red-900 text-red-200 border border-red-800/40 text-xs font-bold text-center transition-colors cursor-pointer flex items-center justify-center gap-1 shadow-2xs"
+                  >
+                    <span className="material-symbols-outlined text-[15px]">lock</span>
+                    <span>Sign Out</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FIXED SIDEBAR (W-72) - DESKTOP ONLY */}
+      <aside className="hidden lg:flex fixed left-0 top-0 h-full w-72 bg-[#FBF2F0] border-r border-[#E9E1DF] z-50 flex-col justify-between py-6 px-4 shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
         <div className="flex flex-col gap-6">
           {/* Brand Header */}
           <div className="flex items-center gap-3 px-3 py-2 cursor-pointer" onClick={onSwitchToStorefront} title="Click to view Storefront">
@@ -545,10 +694,72 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       </aside>
 
       {/* MAIN CONTENT CANVAS */}
-      <div className="pl-72 flex-1 flex flex-col min-w-0">
-        {/* FIXED TOP HEADER */}
-        <header className="fixed top-0 left-72 right-0 h-20 bg-[#FFF8F6]/85 backdrop-blur-xl border-b border-[#E9E1DF] shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40">
-          <div className="h-20 w-full px-8 flex items-center justify-between gap-6">
+      <div className="pl-0 lg:pl-72 flex-1 flex flex-col min-w-0">
+        {/* FIXED TOP HEADER (Responsive for Mobile & Desktop) */}
+        <header className="fixed top-0 left-0 lg:left-72 right-0 h-16 sm:h-20 bg-[#FFF8F6]/90 backdrop-blur-xl border-b border-[#E9E1DF] shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40">
+          {/* Mobile Header Bar (< lg) */}
+          <div className="flex lg:hidden items-center justify-between h-16 px-4 gap-2 w-full">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="w-10 h-10 flex items-center justify-center rounded-lg text-[#554336] hover:text-[#8D4B00] hover:bg-[#F5ECEA] transition-colors cursor-pointer"
+                aria-label="Open menu drawer"
+              >
+                <span className="material-symbols-outlined text-[24px]">menu</span>
+              </button>
+              <div className="flex items-center gap-2 min-w-0">
+                <img
+                  alt="The Phoenix Desert Safari Dubai"
+                  className="h-7 w-auto object-contain shrink-0"
+                  src="https://lh3.googleusercontent.com/aida/AEtjO1UZ22OtDC0HMRnV7UxKqG-oBlVkDG8Xyi28iKhQkztrVgOCzDHWMfT2thyIqzbM_HedxCs_EvGtlfwdFEAKJqgs6gf1Mz0g6cl_9ob2Ai23OeAOQSTGcZ8QN1uK-aZRnQ1EN08RBYqdHzRyOz2EI1i7oQoI82KEe-3ZyA3Z1n3ajFslmG1yT-rUMuJOQRmvRRGAwqXGluH6dtgDsP2-gCG0HdyUBrzW1Kybm3unP6ygykurnH0IqqcT3sUv"
+                />
+                <div className="flex flex-col min-w-0">
+                  <span className="font-serif font-bold text-sm text-[#1E1B1A] leading-tight truncate">The Phoenix</span>
+                  <span className="text-[10px] text-[#8D4B00] font-bold uppercase tracking-wider truncate">
+                    {activeNav === 'homepage-cms'
+                      ? 'CMS & Hero'
+                      : activeNav === 'tour-catalog-pricing'
+                      ? `Tours (${experiences.length})`
+                      : activeNav === 'bookings-convoys'
+                      ? 'Bookings'
+                      : activeNav === 'seo-audit'
+                      ? 'SEO Audit'
+                      : activeNav === 'overview-analytics'
+                      ? 'Analytics'
+                      : 'Admin'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#EFE6E4] text-[#006194] shadow-2xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#006194] animate-pulse"></span>
+                <span className="text-[10px] font-bold tracking-wide uppercase">DTCM</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => showToast('All 18 desert convoys operating safely on schedule.')}
+                className="relative w-9 h-9 flex items-center justify-center rounded-lg text-[#554336] hover:text-[#1E1B1A] transition-colors"
+                title="Notifications"
+              >
+                <span className="material-symbols-outlined text-[20px]">notifications</span>
+                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#EA580C]"></span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="w-8 h-8 rounded-full bg-[#8D4B00] text-white flex items-center justify-center font-bold text-xs ring-2 ring-[#FFDCC3] cursor-pointer shadow-xs"
+                title={adminSession?.email || 'awalgsm@gmail.com'}
+              >
+                A
+              </button>
+            </div>
+          </div>
+
+          {/* Desktop Header Bar (>= lg) */}
+          <div className="hidden lg:flex h-20 w-full px-8 items-center justify-between gap-6">
             {/* Search Input */}
             <div className="flex items-center gap-4 flex-1 max-w-lg">
               <div className="relative w-full">
@@ -624,11 +835,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </header>
 
         {/* INNER SCROLLABLE CONTENT */}
-        <main className="pt-24 px-8 pb-16 w-full max-w-[1400px]">
+        <main className="pt-20 lg:pt-24 px-4 sm:px-6 lg:px-8 pb-28 lg:pb-16 w-full max-w-[1400px]">
           {/* Sub-header Breadcrumb & Direct Action Ribbon */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-5 sm:pb-6">
             <div className="flex flex-col">
-              <div className="flex items-center gap-2 text-[#554336] text-[11px] font-bold tracking-wider uppercase mb-1">
+              <div className="flex items-center gap-1.5 text-[#554336] text-[10px] sm:text-[11px] font-bold tracking-wider uppercase mb-1 flex-wrap">
                 <span className="hover:text-[#8D4B00] cursor-pointer transition-colors" onClick={() => setActiveNav('homepage-cms')}>
                   Admin Portal
                 </span>
@@ -649,7 +860,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     : 'System & DTCM Settings'}
                 </span>
               </div>
-              <h1 className="font-serif font-bold text-2xl sm:text-3xl text-[#1E1B1A] tracking-tight">
+              <h1 className="font-serif font-bold text-xl sm:text-2xl lg:text-3xl text-[#1E1B1A] tracking-tight leading-tight">
                 {activeNav === 'homepage-cms'
                   ? 'Expeditions & Showcase Manager'
                   : activeNav === 'tour-catalog-pricing'
@@ -667,7 +878,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
 
             {/* Quick Actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
               <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#EFE6E4] shadow-xs text-xs font-semibold text-[#1E1B1A]">
                 <span className="material-symbols-outlined text-[16px] text-[#8D4B00]">verified_user</span>
                 <span>DTCM Permit #EXP-2024-8849</span>
@@ -677,27 +888,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <button
                 type="button"
                 onClick={onSwitchToStorefront}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-[#E9E1DF] text-[#1E1B1A] text-xs font-bold uppercase tracking-wider shadow-xs hover:bg-[#F5ECEA] transition-all cursor-pointer"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-white border border-[#E9E1DF] text-[#1E1B1A] text-xs font-bold uppercase tracking-wider shadow-xs hover:bg-[#F5ECEA] transition-all cursor-pointer"
                 title="Switch to customer storefront view"
               >
-                <span className="material-symbols-outlined text-[18px] text-[#006194]">open_in_new</span>
-                <span>Live Storefront</span>
+                <span className="material-symbols-outlined text-[16px] text-[#006194]">open_in_new</span>
+                <span>Storefront</span>
               </button>
 
               {/* Publish CMS Button */}
               <button
                 type="button"
                 onClick={handlePublishCMS}
-                className="flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-[#8D4B00] to-[#EA580C] text-white text-xs font-bold uppercase tracking-wider shadow-md hover:shadow-lg hover:opacity-95 transition-all cursor-pointer"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-[#8D4B00] to-[#EA580C] text-white text-xs font-bold uppercase tracking-wider shadow-md hover:shadow-lg hover:opacity-95 transition-all cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px]">publish</span>
-                <span>Publish CMS Updates</span>
+                <span className="material-symbols-outlined text-[16px]">publish</span>
+                <span>Publish Updates</span>
               </button>
             </div>
           </div>
 
           {/* KPI BENTO GRID (4 Cards) */}
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+          <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-6 sm:mb-8">
             {/* Card 1: Active Inventory */}
             <div className="relative overflow-hidden rounded-xl bg-white border border-[#E9E1DF] p-5 shadow-xs hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between">
@@ -1123,8 +1334,109 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </button>
                 </div>
 
-                {/* Main Data Table Container */}
-                <div className="overflow-hidden rounded-xl bg-white border border-[#E9E1DF] shadow-xs">
+                {/* Main Data Container: Mobile Cards (md:hidden) & Desktop Table (hidden md:block) */}
+
+                {/* 1. Mobile Cards View (Optimized for touch screens) */}
+                <div className="md:hidden flex flex-col gap-3.5">
+                  {filteredTours.map((tour) => {
+                    const cap = capacities[tour.id] || { booked: 15, max: 25 };
+                    const percentage = Math.round((cap.booked / cap.max) * 100);
+                    const isHighDemand = percentage >= 80;
+
+                    return (
+                      <div
+                        key={tour.id}
+                        className="bg-white p-3.5 rounded-xl border border-[#E9E1DF] shadow-xs flex flex-col gap-3"
+                      >
+                        <div className="flex gap-3">
+                          <div className="relative w-20 h-20 rounded-lg overflow-hidden shrink-0 bg-[#F5ECEA] border border-[#E9E1DF]">
+                            <img src={tour.image} alt={tour.altText} className="w-full h-full object-cover" />
+                            {tour.badge && (
+                              <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-[#FFDBCE] text-[#370E00] text-[9px] uppercase font-bold tracking-tight">
+                                {tour.badge}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-1">
+                              <h3 className="font-bold text-sm text-[#1E1B1A] leading-tight line-clamp-1">{tour.title}</h3>
+                              <div className="text-right shrink-0">
+                                <span className="font-serif font-bold text-sm text-[#8D4B00] block leading-tight">
+                                  AED {tour.priceAED}
+                                </span>
+                              </div>
+                            </div>
+                            <p className="text-xs text-[#554336] line-clamp-1 mt-0.5">{tour.subtitle}</p>
+                            <div className="flex items-center gap-2 mt-1.5 text-[#554336] text-[11px]">
+                              <span className="flex items-center gap-0.5">
+                                <span className="material-symbols-outlined text-[13px] text-[#8D4B00]">schedule</span>
+                                {tour.duration}
+                              </span>
+                              <span>•</span>
+                              <span className="flex items-center gap-0.5">
+                                <span className="material-symbols-outlined text-[13px] text-[#EA580C]">departure_board</span>
+                                {tour.departureTime || 'Daily Slot'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Capacity Bar & Touch Controls */}
+                        <div className="pt-2 bg-[#FBF2F0] p-2.5 rounded-lg flex items-center justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between text-[11px] mb-1">
+                              <span className="text-[#1E1B1A] font-semibold">Booked {cap.booked}/{cap.max} Guests</span>
+                              <span className={`font-bold ${isHighDemand ? 'text-[#EA580C]' : 'text-[#8D4B00]'}`}>
+                                {percentage}%
+                              </span>
+                            </div>
+                            <div className="w-full h-2 rounded-full bg-[#EFE6E4] overflow-hidden">
+                              <div
+                                className={`h-full rounded-full ${isHighDemand ? 'bg-gradient-to-r from-[#8D4B00] to-[#EA580C]' : 'bg-[#8D4B00]'}`}
+                                style={{ width: `${Math.min(percentage, 100)}%` }}
+                              ></div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEdit(tour)}
+                              className="w-8 h-8 rounded-lg bg-white border border-[#E9E1DF] flex items-center justify-center text-[#1E1B1A] hover:text-[#8D4B00] shadow-2xs"
+                              title="Edit tour"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">edit</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleFeatured(tour)}
+                              className={`w-8 h-8 rounded-lg border flex items-center justify-center shadow-2xs ${
+                                tour.featured ? 'bg-[#FFDCC3] border-[#8D4B00]/40 text-[#8D4B00]' : 'bg-white border-[#E9E1DF] text-stone-400'
+                              }`}
+                              title={tour.featured ? 'Featured on storefront' : 'Not featured'}
+                            >
+                              <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: tour.featured ? "'FILL' 1" : "'FILL' 0" }}>
+                                star
+                              </span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDuplicateTour(tour)}
+                              className="w-8 h-8 rounded-lg bg-white border border-[#E9E1DF] flex items-center justify-center text-[#554336] hover:text-[#1E1B1A] shadow-2xs"
+                              title="Duplicate tour"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">content_copy</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* 2. Desktop Table View (Hidden on mobile) */}
+                <div className="hidden md:block overflow-hidden rounded-xl bg-white border border-[#E9E1DF] shadow-xs">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left">
                       <thead>
@@ -1353,7 +1665,63 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </button>
               </div>
 
-              <div className="overflow-hidden rounded-xl bg-white border border-[#E9E1DF] shadow-xs">
+              {/* Main Bookings Container: Mobile Cards (md:hidden) & Desktop Table (hidden md:block) */}
+
+              {/* 1. Mobile Cards View for Bookings */}
+              <div className="md:hidden flex flex-col gap-3">
+                {bookings.map((b) => (
+                  <div key={b.id} className="p-4 rounded-xl bg-white border border-[#E9E1DF] shadow-xs flex flex-col gap-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <span className="font-mono font-bold text-xs text-[#8D4B00]">{b.voucherCode}</span>
+                        <h4 className="font-bold text-sm text-[#1E1B1A] mt-0.5">{b.guestName}</h4>
+                        <span className="text-[11px] text-[#554336]">{b.hotel} ({b.room})</span>
+                      </div>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          b.status === 'Dispatched'
+                            ? 'bg-amber-100 text-amber-900'
+                            : b.status === 'Confirmed'
+                            ? 'bg-emerald-100 text-emerald-900'
+                            : 'bg-stone-100 text-stone-800'
+                        }`}
+                      >
+                        {b.status}
+                      </span>
+                    </div>
+
+                    <div className="p-2.5 rounded-lg bg-[#FBF2F0] flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-semibold text-[#1E1B1A] block">{b.experienceTitle}</span>
+                        <span className="text-[11px] text-[#554336]">{b.partySize} • AED {b.totalAED}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-bold text-[#1E1B1A] block">{b.timeSlot}</span>
+                        <span className="text-[10px] text-[#8D4B00]">{b.marshal}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-[11px] text-[#554336]">{b.convoyNumber}</span>
+                      <a
+                        href={`https://wa.me/971561505270?text=Hello%20${encodeURIComponent(
+                          b.guestName
+                        )},%20this%20is%20The%20Phoenix%20Dubai%20Desert%20Safari.%20Your%20marshal%20is%20${encodeURIComponent(
+                          b.marshal
+                        )}%20for%20today.`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-bold hover:bg-emerald-100 text-xs shadow-2xs"
+                      >
+                        <span className="material-symbols-outlined text-[15px]">chat</span> WhatsApp Guest
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* 2. Desktop Table View for Bookings */}
+              <div className="hidden md:block overflow-hidden rounded-xl bg-white border border-[#E9E1DF] shadow-xs">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left">
                     <thead>
@@ -1634,36 +2002,93 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </main>
       </div>
 
-      {/* QUICK EDIT / CREATE SLIDE-OVER DRAWER (Matches screenshot drawer) */}
+      {/* BACKDROP FOR SLIDE-OVER DRAWER (MOBILE & DESKTOP) */}
+      {isDrawerOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[99] transition-opacity animate-in fade-in duration-200"
+          onClick={() => setIsDrawerOpen(false)}
+        ></div>
+      )}
+
+      {/* QUICK EDIT / CREATE SLIDE-OVER DRAWER (Mobile-optimized bottom/side sheet) */}
       <div
-        className={`fixed inset-y-0 right-0 w-full max-w-md bg-white border-l border-[#E9E1DF] shadow-2xl z-[100] transform transition-transform duration-300 flex flex-col justify-between ${
+        className={`fixed inset-y-0 right-0 w-full sm:max-w-md bg-white border-l border-[#E9E1DF] shadow-2xl z-[100] transform transition-transform duration-300 flex flex-col justify-between ${
           isDrawerOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="p-6 overflow-y-auto flex-1">
+        <div className="p-5 sm:p-6 overflow-y-auto flex-1">
+          {/* Tactile Drag Handle for Mobile */}
+          <div className="w-12 h-1.5 rounded-full bg-[#E9E1DF] mx-auto mb-3 sm:hidden"></div>
+
           {/* Drawer Header */}
           <div className="flex items-center justify-between pb-4 border-b border-[#E9E1DF]">
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-[#8D4B00] uppercase tracking-wider">Direct Tour Modifier</span>
-              <h3 className="font-serif font-bold text-xl text-[#1E1B1A]">
+              <span className="text-[10px] font-bold text-[#8D4B00] uppercase tracking-wider flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                Direct Tour Modifier • DTCM Live
+              </span>
+              <h3 className="font-serif font-bold text-lg sm:text-xl text-[#1E1B1A]">
                 {drawerMode === 'edit' ? selectedTour?.title : 'Add New Tour Experience'}
               </h3>
             </div>
             <button
               onClick={() => setIsDrawerOpen(false)}
               className="p-2 rounded-full hover:bg-[#F5ECEA] text-[#554336] transition-colors cursor-pointer"
+              aria-label="Close drawer"
             >
               <span className="material-symbols-outlined text-[20px]">close</span>
             </button>
           </div>
 
           {/* Drawer Form Fields */}
-          <div className="flex flex-col gap-5 pt-4">
-            <div className="p-3.5 rounded-lg bg-[#FBF2F0] border border-[#E9E1DF] flex items-center justify-between">
-              <span className="text-xs font-bold text-[#1E1B1A]">Today's Real-time Slots</span>
-              <span className="font-serif font-bold text-lg text-[#8D4B00]">
-                {selectedTour ? `${capacities[selectedTour.id]?.booked || 38} / ${capacities[selectedTour.id]?.max || 45}` : '30 / 30 Available'}
-              </span>
+          <div className="flex flex-col gap-4 sm:gap-5 pt-4">
+            {/* Real-Time Capacity Stepper (Mobile Touch Optimized) */}
+            <div className="p-3.5 rounded-xl bg-[#FBF2F0] border border-[#E9E1DF] flex items-center justify-between gap-3 shadow-2xs">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-[#8D4B00] uppercase tracking-wider">Today's Real-time Slots</span>
+                <span className="text-xs font-semibold text-[#1E1B1A]">Camp Permitted Capacity</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selectedTour) {
+                      setCapacities((prev) => ({
+                        ...prev,
+                        [selectedTour.id]: {
+                          ...prev[selectedTour.id],
+                          max: Math.max(10, (prev[selectedTour.id]?.max || 30) - 5),
+                        },
+                      }));
+                    }
+                  }}
+                  className="w-8 h-8 rounded-lg bg-white border border-[#E9E1DF] flex items-center justify-center font-bold text-[#1E1B1A] shadow-2xs hover:bg-[#F5ECEA] cursor-pointer active:scale-95 transition-transform"
+                  title="Decrease 5 slots"
+                >
+                  -
+                </button>
+                <span className="font-serif font-bold text-sm sm:text-base text-[#8D4B00] min-w-[70px] text-center">
+                  {selectedTour ? `${capacities[selectedTour.id]?.booked || 0} / ${capacities[selectedTour.id]?.max || 30}` : '30 Max'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selectedTour) {
+                      setCapacities((prev) => ({
+                        ...prev,
+                        [selectedTour.id]: {
+                          ...prev[selectedTour.id],
+                          max: Math.min(120, (prev[selectedTour.id]?.max || 30) + 5),
+                        },
+                      }));
+                    }
+                  }}
+                  className="w-8 h-8 rounded-lg bg-white border border-[#E9E1DF] flex items-center justify-center font-bold text-[#1E1B1A] shadow-2xs hover:bg-[#F5ECEA] cursor-pointer active:scale-95 transition-transform"
+                  title="Increase 5 slots"
+                >
+                  +
+                </button>
+              </div>
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -1674,6 +2099,161 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 onChange={(e) => setDrawerTitle(e.target.value)}
                 placeholder="e.g. Evening Desert Safari"
                 className="w-full px-3.5 py-2.5 rounded-lg bg-[#F5ECEA] text-xs font-bold text-[#1E1B1A] focus:outline-none focus:ring-2 focus:ring-[#8D4B00] border border-[#E9E1DF]"
+              />
+            </div>
+
+            {/* Tour Image Showcase & Link Input */}
+            <div className="flex flex-col gap-2 p-3.5 rounded-xl bg-[#FBF2F0] border border-[#E9E1DF]">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-[#554336] flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px] text-[#8D4B00]">image</span>
+                  Tour Showcase Image
+                </label>
+                <span className="text-[10px] text-[#8D4B00] font-bold uppercase tracking-wider">Live Preview</span>
+              </div>
+
+              {/* Visual Preview Box */}
+              <div className="relative w-full h-36 rounded-lg overflow-hidden bg-stone-200 border border-[#E9E1DF] group shadow-inner">
+                {drawerImage ? (
+                  <img
+                    src={drawerImage}
+                    alt={drawerTitle || 'Tour preview'}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src =
+                        'https://lh3.googleusercontent.com/aida-public/AB6AXuD-WGzdpK8MS1oA3hauA_Ygx6gWG9_iDxkJhAkQyV5wuzUwmRq0ijeyHwq3h7p9z02MkR7BZE-vSYaLQwFsvp5MExNqXcROyPeCHHjDrUvM9bx70FlWEd_J2KOTqNcG-z7by7k8TKZvYm4gqz_sNTzbUj2XGT9NwvAOEI1l-7xTYTLJklG39UiXhzFbHysO08Qy-SRI5J9bPEztGnzm3Z-UC7hqAcsV6QYDodQ8Ykn4iQ3n7OPoPVohXg';
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-stone-400 gap-1">
+                    <span className="material-symbols-outlined text-[28px]">broken_image</span>
+                    <span className="text-xs">No image link provided</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent flex items-end justify-between p-2.5">
+                  <div className="min-w-0 pr-2">
+                    <span className="text-[10px] font-bold text-[#FFDCC3] uppercase tracking-wider block">
+                      {drawerBadge || 'Curated Tour'}
+                    </span>
+                    <span className="text-xs font-bold text-white truncate block">
+                      {drawerTitle || 'Experience Title'}
+                    </span>
+                  </div>
+                  <span className="px-2 py-0.5 rounded bg-white/90 backdrop-blur-xs text-[#8D4B00] text-[10px] font-bold shrink-0 shadow-xs">
+                    AED {drawerPrice}
+                  </span>
+                </div>
+              </div>
+
+              {/* Direct Image URL Link Input */}
+              <div className="flex flex-col gap-1 pt-1">
+                <div className="flex items-center justify-between text-[11px] text-[#554336]">
+                  <span className="font-semibold">Image URL Link (HTTPS)</span>
+                  {drawerImage && (
+                    <button
+                      type="button"
+                      onClick={() => setDrawerImage('')}
+                      className="text-[10px] text-red-600 hover:underline cursor-pointer font-semibold"
+                    >
+                      Clear Link
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#554336] text-[16px]">
+                    link
+                  </span>
+                  <input
+                    type="url"
+                    value={drawerImage}
+                    onChange={(e) => setDrawerImage(e.target.value)}
+                    placeholder="https://example.com/tour-photo.jpg"
+                    className="w-full pl-9 pr-3 py-2 rounded-lg bg-white text-xs text-[#1E1B1A] placeholder:text-[#554336]/60 focus:outline-none focus:ring-2 focus:ring-[#8D4B00] border border-[#E9E1DF]"
+                  />
+                </div>
+              </div>
+
+              {/* Curated Dubai Preset Badges */}
+              <div className="flex flex-col gap-1.5 pt-1">
+                <span className="text-[10px] font-bold text-[#554336] uppercase tracking-wider">
+                  Or pick a curated 4K asset preset:
+                </span>
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                  {[
+                    {
+                      label: 'Evening Sunset',
+                      url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD-WGzdpK8MS1oA3hauA_Ygx6gWG9_iDxkJhAkQyV5wuzUwmRq0ijeyHwq3h7p9z02MkR7BZE-vSYaLQwFsvp5MExNqXcROyPeCHHjDrUvM9bx70FlWEd_J2KOTqNcG-z7by7k8TKZvYm4gqz_sNTzbUj2XGT9NwvAOEI1l-7xTYTLJklG39UiXhzFbHysO08Qy-SRI5J9bPEztGnzm3Z-UC7hqAcsV6QYDodQ8Ykn4iQ3n7OPoPVohXg',
+                    },
+                    {
+                      label: 'Morning Falconry',
+                      url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAfQTyycIShtNZY1IGG2YE6iI1BuJWbUOsfJNJ61gKLO7mQrl2-meoa5-Gmy6Jqp9yXEDUzye7H3nor3OHqBKqE4YeBbDxGhk5oRz6b_LjOJVlFbZK8Co2chrezHifZs5nLliPx3iemmVjLizVmk-Up001f7763-bL3Ti8L2y80d9YJgZrzudJS1xtbQ644JSyBa7a1bko3FZPyU4S8YXnTCi2cuQ0PiT7izULeWvPOFIx7xpACsll4tw',
+                    },
+                    {
+                      label: 'VIP Luxury Camp',
+                      url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAUe6c4XbtkCWu4pIFYnpZkBPQH3O-lTy9CcguRtQ45IZM9M05HI0gRtzPEdu4BaSfySyo9SSrvtbIX_J_qmMO0BzuRxmfMiu4Ui8oPLZ3PEXknuBp1gf1vyAjrDuY9HQcBiD_IMokRfK6KiUr_L0oOfCgXu5QxRBIHfRSgR56AGCKmkIn3VwKYsTjrJeuSqAccMEzilDFy4UYM1iY-fe1pO00TBnZaUUKho6Nfm7nFRaVfiM9qh9Ac2A',
+                    },
+                    {
+                      label: 'ATV Quad Rush',
+                      url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDvgtD4J-CCb2q95-AEEZivJSFNld4MC7WUtHkFEjDa8toVFC-VIZkHgy5ohOFf2OW_hHUk8VdWEwCCLSIDDWhIB674BTFDcUCGw7z4AgmTa6AfTxHyYGQCpjD73ZTUbqTlBGERN9GMGrxRdj8-gVIAAaLzeFChg2_zwgDSN45iIEBhIhtyT5qXQvHIV-7jN9R0sGXuPGv627zjVpdMsQBo00utZbb8nJPArhUr3KvdETzpFV--n7T9kA',
+                    },
+                    {
+                      label: 'Can-Am Buggy',
+                      url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB-TxXaiA4ximXtZzxDZDHtEF8cviLK2dvS3XgmJ7EXrZ3e7QYSJbMY8JoFIJt70Tpk6aeeOE-Ph_UC8bTLqvVd9CB5POfGXeHQr8kpKgrlfHX-Ibjo7PZw74sKn0DQXKn_cZkV8npxhWFfMIIGHlB6Kp7EN6tE0rQnMCV7CYUywQN04G6O_aGSUlEF6GllnHMNq1Vxu4TRQFzDYDdKzYAFhCh_bMRYuQ4sc0XO7051rR7e6AYYfIyAeg',
+                    },
+                    {
+                      label: 'City Heritage',
+                      url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDz7AMgdCOpI2Gg3Z6XEbD6KbeN6oBkUUWyfauZR9m2V2I_7bJGMen2YRBCT7XomkDSw1JBqO9hCuPzQ8fNcUmZDkIDiYTG1hY1ZBCQeZRXBWoOWhIhu4SgmBuB8yku7MSFDrwqC7MLHsbgHP5sEVqDMG21qVg3WwEDCOMq_J1FIz3EcoWMvmgruN24kDMWlSo6yJZZMUN_NWokbiLIW-M7qt3yqnxKitNBXKqXWEhhUh5OksXgfjtw0w',
+                    },
+                    {
+                      label: 'Marina Dhow',
+                      url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA7pKMN_yYnPnptWbnoNksYgVGMMu4IDLfJHZ5Bg70TzsbfGTIotF26k5iiPmzj0QbgHo4xV4KrEvgOQMGRrN7QOgt6n86MfUC6lW3QG6xnIqFkRol87hi3HG0YjEQduhHqedaWPTYVpnwxuBismZMSseLQZjpdKzL6gfUYZh_ykmlplUHCxBsYPfpFsZ_-FKynGJT-9BPag2g14Vpi1dqFeOkLc92pNNHJHOcZmmoHqIwf5aIJAmuDhQ',
+                    },
+                  ].map((preset, pIdx) => (
+                    <button
+                      key={pIdx}
+                      type="button"
+                      onClick={() => setDrawerImage(preset.url)}
+                      className={`px-2.5 py-1 rounded-md text-[10px] font-bold whitespace-nowrap transition-all flex items-center gap-1 cursor-pointer border ${
+                        drawerImage === preset.url
+                          ? 'bg-[#8D4B00] text-white border-[#8D4B00]'
+                          : 'bg-white text-[#554336] border-[#E9E1DF] hover:bg-[#F5ECEA]'
+                      }`}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+                      <span>{preset.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Short Subtitle / Highlight Hook */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <label className="font-bold text-[#554336]">Short Highlight Hook (Subtitle)</label>
+                <span className="text-[10px] text-stone-400">Card &amp; Search preview</span>
+              </div>
+              <input
+                type="text"
+                value={drawerSubtitle}
+                onChange={(e) => setDrawerSubtitle(e.target.value)}
+                placeholder="e.g. Dune Bashing, BBQ Dinner, Fire & Tanoura Show"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#F5ECEA] text-xs text-[#1E1B1A] focus:outline-none focus:ring-2 focus:ring-[#8D4B00] border border-[#E9E1DF]"
+              />
+            </div>
+
+            {/* Detailed Tour Description */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <label className="font-bold text-[#554336]">Detailed Tour Description</label>
+                <span className="text-[10px] text-stone-400">{drawerDescription.length} chars</span>
+              </div>
+              <textarea
+                value={drawerDescription}
+                onChange={(e) => setDrawerDescription(e.target.value)}
+                rows={4}
+                placeholder="Full description of the experience, what is included, schedule details, hospitality, and safety protocols..."
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#F5ECEA] text-xs text-[#1E1B1A] focus:outline-none focus:ring-2 focus:ring-[#8D4B00] border border-[#E9E1DF] resize-none leading-relaxed"
               />
             </div>
 
@@ -1737,7 +2317,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
 
             {/* Display & Automation Toggles */}
-            <div className="flex flex-col gap-2.5 pt-2">
+            <div className="flex flex-col gap-2.5 pt-1">
               <span className="text-xs font-bold text-[#554336]">Display &amp; Automation Toggles</span>
               <div className="p-3 rounded-lg bg-[#F5ECEA] border border-[#E9E1DF] flex items-center justify-between">
                 <span className="text-xs text-[#1E1B1A]">Feature on Storefront Hero Grid</span>
@@ -1771,23 +2351,85 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
 
         {/* Drawer Footer Actions */}
-        <div className="p-6 bg-[#FBF2F0] border-t border-[#E9E1DF] flex items-center gap-3">
+        <div className="p-4 sm:p-6 bg-[#FBF2F0] border-t border-[#E9E1DF] flex items-center gap-3">
           <button
             type="button"
             onClick={() => setIsDrawerOpen(false)}
-            className="flex-1 py-2.5 rounded-lg bg-[#F5ECEA] hover:bg-[#EFE6E4] text-xs font-bold uppercase tracking-wider text-[#1E1B1A] transition-colors cursor-pointer"
+            className="flex-1 py-3 rounded-lg bg-[#F5ECEA] hover:bg-[#EFE6E4] text-xs font-bold uppercase tracking-wider text-[#1E1B1A] transition-colors cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleSaveDrawer}
-            className="flex-1 py-2.5 rounded-lg bg-[#8D4B00] hover:bg-[#B15F00] text-white text-xs font-bold uppercase tracking-wider shadow-sm transition-all cursor-pointer"
+            className="flex-1 py-3 rounded-lg bg-[#8D4B00] hover:bg-[#B15F00] text-white text-xs font-bold uppercase tracking-wider shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-98"
           >
-            Save Changes
+            <span className="material-symbols-outlined text-[16px]">bolt</span>
+            <span>Save Changes</span>
           </button>
         </div>
       </div>
+
+      {/* MOBILE FIXED BOTTOM NAVIGATION BAR (< lg) */}
+      <nav
+        aria-label="Mobile Operator Admin Navigation"
+        className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[#FFF8F6]/95 backdrop-blur-xl border-t border-[#E9E1DF] shadow-[0_-2px_16px_rgba(141,75,0,0.08)] pb-safe"
+      >
+        <div className="flex justify-around items-center h-16 px-1 max-w-lg mx-auto">
+          <button
+            type="button"
+            onClick={() => setActiveNav('homepage-cms')}
+            className={`flex flex-col items-center justify-center w-16 h-12 transition-colors cursor-pointer ${
+              activeNav === 'homepage-cms' ? 'text-[#8D4B00] font-bold' : 'text-[#554336] hover:text-[#1E1B1A]'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[22px]">view_quilt</span>
+            <span className="text-[10px] mt-0.5 font-medium">CMS &amp; Hero</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveNav('tour-catalog-pricing')}
+            className={`flex flex-col items-center justify-center w-16 h-12 transition-colors cursor-pointer relative ${
+              activeNav === 'tour-catalog-pricing' ? 'text-[#8D4B00] font-bold' : 'text-[#554336] hover:text-[#1E1B1A]'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[22px]">explore</span>
+            <span className="text-[10px] mt-0.5 font-medium">Tours ({experiences.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveNav('bookings-convoys')}
+            className={`flex flex-col items-center justify-center w-16 h-12 transition-colors cursor-pointer ${
+              activeNav === 'bookings-convoys' ? 'text-[#8D4B00] font-bold' : 'text-[#554336] hover:text-[#1E1B1A]'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[22px]">calendar_month</span>
+            <span className="text-[10px] mt-0.5 font-medium">Bookings</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveNav('seo-audit')}
+            className={`flex flex-col items-center justify-center w-16 h-12 transition-colors cursor-pointer ${
+              activeNav === 'seo-audit' ? 'text-[#8D4B00] font-bold' : 'text-[#554336] hover:text-[#1E1B1A]'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[22px]">travel_explore</span>
+            <span className="text-[10px] mt-0.5 font-medium">SEO Audit</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="flex flex-col items-center justify-center w-16 h-12 text-[#554336] hover:text-[#8D4B00] transition-colors cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[22px]">menu</span>
+            <span className="text-[10px] mt-0.5 font-medium">More</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 };
