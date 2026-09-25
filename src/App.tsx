@@ -4,8 +4,8 @@
  */
 
 import React, { useState } from 'react';
-import { Currency, Experience, Review } from './types';
-import { EXPERIENCES, REVIEWS } from './data/safaris';
+import { Currency, Experience, OffRoadPricingConfig, Review } from './types';
+import { DEFAULT_OFF_ROAD_PRICING, EXPERIENCES, REVIEWS } from './data/safaris';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { SignatureExpeditions } from './components/SignatureExpeditions';
@@ -53,7 +53,7 @@ export default function App() {
       heroImage:
         'https://lh3.googleusercontent.com/aida-public/AB6AXuCwh3IxGfRyabThS2IkAAkO8dgF-efStfsRxJ1OeVcgXu3uJ4GtgqV_Ma90tHpmLrmvedQGkOkh0VKcZlNh8e5DBmZy2TtfVPWAKzOJ2cZlwKwdVahe2FQVZ-BwAqh3Pi2Cpg_Y--XbSM36LrxiBL5HqQ55NT_aE_KkRfbdCo1qqbXXXhkZNoiG6yGKjm_Dzi9nmdUz_ADZ9vR_MmbdmkTNoWUG5oPjljsrmRK8AUVCrFZWyKzGs4vZ_A',
       announcementTicker:
-        'DTCM Licensed Operator • Business Bay, Dubai | Instant Voucher Confirmation',
+        'DTCM Licensed Operator • Free Home & Hotel Pickup Across Dubai | Instant Confirmation',
       showAnnouncement: true,
       defaultBookingExperience: 'evening-desert-safari',
       directPhone: '+971 56 150 5270',
@@ -73,6 +73,17 @@ export default function App() {
     return EXPERIENCES;
   });
 
+  // Dynamic Off-Road Machine & Vehicle Rates (Quad Bikes & Buggies)
+  const [offRoadPricing, setOffRoadPricing] = useState<OffRoadPricingConfig>(() => {
+    try {
+      const saved = localStorage.getItem('phoenix_offroad_pricing');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn('Error reading stored offroad pricing', e);
+    }
+    return DEFAULT_OFF_ROAD_PRICING;
+  });
+
   // Modal States
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [bookingModalParams, setBookingModalParams] = useState<{
@@ -83,6 +94,11 @@ export default function App() {
     duration?: '30m' | '60m';
     machine?: string;
     timeSlot?: string;
+    quadRider?: 'single' | 'double';
+    quadTerrain?: 'inside_circle' | 'open_desert';
+    quadEngine?: '220cc' | '350cc';
+    buggyModel?: 'polaris' | 'canam';
+    buggySeater?: '2-seater' | '4-seater';
   }>({});
 
   const [itineraryModalOpen, setItineraryModalOpen] = useState(false);
@@ -104,7 +120,19 @@ export default function App() {
 
   const handleOpenBooking = (
     experienceId?: string,
-    params?: { duration?: '30m' | '60m'; machine?: string; timeSlot?: string; date?: string; adults?: number; children?: number }
+    params?: {
+      duration?: '30m' | '60m';
+      machine?: string;
+      timeSlot?: string;
+      date?: string;
+      adults?: number;
+      children?: number;
+      quadRider?: 'single' | 'double';
+      quadTerrain?: 'inside_circle' | 'open_desert';
+      quadEngine?: '220cc' | '350cc';
+      buggyModel?: 'polaris' | 'canam';
+      buggySeater?: '2-seater' | '4-seater';
+    }
   ) => {
     setBookingModalParams({ experienceId, ...params });
     setBookingModalOpen(true);
@@ -142,51 +170,79 @@ export default function App() {
     }
   };
 
-  // Experience Mutations for Admin CMS
-  const handleUpdateExperience = (updated: Experience) => {
-    setExperiences((prev) => {
-      const next = prev.map((exp) => (exp.id === updated.id ? updated : exp));
-      try {
-        localStorage.setItem('phoenix_experiences', JSON.stringify(next));
-      } catch {}
-      return next;
-    });
-  };
-
-  const handleAddExperience = (newExp: Experience) => {
-    setExperiences((prev) => {
-      const next = [newExp, ...prev];
-      try {
-        localStorage.setItem('phoenix_experiences', JSON.stringify(next));
-      } catch {}
-      return next;
-    });
-  };
-
-  const handleDeleteExperience = (id: string) => {
-    setExperiences((prev) => {
-      const next = prev.filter((exp) => exp.id !== id);
-      try {
-        localStorage.setItem('phoenix_experiences', JSON.stringify(next));
-      } catch {}
-      return next;
-    });
-  };
-
+  // CMS Handlers
   const handleUpdateCmsConfig = (updated: CMSConfig) => {
     setCmsConfig(updated);
     try {
       localStorage.setItem('phoenix_cms_config', JSON.stringify(updated));
-    } catch {}
+    } catch (e) {
+      console.warn('Error saving cmsConfig', e);
+    }
   };
 
-  const handleRestoreAll = (newCms: CMSConfig, newExp: Experience[]) => {
-    setCmsConfig(newCms);
-    setExperiences(newExp);
+  // Tour Handlers
+  const handleUpdateExperience = (updated: Experience) => {
+    const next = experiences.map((exp) => (exp.id === updated.id ? updated : exp));
+    setExperiences(next);
     try {
-      localStorage.setItem('phoenix_cms_config', JSON.stringify(newCms));
-      localStorage.setItem('phoenix_experiences', JSON.stringify(newExp));
-    } catch {}
+      localStorage.setItem('phoenix_experiences', JSON.stringify(next));
+    } catch (e) {
+      console.warn('Error saving experiences', e);
+    }
+  };
+
+  const handleAddExperience = (newExp: Experience) => {
+    const next = [newExp, ...experiences];
+    setExperiences(next);
+    try {
+      localStorage.setItem('phoenix_experiences', JSON.stringify(next));
+    } catch (e) {
+      console.warn('Error saving experiences', e);
+    }
+  };
+
+  const handleDeleteExperience = (id: string) => {
+    const next = experiences.filter((exp) => exp.id !== id);
+    setExperiences(next);
+    try {
+      localStorage.setItem('phoenix_experiences', JSON.stringify(next));
+    } catch (e) {
+      console.warn('Error saving experiences', e);
+    }
+  };
+
+  // Off-Road Machine Pricing Handler
+  const handleUpdateOffRoadPricing = (updated: OffRoadPricingConfig) => {
+    setOffRoadPricing(updated);
+    try {
+      localStorage.setItem('phoenix_offroad_pricing', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Error saving offroad pricing', e);
+    }
+  };
+
+  // Full System Restore Handler
+  const handleRestoreAll = (
+    newCmsConfig: CMSConfig,
+    newExperiences: Experience[],
+    newOffRoadPricing?: OffRoadPricingConfig
+  ) => {
+    setCmsConfig(newCmsConfig);
+    setExperiences(newExperiences);
+    if (newOffRoadPricing) {
+      setOffRoadPricing(newOffRoadPricing);
+      try {
+        localStorage.setItem('phoenix_offroad_pricing', JSON.stringify(newOffRoadPricing));
+      } catch (e) {
+        console.warn('Error saving restored offroad pricing', e);
+      }
+    }
+    try {
+      localStorage.setItem('phoenix_cms_config', JSON.stringify(newCmsConfig));
+      localStorage.setItem('phoenix_experiences', JSON.stringify(newExperiences));
+    } catch (e) {
+      console.warn('Error saving restored data', e);
+    }
   };
 
   // Admin Authentication Actions
@@ -238,6 +294,8 @@ export default function App() {
         adminSession={adminSession}
         onSignOut={handleAdminSignOut}
         onRestoreAll={handleRestoreAll}
+        offRoadPricing={offRoadPricing}
+        onUpdateOffRoadPricing={handleUpdateOffRoadPricing}
       />
     );
   }
@@ -247,7 +305,7 @@ export default function App() {
     <div className="bg-[#FAF6F0] text-[#1C1917] min-h-screen flex flex-col selection:bg-amber-100 selection:text-amber-900 font-sans relative">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-24 right-4 sm:right-8 z-50 bg-stone-900 text-white px-5 py-3 rounded-xl shadow-2xl border border-amber-500/40 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="fixed top-24 right-4 sm:right-8 z-50 bg-stone-900 text-white px-5 py-3 rounded-xl shadow-2xl border border-amber-500/40 flex items-center gap-3 animate-in fade-in slide-from-top-4 duration-300">
           <span className="material-symbols-outlined text-emerald-400 text-[22px]">verified</span>
           <span className="text-xs font-semibold">{toastMessage}</span>
           <button
@@ -290,8 +348,8 @@ export default function App() {
         phone={cmsConfig.directPhone}
       />
 
-      {/* Main Content Sections */}
-      <main className="w-full pt-20 bg-[#FAF6F0] flex-1">
+      {/* Main Experience Layout */}
+      <main className="flex-1 flex flex-col">
         <Hero
           onCheckLiveRates={handleCheckLiveRates}
           onOpenConcierge={() => setWhatsAppOpen(true)}
@@ -315,6 +373,7 @@ export default function App() {
           onBookExperience={(id, params) => handleOpenBooking(id, params)}
           onViewItinerary={handleViewItinerary}
           experiences={experiences}
+          offRoadPricing={offRoadPricing}
         />
 
         <CityToursSection
@@ -360,9 +419,15 @@ export default function App() {
           initialDuration={bookingModalParams.duration}
           initialMachine={bookingModalParams.machine}
           initialTimeSlot={bookingModalParams.timeSlot}
+          initialQuadRider={bookingModalParams.quadRider}
+          initialQuadTerrain={bookingModalParams.quadTerrain}
+          initialQuadEngine={bookingModalParams.quadEngine}
+          initialBuggyModel={bookingModalParams.buggyModel}
+          initialBuggySeater={bookingModalParams.buggySeater}
           currency={currency}
           onClose={() => setBookingModalOpen(false)}
           experiences={experiences}
+          offRoadPricing={offRoadPricing}
         />
       )}
 
@@ -380,7 +445,7 @@ export default function App() {
         />
       )}
 
-      {/* Write a Review Modal */}
+      {/* Review Submission Modal */}
       {reviewModalOpen && (
         <ReviewModal
           onClose={() => setReviewModalOpen(false)}
@@ -388,27 +453,20 @@ export default function App() {
         />
       )}
 
-      {/* WhatsApp VIP Concierge Drawer & Floating Icon */}
+      {/* UltraMsg WhatsApp Direct Concierge Drawer */}
       <WhatsAppDrawer
         isOpen={whatsAppOpen}
         onClose={() => setWhatsAppOpen(false)}
         onOpen={() => setWhatsAppOpen(true)}
       />
 
-      {/* Privacy / Terms / Safety Modal */}
+      {/* Privacy, Terms, and Safety Modal */}
       {infoModalTopic && (
         <InfoModal
           topic={infoModalTopic}
           onClose={() => setInfoModalTopic(null)}
         />
       )}
-
-      {/* Secure Operator Admin Login Modal */}
-      <AdminLoginModal
-        isOpen={adminLoginModalOpen}
-        onClose={() => setAdminLoginModalOpen(false)}
-        onSuccess={handleAdminLoginSuccess}
-      />
     </div>
   );
 }

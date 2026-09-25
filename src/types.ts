@@ -40,6 +40,31 @@ export interface Review {
 
 export type Currency = 'AED' | 'USD' | 'EUR' | 'GBP';
 
+export interface QuadBikeVariantPricing {
+  singleInside30m: number;
+  singleInside60m: number;
+  singleOpen30m: number;
+  singleOpen60m: number;
+  doubleInside30m: number;
+  doubleInside60m: number;
+  doubleOpen30m: number;
+  doubleOpen60m: number;
+}
+
+export interface BuggyModelPricing {
+  twoSeater30m: number;
+  twoSeater60m: number;
+  fourSeater30m: number;
+  fourSeater60m: number;
+}
+
+export interface OffRoadPricingConfig {
+  quad220cc: QuadBikeVariantPricing;
+  quad350cc: QuadBikeVariantPricing;
+  buggyPolaris: BuggyModelPricing;
+  buggyCanAm: BuggyModelPricing;
+}
+
 export interface BookingState {
   experienceId: string;
   date: string;

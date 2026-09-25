@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Experience } from '../../types';
-import { EXPERIENCES } from '../../data/safaris';
+import { Experience, OffRoadPricingConfig } from '../../types';
+import { DEFAULT_OFF_ROAD_PRICING, EXPERIENCES, getBuggyPrice, getQuadBikePrice } from '../../data/safaris';
 import { SeoAuditDashboard } from './SeoAuditDashboard';
 import { AdminSession } from '../../utils/adminAuth';
 
@@ -42,6 +42,7 @@ export interface SiteBackupData {
   dtcmLicense: string;
   cmsConfig: CMSConfig;
   experiences: Experience[];
+  offRoadPricing?: OffRoadPricingConfig;
   capacities?: Record<string, { booked: number; max: number }>;
   bookings?: AdminBooking[];
   metadata?: {
@@ -72,6 +73,8 @@ export interface AdminDashboardProps {
   adminSession?: AdminSession | null;
   onSignOut?: () => void;
   onRestoreAll?: (newCmsConfig: CMSConfig, newExperiences: Experience[]) => void;
+  offRoadPricing?: OffRoadPricingConfig;
+  onUpdateOffRoadPricing?: (updated: OffRoadPricingConfig) => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -85,11 +88,80 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   adminSession,
   onSignOut,
   onRestoreAll,
+  offRoadPricing,
+  onUpdateOffRoadPricing,
 }) => {
   // Navigation tabs
   const [activeNav, setActiveNav] = useState<
-    'overview-analytics' | 'homepage-cms' | 'tour-catalog-pricing' | 'bookings-convoys' | 'customer-inquiries-whatsapp' | 'seo-audit' | 'backup-restore' | 'settings'
-  >('seo-audit');
+    'overview-analytics' | 'homepage-cms' | 'tour-catalog-pricing' | 'offroad-pricing' | 'bookings-convoys' | 'customer-inquiries-whatsapp' | 'seo-audit' | 'backup-restore' | 'settings'
+  >('tour-catalog-pricing');
+
+  // Off-Road Pricing local state
+  const [localOffRoadPricing, setLocalOffRoadPricing] = useState<OffRoadPricingConfig>(() => {
+    if (offRoadPricing) return offRoadPricing;
+    const saved = localStorage.getItem('phoenix_offroad_pricing');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error reading saved off-road pricing', e);
+      }
+    }
+    return DEFAULT_OFF_ROAD_PRICING;
+  });
+
+  useEffect(() => {
+    if (offRoadPricing) {
+      setLocalOffRoadPricing(offRoadPricing);
+    }
+  }, [offRoadPricing]);
+
+  const handleUpdateQuadTier = (
+    tierKey: 'quad220cc' | 'quad350cc',
+    field: keyof OffRoadPricingConfig['quad220cc'],
+    value: number
+  ) => {
+    const updated: OffRoadPricingConfig = {
+      ...localOffRoadPricing,
+      [tierKey]: {
+        ...localOffRoadPricing[tierKey],
+        [field]: value,
+      },
+    };
+    setLocalOffRoadPricing(updated);
+    if (onUpdateOffRoadPricing) {
+      onUpdateOffRoadPricing(updated);
+    }
+    localStorage.setItem('phoenix_offroad_pricing', JSON.stringify(updated));
+  };
+
+  const handleUpdateBuggyTier = (
+    modelKey: 'buggyPolaris' | 'buggyCanAm',
+    field: keyof OffRoadPricingConfig['buggyPolaris'],
+    value: number
+  ) => {
+    const updated: OffRoadPricingConfig = {
+      ...localOffRoadPricing,
+      [modelKey]: {
+        ...localOffRoadPricing[modelKey],
+        [field]: value,
+      },
+    };
+    setLocalOffRoadPricing(updated);
+    if (onUpdateOffRoadPricing) {
+      onUpdateOffRoadPricing(updated);
+    }
+    localStorage.setItem('phoenix_offroad_pricing', JSON.stringify(updated));
+  };
+
+  const handleResetOffRoadDefaults = () => {
+    setLocalOffRoadPricing(DEFAULT_OFF_ROAD_PRICING);
+    if (onUpdateOffRoadPricing) {
+      onUpdateOffRoadPricing(DEFAULT_OFF_ROAD_PRICING);
+    }
+    localStorage.setItem('phoenix_offroad_pricing', JSON.stringify(DEFAULT_OFF_ROAD_PRICING));
+    showToast('Off-road machine rates reset to factory defaults.');
+  };
 
   // Mobile navigation drawer state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -763,6 +835,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 {[
                   { id: 'homepage-cms', label: 'Homepage CMS & Showcase', icon: 'view_quilt', badge: 'Live' },
                   { id: 'tour-catalog-pricing', label: 'Tour Pricing & Slots', icon: 'explore', badge: `${experiences.length} Tours` },
+                  { id: 'offroad-pricing', label: 'Off-Road Machine Rates', icon: 'sports_motorsports', badge: 'Per Vehicle' },
                   { id: 'bookings-convoys', label: 'Bookings & Convoys', icon: 'directions_car', badge: '18 Active' },
                   { id: 'seo-audit', label: 'Technical SEO Audit', icon: 'travel_explore', badge: '98/100' },
                   { id: 'backup-restore', label: 'Backup & Restore Vault', icon: 'settings_backup_restore', badge: 'Safe' },
@@ -906,6 +979,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             >
               <span className="material-symbols-outlined text-[20px]">explore</span>
               Tour Catalog &amp; Pricing
+            </button>
+
+            <button
+              onClick={() => setActiveNav('offroad-pricing')}
+              className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
+                activeNav === 'offroad-pricing'
+                  ? 'bg-[#8D4B00] text-white shadow-sm'
+                  : 'text-[#554336] hover:bg-[#EFE6E4] hover:text-[#1E1B1A]'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-[20px]">sports_motorsports</span>
+                <span>Off-Road Machine Rates</span>
+              </div>
+              <span
+                className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                  activeNav === 'offroad-pricing' ? 'bg-white/20 text-white' : 'bg-[#FFDCC3] text-[#8D4B00]'
+                }`}
+              >
+                Vehicles
+              </span>
             </button>
 
             <button
@@ -2053,6 +2147,453 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* VIEW TAB: OFF-ROAD MACHINE RATES (QUAD & DUNE BUGGY VEHICLE PRICING) */}
+          {activeNav === 'offroad-pricing' && (
+            <div className="space-y-6">
+              {/* Header Banner */}
+              <div className="bg-white p-6 rounded-2xl border border-[#E9E1DF] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-start gap-3.5">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FFDCC3] to-[#FFDBCE] text-[#8D4B00] flex items-center justify-center shrink-0 shadow-xs">
+                    <span className="material-symbols-outlined text-[28px]">sports_motorsports</span>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-serif font-bold text-xl text-[#1E1B1A]">Off-Road Machine Rates (Per-Vehicle Pricing)</h3>
+                      <span className="px-2 py-0.5 rounded-full bg-amber-100 text-[#8D4B00] text-[10px] font-bold uppercase tracking-wider">
+                        Full Vehicle Rates
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#554336] mt-1 max-w-2xl">
+                      Prices are calculated <strong>per whole vehicle</strong> (not per person). Manage granular pricing for 30m vs 60m durations, single vs double rider quads, inside circle track vs open desert, and 2-seater vs 4-seater Polaris and Can-Am buggies.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleResetOffRoadDefaults}
+                    className="px-3.5 py-2 rounded-lg bg-[#F5ECEA] hover:bg-[#EFE6E4] text-[#554336] hover:text-[#1E1B1A] text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">restart_alt</span>
+                    <span>Reset Defaults</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onUpdateOffRoadPricing) {
+                        onUpdateOffRoadPricing(localOffRoadPricing);
+                      }
+                      localStorage.setItem('phoenix_offroad_pricing', JSON.stringify(localOffRoadPricing));
+                      showToast('All Quad Bike & Dune Buggy rates published and live on storefront!');
+                    }}
+                    className="px-4 py-2 rounded-lg bg-[#8D4B00] hover:bg-[#B15F00] text-white text-xs font-bold uppercase tracking-wider shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">save</span>
+                    <span>Save &amp; Publish Rates</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Section 1: Quad Bikes (220cc & 350cc) */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 border-b border-[#E9E1DF] pb-2">
+                  <span className="material-symbols-outlined text-[#8D4B00]">two_wheeler</span>
+                  <h4 className="font-serif font-bold text-base text-[#1E1B1A]">Quad Bike ATV Rates (Per Vehicle)</h4>
+                  <span className="text-xs text-[#554336] font-medium">— Single &amp; Double Rider, Inside Circle &amp; Open Desert</span>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* 220cc Standard Raptor */}
+                  <div className="bg-white rounded-xl border border-[#E9E1DF] p-5 shadow-xs flex flex-col gap-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-[#E9E1DF]">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-900 text-xs font-bold">220cc</span>
+                        <h5 className="font-bold text-sm text-[#1E1B1A]">Yamaha Raptor Standard (220cc)</h5>
+                      </div>
+                      <span className="text-[11px] text-[#554336] font-medium">Automatic • Single &amp; Double</span>
+                    </div>
+
+                    {/* Inside Circle Track Rates */}
+                    <div className="p-3.5 rounded-lg bg-[#FBF2F0] border border-[#E9E1DF]/70 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-[#8D4B00] flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[16px]">track_changes</span>
+                          Inside Circle Track (Enclosed Circuit)
+                        </span>
+                        <span className="text-[10px] bg-white px-2 py-0.5 rounded text-[#554336] font-medium">Safe &amp; Guided</span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        <div>
+                          <label className="text-[10px] font-bold text-[#554336] block">Single 30m (AED)</label>
+                          <input
+                            type="number"
+                            value={localOffRoadPricing.quad220cc.singleInside30m}
+                            onChange={(e) => handleUpdateQuadTier('quad220cc', 'singleInside30m', Number(e.target.value) || 0)}
+                            className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-[#554336] block">Single 60m (AED)</label>
+                          <input
+                            type="number"
+                            value={localOffRoadPricing.quad220cc.singleInside60m}
+                            onChange={(e) => handleUpdateQuadTier('quad220cc', 'singleInside60m', Number(e.target.value) || 0)}
+                            className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-[#554336] block">Double 30m (AED)</label>
+                          <input
+                            type="number"
+                            value={localOffRoadPricing.quad220cc.doubleInside30m}
+                            onChange={(e) => handleUpdateQuadTier('quad220cc', 'doubleInside30m', Number(e.target.value) || 0)}
+                            className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-[#554336] block">Double 60m (AED)</label>
+                          <input
+                            type="number"
+                            value={localOffRoadPricing.quad220cc.doubleInside60m}
+                            onChange={(e) => handleUpdateQuadTier('quad220cc', 'doubleInside60m', Number(e.target.value) || 0)}
+                            className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Open Desert Free Ride Rates */}
+                    <div className="p-3.5 rounded-lg bg-[#FFDCC3]/30 border border-[#8D4B00]/20 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-[#8D4B00] flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[16px]">landscape</span>
+                          Open Desert Dunes (Red Sand Dunes)
+                        </span>
+                        <span className="text-[10px] bg-white px-2 py-0.5 rounded text-[#8D4B00] font-bold">Marshal Escort</span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        <div>
+                          <label className="text-[10px] font-bold text-[#554336] block">Single 30m (AED)</label>
+                          <input
+                            type="number"
+                            value={localOffRoadPricing.quad220cc.singleOpen30m}
+                            onChange={(e) => handleUpdateQuadTier('quad220cc', 'singleOpen30m', Number(e.target.value) || 0)}
+                            className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-[#554336] block">Single 60m (AED)</label>
+                          <input
+                            type="number"
+                            value={localOffRoadPricing.quad220cc.singleOpen60m}
+                            onChange={(e) => handleUpdateQuadTier('quad220cc', 'singleOpen60m', Number(e.target.value) || 0)}
+                            className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-[#554336] block">Double 30m (AED)</label>
+                          <input
+                            type="number"
+                            value={localOffRoadPricing.quad220cc.doubleOpen30m}
+                            onChange={(e) => handleUpdateQuadTier('quad220cc', 'doubleOpen30m', Number(e.target.value) || 0)}
+                            className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-[#554336] block">Double 60m (AED)</label>
+                          <input
+                            type="number"
+                            value={localOffRoadPricing.quad220cc.doubleOpen60m}
+                            onChange={(e) => handleUpdateQuadTier('quad220cc', 'doubleOpen60m', Number(e.target.value) || 0)}
+                            className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 350cc High Dunes Beast */}
+                  <div className="bg-white rounded-xl border border-[#E9E1DF] p-5 shadow-xs flex flex-col gap-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-[#E9E1DF]">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-900 text-xs font-bold">350cc</span>
+                        <h5 className="font-bold text-sm text-[#1E1B1A]">Yamaha Raptor High Dunes (350cc)</h5>
+                      </div>
+                      <span className="text-[11px] text-[#8D4B00] font-bold">High-Power • Single &amp; Double</span>
+                    </div>
+
+                    {/* Inside Circle Track Rates */}
+                    <div className="p-3.5 rounded-lg bg-[#FBF2F0] border border-[#E9E1DF]/70 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-[#8D4B00] flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[16px]">track_changes</span>
+                          Inside Circle Track (Enclosed Circuit)
+                        </span>
+                        <span className="text-[10px] bg-white px-2 py-0.5 rounded text-[#554336] font-medium">Safe &amp; Guided</span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        <div>
+                          <label className="text-[10px] font-bold text-[#554336] block">Single 30m (AED)</label>
+                          <input
+                            type="number"
+                            value={localOffRoadPricing.quad350cc.singleInside30m}
+                            onChange={(e) => handleUpdateQuadTier('quad350cc', 'singleInside30m', Number(e.target.value) || 0)}
+                            className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-[#554336] block">Single 60m (AED)</label>
+                          <input
+                            type="number"
+                            value={localOffRoadPricing.quad350cc.singleInside60m}
+                            onChange={(e) => handleUpdateQuadTier('quad350cc', 'singleInside60m', Number(e.target.value) || 0)}
+                            className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-[#554336] block">Double 30m (AED)</label>
+                          <input
+                            type="number"
+                            value={localOffRoadPricing.quad350cc.doubleInside30m}
+                            onChange={(e) => handleUpdateQuadTier('quad350cc', 'doubleInside30m', Number(e.target.value) || 0)}
+                            className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-[#554336] block">Double 60m (AED)</label>
+                          <input
+                            type="number"
+                            value={localOffRoadPricing.quad350cc.doubleInside60m}
+                            onChange={(e) => handleUpdateQuadTier('quad350cc', 'doubleInside60m', Number(e.target.value) || 0)}
+                            className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Open Desert Free Ride Rates */}
+                    <div className="p-3.5 rounded-lg bg-[#FFDCC3]/30 border border-[#8D4B00]/20 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-[#8D4B00] flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[16px]">landscape</span>
+                          Open Desert Dunes (Red Sand Dunes)
+                        </span>
+                        <span className="text-[10px] bg-white px-2 py-0.5 rounded text-[#8D4B00] font-bold">High Octane</span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        <div>
+                          <label className="text-[10px] font-bold text-[#554336] block">Single 30m (AED)</label>
+                          <input
+                            type="number"
+                            value={localOffRoadPricing.quad350cc.singleOpen30m}
+                            onChange={(e) => handleUpdateQuadTier('quad350cc', 'singleOpen30m', Number(e.target.value) || 0)}
+                            className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-[#554336] block">Single 60m (AED)</label>
+                          <input
+                            type="number"
+                            value={localOffRoadPricing.quad350cc.singleOpen60m}
+                            onChange={(e) => handleUpdateQuadTier('quad350cc', 'singleOpen60m', Number(e.target.value) || 0)}
+                            className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-[#554336] block">Double 30m (AED)</label>
+                          <input
+                            type="number"
+                            value={localOffRoadPricing.quad350cc.doubleOpen30m}
+                            onChange={(e) => handleUpdateQuadTier('quad350cc', 'doubleOpen30m', Number(e.target.value) || 0)}
+                            className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-[#554336] block">Double 60m (AED)</label>
+                          <input
+                            type="number"
+                            value={localOffRoadPricing.quad350cc.doubleOpen60m}
+                            onChange={(e) => handleUpdateQuadTier('quad350cc', 'doubleOpen60m', Number(e.target.value) || 0)}
+                            className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 2: Dune Buggies (Polaris RZR & Can-Am Maverick) */}
+              <div className="space-y-4 pt-4 border-t border-[#E9E1DF]">
+                <div className="flex items-center gap-2 border-b border-[#E9E1DF] pb-2">
+                  <span className="material-symbols-outlined text-[#8D4B00]">sports_motorsports</span>
+                  <h4 className="font-serif font-bold text-base text-[#1E1B1A]">Dune Buggy Rates (Per Vehicle)</h4>
+                  <span className="text-xs text-[#554336] font-medium">— Polaris RZR vs Can-Am Maverick X3 (2-Seater &amp; 4-Seater)</span>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Polaris RZR Buggy */}
+                  <div className="bg-white rounded-xl border border-[#E9E1DF] p-5 shadow-xs flex flex-col justify-between gap-4">
+                    <div>
+                      <div className="flex items-center justify-between pb-3 border-b border-[#E9E1DF]">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded bg-stone-100 text-stone-900 text-xs font-bold">1000cc</span>
+                          <h5 className="font-bold text-sm text-[#1E1B1A]">Polaris RZR 1000cc Buggy</h5>
+                        </div>
+                        <span className="text-[11px] text-[#554336] font-medium">Automatic • Roll Cage</span>
+                      </div>
+
+                      <div className="mt-4 space-y-4">
+                        {/* 2-Seater Polaris */}
+                        <div className="p-3.5 rounded-lg bg-[#FBF2F0] border border-[#E9E1DF]/70">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold text-[#1E1B1A] flex items-center gap-1.5">
+                              <span className="material-symbols-outlined text-[16px] text-[#8D4B00]">person</span>
+                              2-Seater Configuration (Couple / Duo)
+                            </span>
+                            <span className="text-[10px] text-[#554336]">Entire Buggy</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="text-[10px] font-bold text-[#554336] block">30 Minutes (AED)</label>
+                              <input
+                                type="number"
+                                value={localOffRoadPricing.buggyPolaris.twoSeater30m}
+                                onChange={(e) => handleUpdateBuggyTier('buggyPolaris', 'twoSeater30m', Number(e.target.value) || 0)}
+                                className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] font-bold text-[#554336] block">60 Minutes (AED)</label>
+                              <input
+                                type="number"
+                                value={localOffRoadPricing.buggyPolaris.twoSeater60m}
+                                onChange={(e) => handleUpdateBuggyTier('buggyPolaris', 'twoSeater60m', Number(e.target.value) || 0)}
+                                className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 4-Seater Polaris */}
+                        <div className="p-3.5 rounded-lg bg-[#FBF2F0] border border-[#E9E1DF]/70">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold text-[#1E1B1A] flex items-center gap-1.5">
+                              <span className="material-symbols-outlined text-[16px] text-[#8D4B00]">group</span>
+                              4-Seater Configuration (Family / Group)
+                            </span>
+                            <span className="text-[10px] text-[#554336]">Entire Buggy</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="text-[10px] font-bold text-[#554336] block">30 Minutes (AED)</label>
+                              <input
+                                type="number"
+                                value={localOffRoadPricing.buggyPolaris.fourSeater30m}
+                                onChange={(e) => handleUpdateBuggyTier('buggyPolaris', 'fourSeater30m', Number(e.target.value) || 0)}
+                                className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] font-bold text-[#554336] block">60 Minutes (AED)</label>
+                              <input
+                                type="number"
+                                value={localOffRoadPricing.buggyPolaris.fourSeater60m}
+                                onChange={(e) => handleUpdateBuggyTier('buggyPolaris', 'fourSeater60m', Number(e.target.value) || 0)}
+                                className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Can-Am Maverick X3 Buggy */}
+                  <div className="bg-white rounded-xl border border-[#E9E1DF] p-5 shadow-xs flex flex-col justify-between gap-4">
+                    <div>
+                      <div className="flex items-center justify-between pb-3 border-b border-[#E9E1DF]">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded bg-red-100 text-red-900 text-xs font-bold">TURBO</span>
+                          <h5 className="font-bold text-sm text-[#1E1B1A]">Can-Am Maverick X3 Turbo Buggy</h5>
+                        </div>
+                        <span className="text-[11px] text-[#8D4B00] font-bold">195HP • Premium Beast</span>
+                      </div>
+
+                      <div className="mt-4 space-y-4">
+                        {/* 2-Seater Can-Am */}
+                        <div className="p-3.5 rounded-lg bg-[#FFDCC3]/30 border border-[#8D4B00]/20">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold text-[#1E1B1A] flex items-center gap-1.5">
+                              <span className="material-symbols-outlined text-[16px] text-[#8D4B00]">person</span>
+                              2-Seater Maverick Turbo (Couple / Duo)
+                            </span>
+                            <span className="text-[10px] font-bold text-[#8D4B00]">Flagship Power</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="text-[10px] font-bold text-[#554336] block">30 Minutes (AED)</label>
+                              <input
+                                type="number"
+                                value={localOffRoadPricing.buggyCanAm.twoSeater30m}
+                                onChange={(e) => handleUpdateBuggyTier('buggyCanAm', 'twoSeater30m', Number(e.target.value) || 0)}
+                                className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] font-bold text-[#554336] block">60 Minutes (AED)</label>
+                              <input
+                                type="number"
+                                value={localOffRoadPricing.buggyCanAm.twoSeater60m}
+                                onChange={(e) => handleUpdateBuggyTier('buggyCanAm', 'twoSeater60m', Number(e.target.value) || 0)}
+                                className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 4-Seater Can-Am */}
+                        <div className="p-3.5 rounded-lg bg-[#FFDCC3]/30 border border-[#8D4B00]/20">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold text-[#1E1B1A] flex items-center gap-1.5">
+                              <span className="material-symbols-outlined text-[16px] text-[#8D4B00]">group</span>
+                              4-Seater Maverick Turbo MAX (Family / VIP Group)
+                            </span>
+                            <span className="text-[10px] font-bold text-[#8D4B00]">Flagship Power</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="text-[10px] font-bold text-[#554336] block">30 Minutes (AED)</label>
+                              <input
+                                type="number"
+                                value={localOffRoadPricing.buggyCanAm.fourSeater30m}
+                                onChange={(e) => handleUpdateBuggyTier('buggyCanAm', 'fourSeater30m', Number(e.target.value) || 0)}
+                                className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] font-bold text-[#554336] block">60 Minutes (AED)</label>
+                              <input
+                                type="number"
+                                value={localOffRoadPricing.buggyCanAm.fourSeater60m}
+                                onChange={(e) => handleUpdateBuggyTier('buggyCanAm', 'fourSeater60m', Number(e.target.value) || 0)}
+                                className="w-full mt-1 px-2.5 py-1.5 rounded-lg bg-white border border-[#E9E1DF] text-xs font-bold text-[#1E1B1A]"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

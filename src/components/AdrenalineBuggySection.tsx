@@ -1,12 +1,25 @@
 import React, { useState } from 'react';
-import { Currency, Experience } from '../types';
-import { CURRENCY_RATES, EXPERIENCES } from '../data/safaris';
+import { Currency, Experience, OffRoadPricingConfig } from '../types';
+import { CURRENCY_RATES, DEFAULT_OFF_ROAD_PRICING, EXPERIENCES, getBuggyPrice, getQuadBikePrice } from '../data/safaris';
 
 interface AdrenalineBuggySectionProps {
   currency: Currency;
-  onBookExperience: (experienceId: string, params?: { duration?: '30m' | '60m'; machine?: string; timeSlot?: string }) => void;
+  onBookExperience: (
+    experienceId: string,
+    params?: {
+      duration?: '30m' | '60m';
+      machine?: string;
+      timeSlot?: string;
+      quadRider?: 'single' | 'double';
+      quadTerrain?: 'inside_circle' | 'open_desert';
+      quadEngine?: '220cc' | '350cc';
+      buggyModel?: 'polaris' | 'canam';
+      buggySeater?: '2-seater' | '4-seater';
+    }
+  ) => void;
   onViewItinerary: (experienceId: string) => void;
   experiences?: Experience[];
+  offRoadPricing?: OffRoadPricingConfig;
 }
 
 export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
@@ -14,23 +27,28 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
   onBookExperience,
   onViewItinerary,
   experiences,
+  offRoadPricing = DEFAULT_OFF_ROAD_PRICING,
 }) => {
   // Quad Bike State
   const [selectedAtvDuration, setSelectedAtvDuration] = useState<'30m' | '60m'>('30m');
   const [selectedAtvCc, setSelectedAtvCc] = useState<'220cc' | '350cc'>('220cc');
+  const [selectedAtvRider, setSelectedAtvRider] = useState<'single' | 'double'>('single');
+  const [selectedAtvTerrain, setSelectedAtvTerrain] = useState<'inside_circle' | 'open_desert'>('open_desert');
   const [selectedAtvSlot, setSelectedAtvSlot] = useState<string>('04:30 PM (Sunset Slot)');
 
-  // Can-Am Buggy State
+  // Dune Buggy State (Polaris vs Can-Am)
+  const [selectedBuggyModel, setSelectedBuggyModel] = useState<'polaris' | 'canam'>('canam');
   const [selectedBuggyDuration, setSelectedBuggyDuration] = useState<'30m' | '60m'>('60m');
   const [selectedBuggySeater, setSelectedBuggySeater] = useState<'2-seater' | '4-seater'>('2-seater');
   const [selectedBuggySlot, setSelectedBuggySlot] = useState<string>('05:00 PM (Golden Hour)');
 
   const allExperiences = experiences && experiences.length > 0 ? experiences : EXPERIENCES;
-  const atvTour = allExperiences.find((e) => e.id === 'quad-bike-atv' || e.id === 'quad-bike-atv-rental') || EXPERIENCES.find((e) => e.id === 'quad-bike-atv');
-  const buggyTour = allExperiences.find((e) => e.id === 'can-am-buggy-safari' || e.id === 'can-am-dune-buggy') || EXPERIENCES.find((e) => e.id === 'can-am-buggy-safari');
-
-  const atvBasePrice = atvTour?.priceAED ?? 150;
-  const buggyBasePrice = buggyTour?.priceAED ?? 1000;
+  const atvTour =
+    allExperiences.find((e) => e.id === 'quad-bike-atv' || e.id === 'quad-bike-atv-rental') ||
+    EXPERIENCES.find((e) => e.id === 'quad-bike-atv');
+  const buggyTour =
+    allExperiences.find((e) => e.id === 'can-am-buggy-safari' || e.id === 'can-am-dune-buggy') ||
+    EXPERIENCES.find((e) => e.id === 'can-am-buggy-safari');
 
   const formatPrice = (aedAmount: number) => {
     const rateInfo = CURRENCY_RATES[currency];
@@ -38,35 +56,20 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
     return `${currency} ${converted.toLocaleString()}`;
   };
 
-  // Quad Bike Dynamic Pricing based on 30m vs 60m and Engine CC
-  const calculateAtvPrice = () => {
-    let base = atvBasePrice;
-    if (selectedAtvDuration === '30m') {
-      if (selectedAtvCc === '220cc') return base;
-      if (selectedAtvCc === '350cc') return base + 70;
-    } else {
-      // 1 Hour (60 Mins)
-      const oneHourBase = Math.round(base * 1.67);
-      if (selectedAtvCc === '220cc') return oneHourBase;
-      if (selectedAtvCc === '350cc') return oneHourBase + 100;
-    }
-    return base;
-  };
+  const atvPrice = getQuadBikePrice(
+    offRoadPricing,
+    selectedAtvCc,
+    selectedAtvRider,
+    selectedAtvTerrain,
+    selectedAtvDuration
+  );
 
-  // Buggy Dynamic Pricing based on 30m vs 60m and 2-seater vs 4-seater
-  const calculateBuggyPrice = () => {
-    let base = buggyBasePrice;
-    if (selectedBuggyDuration === '30m') {
-      const halfHourBase = Math.round(base * 0.7);
-      return selectedBuggySeater === '2-seater' ? halfHourBase : halfHourBase + 350;
-    } else {
-      // 1 Hour (60 Mins)
-      return selectedBuggySeater === '2-seater' ? base : base + 500;
-    }
-  };
-
-  const atvPrice = calculateAtvPrice();
-  const buggyPrice = calculateBuggyPrice();
+  const buggyPrice = getBuggyPrice(
+    offRoadPricing,
+    selectedBuggyModel,
+    selectedBuggySeater,
+    selectedBuggyDuration
+  );
 
   return (
     <section
@@ -76,7 +79,7 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16">
         {/* Headline & Subtitle */}
         <div className="max-w-3xl space-y-1 mb-10">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-[11px] uppercase tracking-widest text-[#C2410C] font-bold">
               Adrenaline &amp; High-Horsepower • Self-Drive Red Dune Expeditions
             </span>
@@ -88,25 +91,24 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
             Dubai Dune Buggy &amp; Quad Bike ATV Rentals
           </h2>
           <p className="text-base text-stone-600">
-            Command 1000cc Can-Am Maverick X3 Turbo buggies and Raptor ATVs across soaring open red sand
-            dunes in Lahbab. Choose between 30-minute and 1-hour high-octane sessions. Direct arrival to desert camp with free parking or optional private 4x4 chauffeur transfer (no shared pickup).
+            Self-drive high-performance Can-Am Maverick X3 Turbo, Polaris RZR Buggies, and Yamaha Raptor ATVs across soaring Lahbab dunes. Pricing is for the whole vehicle. Direct arrival to desert base camp with free parking or optional private 4x4 chauffeur transfer.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-          {/* Quad Bike Highlight Card */}
+          {/* ===================== QUAD BIKE HIGHLIGHT CARD ===================== */}
           <div className="bg-white rounded-2xl p-6 sm:p-8 flex flex-col justify-between border border-amber-100 shadow-[0_8px_30px_rgba(217,119,6,0.08)] relative overflow-hidden">
             <div className="space-y-4 z-10">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-[11px] font-bold uppercase border border-amber-200">
-                  No Driving License Required
+                  Rate per Quad Bike Vehicle
                 </span>
                 <div className="text-right">
                   <span className="text-2xl text-[#EA580C] font-bold font-serif">
                     {formatPrice(atvPrice)}
                   </span>
                   <span className="text-xs text-stone-500 font-normal font-sans ml-1">
-                    / {selectedAtvDuration === '30m' ? '30 Mins' : '1 Hour'}
+                    / {selectedAtvDuration === '30m' ? '30 Mins' : '1 Hour'} ({selectedAtvRider === 'single' ? 'Single' : 'Double'})
                   </span>
                 </div>
               </div>
@@ -116,8 +118,7 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
                   {atvTour?.title || 'Quad Bike ATV Rental'}
                 </h3>
                 <p className="text-sm text-stone-600 leading-relaxed mt-1">
-                  Conquer open desert dunes on high-performance 220cc or 350cc Raptor ATVs. Full
-                  freedom in open desert dunes with helmet, goggles, and safety guide escort.
+                  Ride 220cc or 350cc Raptor ATVs. Choose between designated circle tracks or deep open red dune trails with marshals. Helmet, goggles, and fuel included.
                 </p>
               </div>
 
@@ -160,7 +161,71 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
                 </div>
               </div>
 
-              {/* 2. CC SELECTOR */}
+              {/* 2. RIDER TYPE: SINGLE vs DOUBLE */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pt-1">
+                <span className="text-xs text-stone-600 font-bold flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[15px] text-[#EA580C]">person</span>
+                  Riders on Bike:
+                </span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedAtvRider('single')}
+                    className={`px-3 py-1.5 text-xs rounded-lg font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                      selectedAtvRider === 'single'
+                        ? 'bg-[#8D4B00] text-white shadow-xs'
+                        : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                    }`}
+                  >
+                    <span>Single Rider (1 Person)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedAtvRider('double')}
+                    className={`px-3 py-1.5 text-xs rounded-lg font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                      selectedAtvRider === 'double'
+                        ? 'bg-[#8D4B00] text-white shadow-xs'
+                        : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                    }`}
+                  >
+                    <span>Double (2 Persons)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 3. TERRAIN: INSIDE CIRCLE vs OPEN DESERT */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pt-1">
+                <span className="text-xs text-stone-600 font-bold flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[15px] text-[#EA580C]">terrain</span>
+                  Track Location:
+                </span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedAtvTerrain('inside_circle')}
+                    className={`px-3 py-1.5 text-xs rounded-lg font-bold transition-all cursor-pointer ${
+                      selectedAtvTerrain === 'inside_circle'
+                        ? 'bg-[#8D4B00] text-white shadow-xs'
+                        : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                    }`}
+                  >
+                    Inside Circle Track
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedAtvTerrain('open_desert')}
+                    className={`px-3 py-1.5 text-xs rounded-lg font-bold transition-all cursor-pointer ${
+                      selectedAtvTerrain === 'open_desert'
+                        ? 'bg-[#8D4B00] text-white shadow-xs'
+                        : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                    }`}
+                  >
+                    Open Desert Dunes
+                  </button>
+                </div>
+              </div>
+
+              {/* 4. ENGINE CAPACITY: 220CC vs 350CC */}
               <div className="flex items-center justify-between gap-2 pt-1 pb-1">
                 <span className="text-xs text-stone-500 font-semibold">Engine Tier:</span>
                 <div className="flex items-center gap-1.5">
@@ -169,19 +234,19 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
                       key={cc}
                       type="button"
                       onClick={() => setSelectedAtvCc(cc)}
-                      className={`px-3 py-1 text-xs rounded-lg font-bold transition-all cursor-pointer ${
+                      className={`px-3.5 py-1 text-xs rounded-lg font-bold transition-all cursor-pointer ${
                         selectedAtvCc === cc
-                          ? 'bg-[#8D4B00] text-white shadow-xs'
+                          ? 'bg-[#EA580C] text-white shadow-xs'
                           : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
                       }`}
                     >
-                      {cc} Raptor
+                      {cc} Raptor ATV
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* 3. TIME SLOT SELECTION */}
+              {/* 5. TIME SLOT SELECTION */}
               <div className="flex items-center justify-between gap-2 pt-1">
                 <span className="text-xs text-stone-500 font-semibold">Time Slot:</span>
                 <select
@@ -205,7 +270,7 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
                     two_wheeler
                   </span>
                   <span className="text-xs text-stone-800 font-semibold truncate">
-                    {selectedAtvCc} ({selectedAtvDuration === '30m' ? '30 Min' : '60 Min'})
+                    {selectedAtvCc} ({selectedAtvRider === 'single' ? '1 Rider' : '2 Riders'})
                   </span>
                 </div>
                 <div className="p-2 bg-[#FAF6F0] rounded-xl border border-stone-200/70 flex items-center gap-2">
@@ -240,8 +305,11 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
                   onClick={() =>
                     onBookExperience(atvTour?.id || 'quad-bike-atv', {
                       duration: selectedAtvDuration,
-                      machine: `${selectedAtvCc} Raptor ATV`,
+                      machine: `${selectedAtvCc} Raptor (${selectedAtvRider === 'single' ? 'Single' : 'Double'} • ${selectedAtvTerrain === 'inside_circle' ? 'Circle Track' : 'Open Desert'})`,
                       timeSlot: selectedAtvSlot,
+                      quadRider: selectedAtvRider,
+                      quadTerrain: selectedAtvTerrain,
+                      quadEngine: selectedAtvCc,
                     })
                   }
                   className="flex-1 py-2.5 rounded-lg bg-gradient-to-r from-[#EA580C] to-[#D97706] hover:from-[#C2410C] hover:to-[#EA580C] text-white text-center text-xs uppercase tracking-wider font-bold shadow-md transition-all cursor-pointer"
@@ -252,30 +320,29 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
             </div>
           </div>
 
-          {/* Can-Am Buggy Highlight Card */}
+          {/* ===================== DUNE BUGGY HIGHLIGHT CARD ===================== */}
           <div className="bg-white rounded-2xl p-6 sm:p-8 flex flex-col justify-between border border-amber-100 shadow-[0_8px_30px_rgba(217,119,6,0.08)] relative overflow-hidden">
             <div className="space-y-4 z-10">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="px-3 py-1 rounded-full bg-orange-100 text-orange-900 text-[11px] font-bold uppercase border border-orange-200">
-                  Turbo High Performance
+                  Rate per Buggy Vehicle
                 </span>
                 <div className="text-right">
                   <span className="text-2xl text-[#EA580C] font-bold font-serif">
                     {formatPrice(buggyPrice)}
                   </span>
                   <span className="text-xs text-stone-500 font-normal font-sans ml-1">
-                    / {selectedBuggyDuration === '30m' ? '30 Mins' : '1 Hour'}
+                    / {selectedBuggyDuration === '30m' ? '30 Mins' : '1 Hour'} ({selectedBuggyModel === 'canam' ? 'Can-Am' : 'Polaris'} {selectedBuggySeater})
                   </span>
                 </div>
               </div>
 
               <div>
                 <h3 className="text-2xl text-stone-900 font-semibold font-serif">
-                  {buggyTour?.title || 'Can-Am Dune Buggy Safari'}
+                  {selectedBuggyModel === 'canam' ? 'Can-Am Maverick X3 Buggy' : 'Polaris RZR Dune Buggy'}
                 </h3>
                 <p className="text-sm text-stone-600 leading-relaxed mt-1">
-                  Drive 2-seater or 4-seater Can-Am Maverick X3 Turbo buggies with roll cages, 4-point
-                  harnesses, and desert guides. Maximum power to scale the tallest Dubai dunes.
+                  Choose between Can-Am Maverick X3 Turbo (1000cc) or Polaris RZR buggies in 2-seater and 4-seater models with full roll cage, 4-point harness, and escort guide.
                 </p>
               </div>
 
@@ -318,28 +385,60 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
                 </div>
               </div>
 
-              {/* 2. SEATER CONFIGURATION */}
+              {/* 2. MODEL SELECTOR: POLARIS RZR vs CAN-AM MAVERICK */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pt-1">
+                <span className="text-xs text-stone-600 font-bold flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[15px] text-[#EA580C]">directions_car</span>
+                  Buggy Model:
+                </span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedBuggyModel('polaris')}
+                    className={`px-3 py-1.5 text-xs rounded-lg font-bold transition-all cursor-pointer ${
+                      selectedBuggyModel === 'polaris'
+                        ? 'bg-[#8D4B00] text-white shadow-xs'
+                        : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                    }`}
+                  >
+                    Polaris RZR
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedBuggyModel('canam')}
+                    className={`px-3 py-1.5 text-xs rounded-lg font-bold transition-all cursor-pointer ${
+                      selectedBuggyModel === 'canam'
+                        ? 'bg-[#8D4B00] text-white shadow-xs'
+                        : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                    }`}
+                  >
+                    Can-Am Maverick Turbo
+                  </button>
+                </div>
+              </div>
+
+              {/* 3. SEATER CONFIGURATION: 2-SEATER vs 4-SEATER */}
               <div className="flex items-center justify-between gap-2 pt-1 pb-1">
-                <span className="text-xs text-stone-500 font-semibold">Configuration:</span>
+                <span className="text-xs text-stone-500 font-semibold">Seater Capacity:</span>
                 <div className="flex items-center gap-1.5">
                   {(['2-seater', '4-seater'] as const).map((seat) => (
                     <button
                       key={seat}
                       type="button"
                       onClick={() => setSelectedBuggySeater(seat)}
-                      className={`px-3 py-1 text-xs rounded-lg font-bold transition-all cursor-pointer ${
+                      className={`px-3.5 py-1 text-xs rounded-lg font-bold transition-all cursor-pointer ${
                         selectedBuggySeater === seat
-                          ? 'bg-[#8D4B00] text-white shadow-xs'
+                          ? 'bg-[#EA580C] text-white shadow-xs'
                           : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
                       }`}
                     >
-                      Can-Am {seat.toUpperCase()}
+                      {seat.toUpperCase()}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* 3. TIME SLOT SELECTION */}
+              {/* 4. TIME SLOT SELECTION */}
               <div className="flex items-center justify-between gap-2 pt-1">
                 <span className="text-xs text-stone-500 font-semibold">Time Slot:</span>
                 <select
@@ -360,7 +459,7 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
                 <div className="p-2 bg-[#FAF6F0] rounded-xl border border-stone-200/70 flex items-center gap-2">
                   <span className="material-symbols-outlined text-[#EA580C] text-[18px]">speed</span>
                   <span className="text-xs text-stone-800 font-semibold truncate">
-                    Can-Am Maverick X3 Turbo
+                    {selectedBuggyModel === 'canam' ? 'Can-Am Maverick X3' : 'Polaris RZR'} ({selectedBuggySeater})
                   </span>
                 </div>
                 <div className="p-2 bg-[#FAF6F0] rounded-xl border border-stone-200/70 flex items-center gap-2">
@@ -395,8 +494,10 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
                   onClick={() =>
                     onBookExperience(buggyTour?.id || 'can-am-buggy-safari', {
                       duration: selectedBuggyDuration,
-                      machine: `Can-Am Maverick (${selectedBuggySeater})`,
+                      machine: `${selectedBuggyModel === 'canam' ? 'Can-Am Maverick' : 'Polaris RZR'} (${selectedBuggySeater})`,
                       timeSlot: selectedBuggySlot,
+                      buggyModel: selectedBuggyModel,
+                      buggySeater: selectedBuggySeater,
                     })
                   }
                   className="flex-1 py-2.5 rounded-lg bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#D97706] text-white text-center text-xs uppercase tracking-wider font-bold hover:brightness-110 shadow-md transition-all cursor-pointer"

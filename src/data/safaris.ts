@@ -1,4 +1,76 @@
-import { Currency, Experience, Review } from '../types';
+import { Currency, Experience, OffRoadPricingConfig, Review } from '../types';
+
+export const DEFAULT_OFF_ROAD_PRICING: OffRoadPricingConfig = {
+  quad220cc: {
+    singleInside30m: 120,
+    singleInside60m: 200,
+    singleOpen30m: 150,
+    singleOpen60m: 250,
+    doubleInside30m: 160,
+    doubleInside60m: 260,
+    doubleOpen30m: 200,
+    doubleOpen60m: 320,
+  },
+  quad350cc: {
+    singleInside30m: 170,
+    singleInside60m: 280,
+    singleOpen30m: 220,
+    singleOpen60m: 350,
+    doubleInside30m: 220,
+    doubleInside60m: 340,
+    doubleOpen30m: 270,
+    doubleOpen60m: 420,
+  },
+  buggyPolaris: {
+    twoSeater30m: 600,
+    twoSeater60m: 900,
+    fourSeater30m: 800,
+    fourSeater60m: 1200,
+  },
+  buggyCanAm: {
+    twoSeater30m: 700,
+    twoSeater60m: 1000,
+    fourSeater30m: 950,
+    fourSeater60m: 1500,
+  },
+};
+
+export function getQuadBikePrice(
+  pricing: OffRoadPricingConfig = DEFAULT_OFF_ROAD_PRICING,
+  engine: '220cc' | '350cc',
+  riderType: 'single' | 'double',
+  terrain: 'inside_circle' | 'open_desert',
+  duration: '30m' | '60m'
+): number {
+  const tier = engine === '220cc' ? pricing.quad220cc : pricing.quad350cc;
+  if (riderType === 'single') {
+    if (terrain === 'inside_circle') {
+      return duration === '30m' ? tier.singleInside30m : tier.singleInside60m;
+    } else {
+      return duration === '30m' ? tier.singleOpen30m : tier.singleOpen60m;
+    }
+  } else {
+    if (terrain === 'inside_circle') {
+      return duration === '30m' ? tier.doubleInside30m : tier.doubleInside60m;
+    } else {
+      return duration === '30m' ? tier.doubleOpen30m : tier.doubleOpen60m;
+    }
+  }
+}
+
+export function getBuggyPrice(
+  pricing: OffRoadPricingConfig = DEFAULT_OFF_ROAD_PRICING,
+  model: 'polaris' | 'canam',
+  seater: '2-seater' | '4-seater',
+  duration: '30m' | '60m'
+): number {
+  const modelPricing = model === 'polaris' ? pricing.buggyPolaris : pricing.buggyCanAm;
+  if (seater === '2-seater') {
+    return duration === '30m' ? modelPricing.twoSeater30m : modelPricing.twoSeater60m;
+  } else {
+    return duration === '30m' ? modelPricing.fourSeater30m : modelPricing.fourSeater60m;
+  }
+}
 
 export const EXPERIENCES: Experience[] = [
   // --- DESERT SAFARIS ---
