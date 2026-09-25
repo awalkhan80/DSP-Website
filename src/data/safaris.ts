@@ -337,6 +337,134 @@ export const EXPERIENCES: Experience[] = [
       { time: '08:45 PM', title: 'Grand Buffet Dinner Opens', description: 'Enjoy multi-course delicacies prepared by 5-star culinary chefs with fresh salads, kebabs, and desserts.' },
       { time: '09:30 PM', title: 'Live Tanoura Dancing Show', description: 'Mesmerizing hypnotic spinning dancer with glowing illuminated skirts on the open deck.' }
     ]
+  },
+  {
+    id: 'burj-khalifa-124-125',
+    category: 'city-tours',
+    categoryLabel: 'Sightseeing & Attractions',
+    title: 'Burj Khalifa At The Top (124th & 125th Floor)',
+    subtitle: "World's Tallest Tower",
+    badge: '124th & 125th Floor',
+    duration: '1.5 Hours',
+    priceAED: 175,
+    priceUnit: '/ Person',
+    description: 'Ascend to the 124th and 125th floors of the iconic Burj Khalifa in high-speed double-deck elevators at 10m/s. Experience 360-degree panoramic glass views over Dubai, Arabian Gulf, outdoor observation terrace, and state-of-the-art telescopes.',
+    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1200&q=80',
+    altText: 'Burj Khalifa skyscraper towering over downtown Dubai with observation decks illuminated against clear sky',
+    highlights: [
+      'Levels 124 & 125 Admission (AED 175)',
+      'Fastest Double-Deck Elevators (10m/s)',
+      '360° Glass Panoramic Views of Dubai',
+      'Outdoor Observation Terrace Access',
+      'High-Powered Digital Telescopes',
+      'Direct Dubai Mall Ground Floor Entry'
+    ],
+    departureTime: 'Daily (Every 30 mins from 08:30 AM)',
+    returnTime: 'Flexible Visit',
+    hotelPickup: false,
+    vehicleType: 'Direct Gate (Dubai Mall LG Floor)',
+    itinerary: [
+      { time: '0-15 Min', title: 'Dubai Mall Ground Level Entry', description: 'Walk through the At The Top reception with multimedia displays showcasing Burj Khalifa construction.' },
+      { time: '15-20 Min', title: '10m/s High-Speed Elevator', description: 'Experience the world fastest double-deck elevators climbing 456 meters in under 60 seconds.' },
+      { time: '20-75 Min', title: '124th & 125th Floor Observation', description: 'Step onto the open-air terrace, use interactive view-finders, and capture unobstructed 360-degree photos.' },
+      { time: '75-90 Min', title: 'Souvenir Gallery & Exit', description: 'Browse official Burj Khalifa souvenirs and descend smoothly back to Dubai Mall.' }
+    ]
+  },
+  {
+    id: 'burj-khalifa-fountain-lake-ride',
+    category: 'city-tours',
+    categoryLabel: 'Sightseeing & Attractions',
+    title: 'Burj Khalifa Fountain Lake Ride',
+    subtitle: 'Front-Row Aquatic Spectacle',
+    badge: 'Fountain Abra Ride',
+    duration: '30 Minutes',
+    priceAED: 100,
+    priceUnit: '/ Person',
+    description: 'Glide across the 30-acre Burj Lake on a traditional wooden motorized Abra. Witness the world largest choreographed fountain dancing to Arabic and international hits right next to your boat with illuminated water jets rising 140 meters high.',
+    image: 'https://images.unsplash.com/photo-1580674684081-7617fbf3d745?auto=format&fit=crop&w=1200&q=80',
+    altText: 'Dubai Fountain show illuminated at night with water jets shooting in front of Burj Khalifa on the lake',
+    highlights: [
+      'Front-Row Fountain Lake Cruise (AED 100)',
+      'Traditional Wooden Abra Boat Experience',
+      'Towering 140m Water Jets Up Close',
+      'Direct Sightline to Burj Khalifa LED Show',
+      'Best Photography Angles Guaranteed',
+      'Dedicated Express Boarding Pontoon'
+    ],
+    departureTime: '05:45 PM - 11:15 PM (Every 30 Mins)',
+    returnTime: '30 Min Session',
+    hotelPickup: false,
+    vehicleType: 'Traditional Electric Lake Abra',
+    itinerary: [
+      { time: 'Boarding', title: 'Fountain Promenade Check-in', description: 'Arrive at the Waterfront Promenade pontoon near Dubai Mall for VIP priority boarding.' },
+      { time: 'Departure', title: 'Burj Lake Navigation', description: 'Cruise into the center of Burj Lake as the surrounding Dubai downtown skyline lights up.' },
+      { time: 'Showtime', title: 'Choreographed Fountain Performance', description: 'Experience the roaring music and 22,000 gallons of illuminated dancing water right beside your boat.' }
+    ]
+  },
+  {
+    id: 'skydive-dubai-tandem-palm',
+    category: 'city-tours',
+    categoryLabel: 'Adrenaline & Bucket List',
+    title: 'Sky Dive Dubai Tandem Palm Jumeirah',
+    subtitle: 'Freefall Over Palm Island',
+    badge: '2700 AED Tandem',
+    duration: '3 Hours',
+    priceAED: 2700,
+    priceUnit: '/ Person',
+    description: 'The pinnacle of skydiving in Dubai. Freefall at over 120 mph (190 km/h) harnessed to a world-class USPA-licensed tandem master from 13,000 feet directly above the legendary Palm Jumeirah. Includes dedicated camera flyer with high-definition video and photo package.',
+    image: 'https://images.unsplash.com/photo-1521673845931-7b0fb2a73dd7?auto=format&fit=crop&w=1200&q=80',
+    altText: 'Tandem skydiver in freefall over the Palm Jumeirah island in Dubai with blue ocean and skyline in the background',
+    highlights: [
+      '13,000 Feet Tandem Skydiving (AED 2700)',
+      'Iconic Palm Jumeirah Dropzone (Premium DZ)',
+      '60-Second 120mph Freefall Thrill',
+      'Dedicated Video & Photo Package Included',
+      'USPA-Certified Master Instructor',
+      'Commemorative Flight Certificate'
+    ],
+    departureTime: 'Morning Slots (07:00 AM - 11:30 AM)',
+    returnTime: 'Flexible',
+    hotelPickup: false,
+    vehicleType: 'Twin Otter Drop Aircraft',
+    itinerary: [
+      { time: '0-45 Min', title: 'Dropzone Check-in & Gear Fitting', description: 'Weigh-in, harness fitting, and 1-on-1 briefing with your dedicated tandem master and cameraman.' },
+      { time: '45-65 Min', title: 'Scenic Flight to 13,000 Feet', description: 'Breathtaking 20-minute plane ascent over Dubai Marina, Bluewaters Island, and the Arabian Gulf.' },
+      { time: '65-70 Min', title: '60-Second Freefall & Parachute Ride', description: 'Leap from the plane at 120mph followed by a smooth 5-minute canopy ride gliding over the Palm fronds.' },
+      { time: '70-90 Min', title: 'Soft Landing & Video Delivery', description: 'Celebrate landing on the dropzone turf and receive your edited full HD video and photos.' }
+    ]
+  },
+  {
+    id: 'miracle-garden-global-village-combo',
+    category: 'city-tours',
+    categoryLabel: 'City Sightseeing & Culture',
+    title: 'Miracle Garden + Global Village Combo',
+    subtitle: 'Private Car (AED 250) + Tickets (AED 130/pp)',
+    badge: 'Combo Special',
+    duration: '7 Hours',
+    priceAED: 250,
+    priceUnit: 'Car + Tkts',
+    description: 'Dual iconic Dubai attraction combo featuring a dedicated private luxury vehicle (AED 250 flat per car) and official combo entry tickets (AED 130 per person). Explore 150 million blooming flowers at Dubai Miracle Garden in the afternoon, followed by 90+ cultural country pavilions and night shows at Global Village.',
+    image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=1200&q=80',
+    altText: 'Dubai Miracle Garden giant flower sculptures and arched floral walkways under sunny sky',
+    highlights: [
+      'Private Dedicated Car for Your Group (AED 250 Flat)',
+      'Combo Entry Tickets Included (AED 130 / Person)',
+      '150 Million Blooming Flowers & Emirates A380',
+      'Global Village 90+ Country Pavilions & Shows',
+      'Doorstep Hotel / Residence Pick-Up & Drop-Off',
+      'Flexible Chauffeur Waiting Time'
+    ],
+    departureTime: '02:00 PM - 03:00 PM',
+    returnTime: '09:30 PM - 10:00 PM',
+    hotelPickup: true,
+    vehicleType: 'Private AC Executive Car / SUV',
+    itinerary: [
+      { time: '02:30 PM', title: 'Doorstep Hotel Pickup in Private Car', description: 'Chauffeur picks you up in a private air-conditioned car from your hotel or residence.' },
+      { time: '03:15 PM', title: 'Dubai Miracle Garden Exploration', description: '2.5 hours exploring heart-shaped floral tunnels, giant Disney topiaries, and the floral Emirates A380.' },
+      { time: '06:00 PM', title: 'Transfer to Global Village', description: 'Short scenic drive arriving at Global Village as evening illumination begins.' },
+      { time: '06:30 PM', title: 'Global Village Cultural Pavilions', description: '3.5 hours sampling street delicacies, shopping authentic crafts from 90+ cultures, and enjoying cultural stage shows.' },
+      { time: '10:00 PM', title: 'Comfortable Private Drop-off', description: 'Relax in your dedicated private car with direct drop-off back at your doorstep.' }
+    ]
   }
 ];
 

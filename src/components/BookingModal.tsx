@@ -168,6 +168,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       duration
     );
     totalAED = vehicleUnitPrice * buggyQuantity;
+  } else if (currentExperience.id === 'miracle-garden-global-village-combo') {
+    // Miracle Garden + Global Village: 250 AED Private Car + 130 AED/Person Combo Tickets
+    const totalGuests = adults + children;
+    const privateCarBase = 250;
+    const ticketsTotal = totalGuests * 130;
+    totalAED = privateCarBase + ticketsTotal;
   } else {
     // Regular Safari or City Excursion
     const basePricePerAdult = currentExperience.priceAED;
@@ -175,8 +181,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     totalAED = adults * basePricePerAdult + children * basePricePerChild;
   }
 
-  // Private 4x4 surcharge if selected (AED 350 flat)
-  if (transferType === 'private_4x4' && currentExperience.id !== 'private-vip-safari') {
+  // Private 4x4 surcharge if selected (AED 350 flat - not applicable to tours that already include private cars)
+  if (
+    transferType === 'private_4x4' &&
+    currentExperience.id !== 'private-vip-safari' &&
+    currentExperience.id !== 'miracle-garden-global-village-combo'
+  ) {
     totalAED += 350;
   }
 
@@ -600,6 +610,35 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       <option value="04:30 PM (Golden Sunset Slot)">04:30 PM (Golden Sunset Slot)</option>
                       <option value="05:30 PM (Twilight &amp; Stargazing)">05:30 PM (Twilight &amp; Stargazing)</option>
                     </>
+                  ) : currentExperience.id === 'burj-khalifa-124-125' ? (
+                    <>
+                      <option value="10:00 AM (Morning Panorama)">10:00 AM (Morning Panorama)</option>
+                      <option value="02:00 PM (Afternoon Clear View)">02:00 PM (Afternoon Clear View)</option>
+                      <option value="04:30 PM (Prime Sunset - High Demand)">04:30 PM (Prime Sunset - High Demand)</option>
+                      <option value="06:30 PM (Evening Skyline & City Lights)">06:30 PM (Evening Skyline & City Lights)</option>
+                      <option value="08:30 PM (Night Panorama)">08:30 PM (Night Panorama)</option>
+                    </>
+                  ) : currentExperience.id === 'burj-khalifa-fountain-lake-ride' ? (
+                    <>
+                      <option value="06:00 PM (Sunset Fountain Show)">06:00 PM (Sunset Fountain Show)</option>
+                      <option value="07:00 PM (Evening Fountain Display)">07:00 PM (Evening Fountain Display)</option>
+                      <option value="08:00 PM (Prime Gala Fountain Show)">08:00 PM (Prime Gala Fountain Show)</option>
+                      <option value="09:00 PM (Night Lake Abra Cruise)">09:00 PM (Night Lake Abra Cruise)</option>
+                      <option value="10:00 PM (Late Night Water Dance)">10:00 PM (Late Night Water Dance)</option>
+                    </>
+                  ) : currentExperience.id === 'skydive-dubai-tandem-palm' ? (
+                    <>
+                      <option value="07:30 AM (Sunrise Early Jump DZ)">07:30 AM (Sunrise Early Jump DZ)</option>
+                      <option value="09:00 AM (Morning Clear Skies)">09:00 AM (Morning Clear Skies)</option>
+                      <option value="10:30 AM (Mid-Morning Tandem)">10:30 AM (Mid-Morning Tandem)</option>
+                      <option value="12:00 PM (Noon Sky Dive Session)">12:00 PM (Noon Sky Dive Session)</option>
+                    </>
+                  ) : currentExperience.id === 'miracle-garden-global-village-combo' ? (
+                    <>
+                      <option value="02:30 PM (Recommended Dual Itinerary)">02:30 PM (Recommended Dual Itinerary)</option>
+                      <option value="03:00 PM (Afternoon Departure)">03:00 PM (Afternoon Departure)</option>
+                      <option value="03:30 PM (Evening-Focused Tour)">03:30 PM (Evening-Focused Tour)</option>
+                    </>
                   ) : (
                     <>
                       <option value="03:00 PM (Afternoon / Golden Sunset)">
@@ -624,7 +663,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <div>
                   <span className="text-xs font-bold text-stone-800 block">Party Size</span>
                   <span className="text-xs text-stone-500">
-                    Children under 3 ride free. Children 3-10 receive 30% discount.
+                    {currentExperience.id === 'miracle-garden-global-village-combo'
+                      ? 'Private vehicle included. Tickets priced per guest.'
+                      : currentExperience.id === 'burj-khalifa-124-125' || currentExperience.id === 'burj-khalifa-fountain-lake-ride' || currentExperience.id === 'skydive-dubai-tandem-palm'
+                      ? 'Official direct admission per participant.'
+                      : 'Children under 3 ride free. Children 3-10 receive 30% discount.'}
                   </span>
                 </div>
                 <div className="flex items-center gap-4">
@@ -671,6 +714,30 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       </button>
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Special Pricing Breakdown for Miracle Garden + Global Village */}
+            {currentExperience.id === 'miracle-garden-global-village-combo' && (
+              <div className="bg-gradient-to-r from-purple-50 to-amber-50 p-3.5 rounded-xl border border-purple-200/80 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-purple-950 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[16px] text-[#8D4B00]">directions_car</span>
+                    Private Dedicated Vehicle (Door-to-Door Chauffeur)
+                  </span>
+                  <span className="font-bold text-purple-900">AED 250 (Flat)</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-purple-950 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[16px] text-emerald-600">confirmation_number</span>
+                    Combo Entry Tickets ({adults + children} Guests × AED 130)
+                  </span>
+                  <span className="font-bold text-emerald-800">AED {(adults + children) * 130}</span>
+                </div>
+                <div className="pt-2 border-t border-purple-200/60 flex items-center justify-between text-xs font-bold text-[#8D4B00]">
+                  <span>Total Package Price:</span>
+                  <span className="text-sm">AED {250 + (adults + children) * 130}</span>
                 </div>
               </div>
             )}
