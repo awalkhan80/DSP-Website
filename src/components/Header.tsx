@@ -56,14 +56,7 @@ export const Header: React.FC<HeaderProps> = ({
                   announcementText
                 ) : (
                   <>
-                    Open 24 Hours • Call &amp; WhatsApp Direct Booking:{' '}
-                    <a
-                      href={`tel:${cleanPhone}`}
-                      className="text-amber-200 font-extrabold underline underline-offset-2 hover:text-white transition-colors"
-                    >
-                      {phone}
-                    </a>{' '}
-                    • Located at DAMAC XL Tower, Business Bay, Dubai
+                    Open 24 Hours • Free Home &amp; Hotel Pickup Across Dubai • Located at DAMAC XL Tower, Business Bay, Dubai
                   </>
                 )}
               </span>
@@ -171,28 +164,6 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right Action Cluster */}
         <div className="flex items-center gap-4">
-          {/* Direct Phone */}
-          <a
-            className="hidden xl:flex items-center gap-1.5 text-stone-800 hover:text-[#EA580C] transition-colors text-[13px] font-semibold"
-            href={`tel:${cleanPhone}`}
-          >
-            <span className="material-symbols-outlined text-[#EA580C] text-[18px]">call</span>
-            <span>{phone}</span>
-          </a>
-
-          {/* SEO Audit & Admin Portal Link */}
-          {onOpenAdmin && (
-            <button
-              type="button"
-              onClick={onOpenAdmin}
-              title="Open Live SEO Audit & Management Console"
-              className="hidden sm:flex items-center gap-1 px-3 py-2 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-stone-800 text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[#8D4B00] text-[16px]">travel_explore</span>
-              <span>SEO Audit</span>
-            </button>
-          )}
-
           {/* Book Adventure CTA */}
           <button
             type="button"
@@ -259,13 +230,6 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           ))}
           <div className="pt-2 border-t border-stone-100 flex flex-col gap-2">
-            <a
-              href="tel:0561505270"
-              className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-amber-50 text-[#EA580C] font-semibold text-sm"
-            >
-              <span className="material-symbols-outlined text-[18px]">call</span>
-              <span>Call Direct: 056 150 5270</span>
-            </a>
             <button
               onClick={() => {
                 onOpenWhatsApp();
