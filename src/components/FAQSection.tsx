@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { WhatsAppLogo } from './icons/WhatsAppLogo';
 
 export interface FAQItem {
   question: string;
@@ -23,7 +24,7 @@ export const FAQ_DATA: FAQItem[] = [
     category: 'dune-buggy',
     question: 'Do I need an international driving license to drive a dune buggy or quad bike in Dubai?',
     answer:
-      'No driving license is required. Self-drive dune buggies (such as our 1000cc Can-Am Maverick X3 Turbo) and quad bikes (220cc to 700cc Raptor ATVs) are operated off-road in designated desert tracks and open dunes. Our DTCM-certified marshals provide a comprehensive 15-minute safety briefing, helmets, and goggles, and an escort marshal car leads your convoy to ensure safe, thrilling navigation across the Lahbab red dunes.',
+      'No driving license is required. Self-drive dune buggies (such as our 1000cc Can-Am Maverick X3 Turbo) and quad bikes (250 CC Quad Bikes) are operated off-road in designated desert tracks and open dunes. Our DTCM-certified marshals provide a comprehensive 15-minute safety briefing, helmets, and goggles, and an escort marshal car leads your convoy to ensure safe, thrilling navigation across the Lahbab red dunes.',
   },
   {
     category: 'dress-code',
@@ -164,9 +165,9 @@ export const FAQSection: React.FC = () => {
             href="https://wa.me/971561505270?text=Hello%20Phoenix%20Safari%2C%20I%20have%20a%20question%20about%20booking"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-xs transition-colors shrink-0"
+            className="px-4 py-2 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-xs transition-colors shrink-0"
           >
-            <span className="material-symbols-outlined text-[16px]">chat</span>
+            <WhatsAppLogo className="w-4 h-4" />
             <span>WhatsApp Concierge</span>
           </a>
         </div>

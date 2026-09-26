@@ -199,26 +199,6 @@ export const Footer: React.FC<FooterProps> = ({
                 <span className="material-symbols-outlined text-[20px]">reviews</span>
               </a>
             </div>
-
-            <div className="pt-2">
-              <span className="text-[11px] uppercase tracking-wider text-stone-500 font-bold">
-                Payment Methods
-              </span>
-              <div className="flex flex-wrap items-center gap-2 text-stone-700 text-xs pt-1">
-                <span className="px-2 py-1 bg-white border border-stone-200 rounded text-[11px] font-semibold shadow-2xs">
-                  Visa
-                </span>
-                <span className="px-2 py-1 bg-white border border-stone-200 rounded text-[11px] font-semibold shadow-2xs">
-                  Mastercard
-                </span>
-                <span className="px-2 py-1 bg-white border border-stone-200 rounded text-[11px] font-semibold shadow-2xs">
-                  Amex
-                </span>
-                <span className="px-2 py-1 bg-white border border-stone-200 rounded text-[11px] font-semibold shadow-2xs">
-                  Apple Pay
-                </span>
-              </div>
-            </div>
           </div>
         </div>
 

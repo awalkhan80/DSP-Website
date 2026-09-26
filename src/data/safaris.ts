@@ -72,6 +72,17 @@ export function getBuggyPrice(
   }
 }
 
+/**
+ * Calculates private vehicle pricing:
+ * Base price: AED 500 for up to 2 pax.
+ * For each additional pax beyond 2: +AED 50 per pax.
+ */
+export function calculatePrivateVehiclePrice(pax: number): number {
+  const count = Math.max(1, pax);
+  const extraPax = Math.max(0, count - 2);
+  return 500 + extraPax * 50;
+}
+
 export const EXPERIENCES: Experience[] = [
   // --- DESERT SAFARIS ---
   {
@@ -191,11 +202,11 @@ export const EXPERIENCES: Experience[] = [
     duration: 'Session',
     priceAED: 150,
     priceUnit: '/ Session',
-    description: 'Conquer open desert dunes on high-performance 220cc to 350cc Raptor ATVs. Full freedom in open desert dunes with helmet, goggles, and safety guide escort. Direct desert meeting point (free) or private 4x4 luxury transfer available.',
+    description: 'Conquer open desert dunes on high-performance 250 CC to 350 CC Quad Bikes. Full freedom in open desert dunes with helmet, goggles, and safety guide escort. Direct desert meeting point (free) or private 4x4 luxury transfer available.',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD3cf4jPrAC-DN5Da2vJ3_AGbHbR6Yx83Fa8N81kJ0Fe0oD87a2N_uLVWQbZW2Io8MdPi1Es_1bU7roSmN9lCjyb1fdk2uGtp0bKsod3-IPm9wxDqwXqvCZrgiEsYThx1JacNiHRBxVqp-EGOmKVV_iunEJuG04GQ9ta38QwMXXZBq_-KSto8HJDqypGth8xvt_T1PEBAqCFfEc9mE_AXABwf3Xc1lWLQKokQycJqqd6cGJtc6buc96jg',
     altText: 'An ATV rider powering a high-speed quad bike through Dubai red dunes carving sand trails during sunny daylight with protective helmet and gear',
     highlights: [
-      '220cc & 350cc Raptor ATVs',
+      '250 CC & 350 CC Quad Bikes',
       'Helmet & Goggles Included',
       'Direct Meeting Point (Free)',
       'Private 4x4 Chauffeur Option',
@@ -203,7 +214,7 @@ export const EXPERIENCES: Experience[] = [
       'Comprehensive Safety Brief'
     ],
     hotelPickup: false,
-    vehicleType: 'Yamaha Raptor ATV (220cc / 350cc)',
+    vehicleType: '250 CC Quad Bike ATV',
     itinerary: [
       { time: '0-15 Min', title: 'Gear Fitting & Safety Brief', description: 'Professional briefing on throttle, brakes, body weight shifting and safety perimeter.' },
       { time: '15-45 Min', title: 'Open Dune Riding', description: 'Ride through sweeping open red sand tracks with a lead marshall guiding you along safe, thrilling lines.' },
@@ -438,16 +449,17 @@ export const EXPERIENCES: Experience[] = [
     category: 'city-tours',
     categoryLabel: 'City Sightseeing & Culture',
     title: 'Miracle Garden + Global Village Combo',
-    subtitle: 'Private Car (AED 250) + Tickets (AED 130/pp)',
+    subtitle: 'Private Car (AED 500) + Tickets (AED 130/pp)',
     badge: 'Combo Special',
     duration: '7 Hours',
-    priceAED: 250,
+    priceAED: 500,
     priceUnit: 'Car + Tkts',
-    description: 'Dual iconic Dubai attraction combo featuring a dedicated private luxury vehicle (AED 250 flat per car) and official combo entry tickets (AED 130 per person). Explore 150 million blooming flowers at Dubai Miracle Garden in the afternoon, followed by 90+ cultural country pavilions and night shows at Global Village.',
+    description: 'Dual iconic Dubai attraction combo featuring a dedicated private luxury vehicle (AED 500 base for up to 2 pax, +AED 50 for each extra pax after 2) and official combo entry tickets (AED 130 per person). Explore 150 million blooming flowers at Dubai Miracle Garden in the afternoon, followed by 90+ cultural country pavilions and night shows at Global Village.',
     image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=1200&q=80',
     altText: 'Dubai Miracle Garden giant flower sculptures and arched floral walkways under sunny sky',
     highlights: [
-      'Private Dedicated Car for Your Group (AED 250 Flat)',
+      'Private Dedicated Car for Your Group (AED 500 for 1-2 Pax)',
+      '+AED 50 for Each Additional Pax after 2 Pax',
       'Combo Entry Tickets Included (AED 130 / Person)',
       '150 Million Blooming Flowers & Emirates A380',
       'Global Village 90+ Country Pavilions & Shows',

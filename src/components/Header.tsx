@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Currency } from '../types';
 import { CURRENCY_RATES } from '../data/safaris';
+import { WhatsAppLogo } from './icons/WhatsAppLogo';
 
 interface HeaderProps {
   currency: Currency;
@@ -201,14 +202,14 @@ export const Header: React.FC<HeaderProps> = ({
             Book Adventure
           </button>
 
-          {/* Concierge Avatar / WhatsApp Trigger */}
+          {/* Concierge WhatsApp Trigger */}
           <button
             type="button"
             onClick={onOpenWhatsApp}
-            title="Chat with VIP Concierge"
-            className="w-9 h-9 rounded-full bg-amber-50 border border-amber-200 hover:border-[#EA580C] flex items-center justify-center shrink-0 text-[#C2410C] shadow-sm hover:scale-105 transition-all cursor-pointer"
+            title="Chat with VIP Concierge on WhatsApp"
+            className="w-9 h-9 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 flex items-center justify-center shrink-0 p-1.5 shadow-xs hover:scale-105 transition-all cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[20px]">person</span>
+            <WhatsAppLogo className="w-6 h-6" />
           </button>
 
           {/* Mobile Menu Hamburger */}
@@ -270,9 +271,9 @@ export const Header: React.FC<HeaderProps> = ({
                 onOpenWhatsApp();
                 setMobileMenuOpen(false);
               }}
-              className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-emerald-600 text-white font-semibold text-sm"
+              className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold text-sm transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[18px]">chat</span>
+              <WhatsAppLogo className="w-5 h-5" />
               <span>WhatsApp VIP Concierge</span>
             </button>
             {onOpenAdmin && (

@@ -121,7 +121,7 @@ export const JsonLdStructuredData: React.FC = () => {
           name: 'Do I need a driving license to drive a dune buggy or quad bike in Dubai?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'No driving license is required. Self-drive dune buggies (1000cc Can-Am Maverick Turbo) and quad bikes (220cc to 700cc ATVs) operate off-road in designated desert tracks under professional marshal escort.',
+            text: 'No driving license is required. Self-drive dune buggies (1000cc Can-Am Maverick Turbo) and quad bikes (250 CC Quad Bikes) operate off-road in designated desert tracks under professional marshal escort.',
           },
         },
         {

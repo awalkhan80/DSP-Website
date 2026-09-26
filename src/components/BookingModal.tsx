@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Currency, Experience, OffRoadPricingConfig } from '../types';
-import { CURRENCY_RATES, DEFAULT_OFF_ROAD_PRICING, EXPERIENCES, getBuggyPrice, getQuadBikePrice } from '../data/safaris';
+import {
+  CURRENCY_RATES,
+  DEFAULT_OFF_ROAD_PRICING,
+  EXPERIENCES,
+  calculatePrivateVehiclePrice,
+  getBuggyPrice,
+  getQuadBikePrice,
+} from '../data/safaris';
+import { WhatsAppLogo } from './icons/WhatsAppLogo';
 
 interface BookingModalProps {
   initialExperienceId?: string;
@@ -71,6 +79,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   // Popular Add-ons (Exclusively for Desert Safaris)
   const [addOnQuad, setAddOnQuad] = useState<boolean>(false);
   const [addOnQuadDuration, setAddOnQuadDuration] = useState<'30m' | '60m'>('30m');
+  const [addOnQuadTerrain, setAddOnQuadTerrain] = useState<'inside_circle' | 'open_desert'>('open_desert');
+  
+  const [addOnBuggy, setAddOnBuggy] = useState<boolean>(false);
+  const [addOnBuggyDuration, setAddOnBuggyDuration] = useState<'30m' | '60m'>('30m');
+
   const [addOnFalcon, setAddOnFalcon] = useState<boolean>(false);
   const [addOnVipTable, setAddOnVipTable] = useState<boolean>(false);
 
@@ -111,7 +124,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     !isBuggyTour &&
     currentExperience.category !== 'city-tours';
 
-  // Enforce meeting point vs private transfer for quad & buggy
+  // Enforce meeting point vs private transfer for quad & buggy, and cap add-on durations on shared safari
   useEffect(() => {
     if (isQuadTour || isBuggyTour) {
       if (transferType === 'shared') {
@@ -122,7 +135,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         setTransferType('shared');
       }
     }
-  }, [selectedExperienceId, isQuadTour, isBuggyTour, transferType]);
+
+    // When sharing desert safari is selected, remove 1-hour quad/buggy options
+    if (transferType === 'shared') {
+      if (addOnQuadDuration === '60m') setAddOnQuadDuration('30m');
+      if (addOnBuggyDuration === '60m') setAddOnBuggyDuration('30m');
+    }
+  }, [selectedExperienceId, isQuadTour, isBuggyTour, transferType, addOnQuadDuration, addOnBuggyDuration]);
 
   // Sync initial machine props if provided
   useEffect(() => {
@@ -147,6 +166,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     }
   }, [initialMachine]);
 
+  // Passenger count for private vehicle calculation
+  const totalPax = isQuadTour
+    ? Math.max(1, quadQuantity * (quadRider === 'single' ? 1 : 2))
+    : isBuggyTour
+    ? Math.max(1, buggyQuantity * (buggySeater === '2-seater' ? 2 : 4))
+    : Math.max(1, adults + children);
+
+  const privateVehicleCost = calculatePrivateVehiclePrice(totalPax);
+
   // Dynamic Price Calculation (Per Whole Vehicle for Quad & Buggy)
   let totalAED = 0;
   let vehicleUnitPrice = 0;
@@ -169,9 +197,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     );
     totalAED = vehicleUnitPrice * buggyQuantity;
   } else if (currentExperience.id === 'miracle-garden-global-village-combo') {
-    // Miracle Garden + Global Village: 250 AED Private Car + 130 AED/Person Combo Tickets
-    const totalGuests = adults + children;
-    const privateCarBase = 250;
+    // Miracle Garden + Global Village: 500 AED Private Car for 1-2 pax (+50 AED/pax after 2) + 130 AED/Person Combo Tickets
+    const totalGuests = Math.max(1, adults + children);
+    const privateCarBase = calculatePrivateVehiclePrice(totalGuests);
     const ticketsTotal = totalGuests * 130;
     totalAED = privateCarBase + ticketsTotal;
   } else {
@@ -181,20 +209,29 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     totalAED = adults * basePricePerAdult + children * basePricePerChild;
   }
 
-  // Private 4x4 surcharge if selected (AED 350 flat - not applicable to tours that already include private cars)
+  // Private 4x4 surcharge if selected (AED 500 for 1-2 pax, +AED 50 per extra pax after 2 pax)
   if (
     transferType === 'private_4x4' &&
     currentExperience.id !== 'private-vip-safari' &&
     currentExperience.id !== 'miracle-garden-global-village-combo'
   ) {
-    totalAED += 350;
+    totalAED += privateVehicleCost;
   }
 
   // Add-ons calculation (Only applies to desert safari tours)
   if (isDesertSafariTour) {
     if (addOnQuad) {
-      const quadAddonRate = addOnQuadDuration === '30m' ? 150 : 250;
+      const quadAddonRate =
+        addOnQuadTerrain === 'inside_circle'
+          ? 120
+          : addOnQuadDuration === '30m'
+          ? 150
+          : 250;
       totalAED += quadAddonRate * adults;
+    }
+    if (addOnBuggy) {
+      const buggyAddonRate = addOnBuggyDuration === '30m' ? 350 : 600;
+      totalAED += buggyAddonRate;
     }
     if (addOnFalcon) totalAED += 50 * (adults + children);
     if (addOnVipTable) totalAED += 200;
@@ -211,13 +248,23 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   };
 
   const handleSendToWhatsApp = () => {
+    let addOnsText = '';
+    if (isDesertSafariTour) {
+      if (addOnQuad) {
+        addOnsText += `• Add-On Quad Bike: ${addOnQuadTerrain === 'inside_circle' ? 'Circle Track' : 'Open Desert'} (${addOnQuadDuration === '30m' ? '30 Mins' : '1 Hour'})\n`;
+      }
+      if (addOnBuggy) {
+        addOnsText += `• Add-On Dune Buggy: Can-Am Maverick (${addOnBuggyDuration === '30m' ? '30 Mins' : '1 Hour'})\n`;
+      }
+      if (addOnFalcon) addOnsText += `• Add-On: VIP Falcon Photography\n`;
+      if (addOnVipTable) addOnsText += `• Add-On: VIP Reserved Majlis Table\n`;
+    }
+
     const durationText = isQuadTour
-      ? `• Vehicle: ${quadQuantity}x ${quadEngine} Raptor ATV (${quadRider === 'single' ? 'Single 1-Rider' : 'Double 2-Riders'}, ${quadTerrain === 'inside_circle' ? 'Circle Track' : 'Open Desert'})\n• Duration: ${duration === '30m' ? '30 Minutes' : '1 Hour (60 Mins)'}\n`
+      ? `• Vehicle: ${quadQuantity}x ${quadEngine === '220cc' ? '250 CC' : '350 CC'} Quad Bike (${quadRider === 'single' ? 'Single 1-Rider' : 'Double 2-Riders'}, ${quadTerrain === 'inside_circle' ? 'Circle Track' : 'Open Desert'})\n• Duration: ${duration === '30m' ? '30 Minutes' : '1 Hour (60 Mins)'}\n`
       : isBuggyTour
       ? `• Vehicle: ${buggyQuantity}x ${buggyModel === 'canam' ? 'Can-Am Maverick Turbo' : 'Polaris RZR'} (${buggySeater})\n• Duration: ${duration === '30m' ? '30 Minutes' : '1 Hour (60 Mins)'}\n`
-      : isDesertSafariTour && addOnQuad
-      ? `• Add-On Quad: ${addOnQuadDuration === '30m' ? '30 Mins' : '1 Hour'}\n`
-      : '';
+      : addOnsText;
 
     const guestsText = isQuadTour
       ? `• Total Bikes: ${quadQuantity} Quad Bike(s)\n`
@@ -229,7 +276,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       transferType === 'meeting_point'
         ? `• Transfer: Direct to Desert Meeting Point (Lahbab Base Camp)\n`
         : transferType === 'private_4x4'
-        ? `• Transfer: Private 4x4 Luxury Transfer (+AED 350)\n• Doorstep Pickup: ${pickupAddressType === 'home' ? 'Home Residence' : 'Hotel'}: ${hotelOrHomeAddress || 'Pending Address'} ${roomOrVillaNumber ? `(${roomOrVillaNumber})` : ''}\n`
+        ? `• Transfer: Private 4x4 Luxury Transfer (+AED ${privateVehicleCost} for ${totalPax} pax)\n• Doorstep Pickup: ${pickupAddressType === 'home' ? 'Home Residence' : 'Hotel'}: ${hotelOrHomeAddress || 'Pending Address'} ${roomOrVillaNumber ? `(${roomOrVillaNumber})` : ''}\n`
         : `• Transfer: Shared 4x4 Home/Hotel Pickup (Included)\n• Doorstep Pickup: ${pickupAddressType === 'home' ? 'Home Residence' : 'Hotel'}: ${hotelOrHomeAddress || 'Pending Address'} ${roomOrVillaNumber ? `(${roomOrVillaNumber})` : ''}\n`;
 
     const text = encodeURIComponent(
@@ -408,10 +455,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   </div>
                 </div>
 
-                {/* 4. Engine Capacity: 220cc vs 350cc */}
+                {/* 4. Engine Capacity */}
                 <div>
                   <label className="text-[11px] font-bold text-stone-700 block mb-1">
-                    Engine Capacity (Raptor ATV):
+                    Quad Bike Engine Capacity:
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {(['220cc', '350cc'] as const).map((cc) => (
@@ -425,7 +472,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                             : 'bg-white text-stone-700 border-stone-200 hover:bg-amber-50'
                         }`}
                       >
-                        {cc} Raptor ATV
+                        {cc === '220cc' ? '250 CC Quad Bike' : '350 CC Quad Bike'}
                       </button>
                     ))}
                   </div>
@@ -726,7 +773,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     <span className="material-symbols-outlined text-[16px] text-[#8D4B00]">directions_car</span>
                     Private Dedicated Vehicle (Door-to-Door Chauffeur)
                   </span>
-                  <span className="font-bold text-purple-900">AED 250 (Flat)</span>
+                  <div className="text-right">
+                    <span className="font-bold text-purple-900 block">
+                      AED {calculatePrivateVehiclePrice(adults + children)}
+                    </span>
+                    <span className="text-[10px] text-stone-500">
+                      AED 500 for 1-2 pax{adults + children > 2 ? ` (+AED ${(adults + children - 2) * 50} for ${adults + children - 2} extra pax)` : ''}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-purple-950 flex items-center gap-1.5">
@@ -737,7 +791,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 </div>
                 <div className="pt-2 border-t border-purple-200/60 flex items-center justify-between text-xs font-bold text-[#8D4B00]">
                   <span>Total Package Price:</span>
-                  <span className="text-sm">AED {250 + (adults + children) * 130}</span>
+                  <span className="text-sm">AED {calculatePrivateVehiclePrice(adults + children) + (adults + children) * 130}</span>
                 </div>
               </div>
             )}
@@ -786,9 +840,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     <span className="material-symbols-outlined text-[18px] text-[#EA580C]">
                       workspace_premium
                     </span>
-                    <div>
-                      <span className="text-xs font-bold block">Private 4x4 Luxury Transfer</span>
-                      <span className="text-[11px] text-stone-500">+AED 350 (Exclusive Chauffeur Pickup)</span>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold block">Private 4x4 Luxury Transfer</span>
+                        <span className="text-xs font-bold text-[#EA580C]">+AED {privateVehicleCost}</span>
+                      </div>
+                      <span className="text-[11px] text-stone-500 block">
+                        AED 500 for 1-2 pax{totalPax > 2 ? ` (+AED ${(totalPax - 2) * 50} for ${totalPax - 2} extra pax)` : ''} &bull; {totalPax} pax
+                      </span>
                     </div>
                   </button>
                 </div>
@@ -838,9 +897,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     <span className="material-symbols-outlined text-[18px] text-[#EA580C]">
                       workspace_premium
                     </span>
-                    <div>
-                      <span className="text-xs font-bold block">Private 4x4 Exclusive Car</span>
-                      <span className="text-[11px] text-stone-500">+AED 350 (Sole Use for Your Party)</span>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold block">Private 4x4 Exclusive Car</span>
+                        <span className="text-xs font-bold text-[#EA580C]">+AED {privateVehicleCost}</span>
+                      </div>
+                      <span className="text-[11px] text-stone-500 block">
+                        AED 500 for 1-2 pax{totalPax > 2 ? ` (+AED ${(totalPax - 2) * 50} for ${totalPax - 2} extra pax)` : ''} &bull; {totalPax} pax
+                      </span>
                     </div>
                   </button>
                 </div>
@@ -849,11 +913,19 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
             {/* Optional Add-ons for desert safari tours only */}
             {isDesertSafariTour && (
-              <div className="bg-white p-4 rounded-xl border border-stone-200 space-y-2">
-                <span className="text-xs font-bold text-stone-800 block">Popular Add-Ons</span>
-                <div className="space-y-2.5">
-                  {/* Quad Bike Addon with Duration Selector */}
-                  <div className="p-2.5 rounded-lg border border-stone-100 hover:bg-stone-50 transition-colors">
+              <div className="bg-white p-4 rounded-xl border border-stone-200 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-stone-800 block">Desert Safari Add-Ons</span>
+                  {transferType === 'shared' && (
+                    <span className="text-[10px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-medium">
+                      Sharing Safari limited to 30-min quad/buggy add-ons
+                    </span>
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  {/* 1. Self-Drive Quad Bike Addon */}
+                  <div className="p-3 rounded-lg border border-amber-200/80 bg-amber-50/40 space-y-2">
                     <div className="flex items-center justify-between">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
@@ -862,39 +934,140 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                           onChange={(e) => setAddOnQuad(e.target.checked)}
                           className="accent-[#EA580C] w-4 h-4 rounded cursor-pointer"
                         />
-                        <span className="text-xs font-bold text-stone-800">
-                          Self-Drive Quad Bike ATV ({addOnQuadDuration === '30m' ? '30 Mins' : '1 Hour'})
+                        <span className="text-xs font-bold text-stone-900">
+                          Add 250 CC Quad Bike ATV
                         </span>
                       </label>
                       <span className="text-xs font-bold text-[#EA580C]">
-                        +{addOnQuadDuration === '30m' ? 'AED 150' : 'AED 250'} / person
+                        +{addOnQuadTerrain === 'inside_circle' ? 'AED 120' : addOnQuadDuration === '30m' ? 'AED 150' : 'AED 250'} / person
                       </span>
                     </div>
+
                     {addOnQuad && (
-                      <div className="mt-2 pl-6 flex items-center gap-2">
-                        <span className="text-[11px] text-stone-500 font-semibold">Slot:</span>
-                        <button
-                          type="button"
-                          onClick={() => setAddOnQuadDuration('30m')}
-                          className={`px-2.5 py-1 text-[11px] rounded font-bold cursor-pointer ${
-                            addOnQuadDuration === '30m'
-                              ? 'bg-[#EA580C] text-white'
-                              : 'bg-stone-100 text-stone-700'
-                          }`}
-                        >
-                          30 Minutes (AED 150)
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setAddOnQuadDuration('60m')}
-                          className={`px-2.5 py-1 text-[11px] rounded font-bold cursor-pointer ${
-                            addOnQuadDuration === '60m'
-                              ? 'bg-[#EA580C] text-white'
-                              : 'bg-stone-100 text-stone-700'
-                          }`}
-                        >
-                          1 Hour (AED 250)
-                        </button>
+                      <div className="mt-2 space-y-2 pl-6">
+                        {/* Terrain Choice: Inside Circle vs Open Desert */}
+                        <div>
+                          <span className="text-[11px] text-stone-600 font-bold block mb-1">Track &amp; Location:</span>
+                          <div className="grid grid-cols-2 gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setAddOnQuadTerrain('inside_circle')}
+                              className={`py-1.5 px-2 text-[11px] rounded-lg font-bold border cursor-pointer transition-colors ${
+                                addOnQuadTerrain === 'inside_circle'
+                                  ? 'bg-[#8D4B00] text-white border-[#8D4B00]'
+                                  : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-50'
+                              }`}
+                            >
+                              Inside Circle Track (AED 120)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setAddOnQuadTerrain('open_desert')}
+                              className={`py-1.5 px-2 text-[11px] rounded-lg font-bold border cursor-pointer transition-colors ${
+                                addOnQuadTerrain === 'open_desert'
+                                  ? 'bg-[#8D4B00] text-white border-[#8D4B00]'
+                                  : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-50'
+                              }`}
+                            >
+                              Open Desert Red Dunes
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Duration Choice (Hidden 1-hour if sharing) */}
+                        {addOnQuadTerrain === 'open_desert' && (
+                          <div>
+                            <span className="text-[11px] text-stone-600 font-bold block mb-1">Session Duration:</span>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setAddOnQuadDuration('30m')}
+                                className={`px-3 py-1 text-[11px] rounded-lg font-bold border cursor-pointer ${
+                                  addOnQuadDuration === '30m'
+                                    ? 'bg-[#EA580C] text-white border-[#EA580C]'
+                                    : 'bg-white text-stone-700 border-stone-200'
+                                }`}
+                              >
+                                30 Minutes (AED 150)
+                              </button>
+                              
+                              {transferType === 'private_4x4' ? (
+                                <button
+                                  type="button"
+                                  onClick={() => setAddOnQuadDuration('60m')}
+                                  className={`px-3 py-1 text-[11px] rounded-lg font-bold border cursor-pointer ${
+                                    addOnQuadDuration === '60m'
+                                      ? 'bg-[#EA580C] text-white border-[#EA580C]'
+                                      : 'bg-white text-stone-700 border-stone-200'
+                                  }`}
+                                >
+                                  1 Hour (AED 250)
+                                </button>
+                              ) : (
+                                <span className="text-[10px] text-stone-500 italic">
+                                  (1-Hour quad only available on Private Safari transfer)
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 2. Self-Drive Dune Buggy Addon */}
+                  <div className="p-3 rounded-lg border border-amber-200/80 bg-amber-50/40 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={addOnBuggy}
+                          onChange={(e) => setAddOnBuggy(e.target.checked)}
+                          className="accent-[#EA580C] w-4 h-4 rounded cursor-pointer"
+                        />
+                        <span className="text-xs font-bold text-stone-900">
+                          Add Can-Am Dune Buggy
+                        </span>
+                      </label>
+                      <span className="text-xs font-bold text-[#EA580C]">
+                        +{addOnBuggyDuration === '30m' ? 'AED 350' : 'AED 600'} / buggy
+                      </span>
+                    </div>
+
+                    {addOnBuggy && (
+                      <div className="mt-2 pl-6 space-y-2">
+                        <span className="text-[11px] text-stone-600 font-bold block">Buggy Session Duration:</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setAddOnBuggyDuration('30m')}
+                            className={`px-3 py-1 text-[11px] rounded-lg font-bold border cursor-pointer ${
+                              addOnBuggyDuration === '30m'
+                                ? 'bg-[#EA580C] text-white border-[#EA580C]'
+                                : 'bg-white text-stone-700 border-stone-200'
+                            }`}
+                          >
+                            30 Minutes (AED 350)
+                          </button>
+
+                          {transferType === 'private_4x4' ? (
+                            <button
+                              type="button"
+                              onClick={() => setAddOnBuggyDuration('60m')}
+                              className={`px-3 py-1 text-[11px] rounded-lg font-bold border cursor-pointer ${
+                                addOnBuggyDuration === '60m'
+                                  ? 'bg-[#EA580C] text-white border-[#EA580C]'
+                                  : 'bg-white text-stone-700 border-stone-200'
+                              }`}
+                            >
+                              1 Hour (AED 600)
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-stone-500 italic">
+                              (1-Hour buggy session only available on Private Safari)
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -973,7 +1146,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   {transferType === 'meeting_point'
                     ? 'Direct Meeting Point'
                     : transferType === 'private_4x4'
-                    ? 'Private 4x4 Transfer'
+                    ? `Private 4x4 Transfer (+AED ${privateVehicleCost})`
                     : 'Shared Transfer'}
                   {' • '}
                   Total: AED {totalAED} ({currency} {convertedTotal})
@@ -1208,7 +1381,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <div className="flex justify-between border-b border-stone-100 pb-1.5">
                   <span className="text-stone-500">Machine &amp; Duration:</span>
                   <span className="font-bold text-[#EA580C]">
-                    {quadQuantity}x {quadEngine} Raptor ({quadRider === 'single' ? 'Single' : 'Double'}, {quadTerrain === 'inside_circle' ? 'Circle Track' : 'Open Dunes'}) • {duration === '30m' ? '30 Mins' : '1 Hour'}
+                    {quadQuantity}x {quadEngine === '220cc' ? '250 CC' : '350 CC'} Quad Bike ({quadRider === 'single' ? 'Single' : 'Double'}, {quadTerrain === 'inside_circle' ? 'Circle Track' : 'Open Dunes'}) • {duration === '30m' ? '30 Mins' : '1 Hour'}
                   </span>
                 </div>
               )}
@@ -1217,6 +1390,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   <span className="text-stone-500">Buggy Model &amp; Seater:</span>
                   <span className="font-bold text-[#EA580C]">
                     {buggyQuantity}x {buggyModel === 'canam' ? 'Can-Am Maverick' : 'Polaris RZR'} ({buggySeater}) • {duration === '30m' ? '30 Mins' : '1 Hour'}
+                  </span>
+                </div>
+              )}
+              {isDesertSafariTour && (addOnQuad || addOnBuggy || addOnFalcon || addOnVipTable) && (
+                <div className="flex justify-between border-b border-stone-100 pb-1.5">
+                  <span className="text-stone-500">Add-Ons Selected:</span>
+                  <span className="font-bold text-[#EA580C] text-right">
+                    {addOnQuad && `250 CC Quad (${addOnQuadTerrain === 'inside_circle' ? 'Circle' : 'Open Dunes'} ${addOnQuadDuration}) `}
+                    {addOnBuggy && `Can-Am Buggy (${addOnBuggyDuration}) `}
+                    {addOnFalcon && `Falcon Photo `}
+                    {addOnVipTable && `VIP Table `}
                   </span>
                 </div>
               )}
@@ -1255,7 +1439,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 onClick={handleSendToWhatsApp}
                 className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-98"
               >
-                <span className="material-symbols-outlined text-[20px]">chat</span>
+                <WhatsAppLogo className="w-5 h-5" />
                 <span>Send Booking to WhatsApp Concierge</span>
               </button>
               <button

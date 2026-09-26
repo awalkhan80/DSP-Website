@@ -1,4 +1,5 @@
 import React from 'react';
+import { WhatsAppLogo } from './icons/WhatsAppLogo';
 
 interface DirectOperatorSectionProps {
   onOpenWhatsApp: () => void;
@@ -136,9 +137,9 @@ export const DirectOperatorSection: React.FC<DirectOperatorSectionProps> = ({
                 <button
                   type="button"
                   onClick={onOpenWhatsApp}
-                  className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs uppercase tracking-wider font-bold text-center flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-600/20 cursor-pointer"
+                  className="flex-1 py-2.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs uppercase tracking-wider font-bold text-center flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-600/20 cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-[18px]">chat</span>
+                  <WhatsAppLogo className="w-5 h-5" />
                   <span>WhatsApp Now</span>
                 </button>
               </div>

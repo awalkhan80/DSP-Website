@@ -74,7 +74,7 @@ export const TRAVEL_GUIDES: GuideArticle[] = [
         'Few outdoor experiences match the adrenaline rush of conquering Dubai’s towering red sand dunes behind the wheel of a high-performance off-road machine. But should you rent a Quad Bike (ATV) or a Can-Am Turbo Dune Buggy?',
       subheadings: [
         {
-          heading: '1. Quad Bike ATVs (220cc to 700cc)',
+          heading: '1. Quad Bike ATVs (250 CC & 350 CC)',
           text: 'Quad bikes offer open-air freedom. You steer with handlebars and use your body weight to lean into dune ridges. They are nimble, cost-effective (starting from AED 150), and perfect for riders seeking an active physical thrill in designated tracks and perimeter dunes.',
         },
         {

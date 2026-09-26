@@ -271,7 +271,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       hotel: 'Address Downtown, Business Bay',
       room: 'Rm 812',
       marshal: 'Marshal Zaid (Lead ATV Buggy)',
-      convoyNumber: 'Buggy Raptor Squad',
+      convoyNumber: 'Buggy Quad Squad',
       status: 'Confirmed',
       paymentStatus: 'Cash on Pickup',
     },
@@ -2212,8 +2212,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <div className="bg-white rounded-xl border border-[#E9E1DF] p-5 shadow-xs flex flex-col gap-4">
                     <div className="flex items-center justify-between pb-3 border-b border-[#E9E1DF]">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-900 text-xs font-bold">220cc</span>
-                        <h5 className="font-bold text-sm text-[#1E1B1A]">Yamaha Raptor Standard (220cc)</h5>
+                        <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-900 text-xs font-bold">250 CC</span>
+                        <h5 className="font-bold text-sm text-[#1E1B1A]">250 CC Quad Bike Standard</h5>
                       </div>
                       <span className="text-[11px] text-[#554336] font-medium">Automatic • Single &amp; Double</span>
                     </div>
@@ -2323,8 +2323,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <div className="bg-white rounded-xl border border-[#E9E1DF] p-5 shadow-xs flex flex-col gap-4">
                     <div className="flex items-center justify-between pb-3 border-b border-[#E9E1DF]">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-900 text-xs font-bold">350cc</span>
-                        <h5 className="font-bold text-sm text-[#1E1B1A]">Yamaha Raptor High Dunes (350cc)</h5>
+                        <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-900 text-xs font-bold">350 CC</span>
+                        <h5 className="font-bold text-sm text-[#1E1B1A]">350 CC Quad Bike High Dunes</h5>
                       </div>
                       <span className="text-[11px] text-[#8D4B00] font-bold">High-Power • Single &amp; Double</span>
                     </div>
@@ -2782,7 +2782,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       Hi! We booked the Evening Safari voucher PHX-884901 for 4 adults. Can we also add 20 minutes of quad biking once we arrive at the desert camp?
                     </div>
                     <div className="bg-[#FFDCC3] p-3 rounded-lg max-w-md ml-auto text-xs text-[#2F1500] font-medium">
-                      Marhaba Sarah! Yes absolutely. We have 350cc Yamaha Raptors and Can-Am buggies ready at the base camp. You can either pay the marshal upon arrival or have us pre-reserve them for you right now.
+                      Marhaba Sarah! Yes absolutely. We have 250 CC Quad Bikes and Can-Am buggies ready at the base camp. You can either pay the marshal upon arrival or have us pre-reserve them for you right now.
                     </div>
                   </div>
                 </div>

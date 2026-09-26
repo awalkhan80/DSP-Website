@@ -91,7 +91,7 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
             Dubai Dune Buggy &amp; Quad Bike ATV Rentals
           </h2>
           <p className="text-base text-stone-600">
-            Self-drive high-performance Can-Am Maverick X3 Turbo, Polaris RZR Buggies, and Yamaha Raptor ATVs across soaring Lahbab dunes. Pricing is for the whole vehicle. Direct arrival to desert base camp with free parking or optional private 4x4 chauffeur transfer.
+            Self-drive high-performance Can-Am Maverick X3 Turbo, Polaris RZR Buggies, and 250 CC Quad Bikes across soaring Lahbab dunes. Pricing is for the whole vehicle. Direct arrival to desert base camp with free parking or optional private 4x4 chauffeur transfer.
           </p>
         </div>
 
@@ -118,7 +118,7 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
                   {atvTour?.title || 'Quad Bike ATV Rental'}
                 </h3>
                 <p className="text-sm text-stone-600 leading-relaxed mt-1">
-                  Ride 220cc or 350cc Raptor ATVs. Choose between designated circle tracks or deep open red dune trails with marshals. Helmet, goggles, and fuel included.
+                  Ride 250 CC or 350 CC Quad Bikes. Choose between designated circle tracks or deep open red dune trails with marshals. Helmet, goggles, and fuel included.
                 </p>
               </div>
 
@@ -240,7 +240,7 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
                           : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
                       }`}
                     >
-                      {cc} Raptor ATV
+                      {cc === '220cc' ? '250 CC' : '350 CC'} Quad Bike
                     </button>
                   ))}
                 </div>
@@ -305,7 +305,7 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
                   onClick={() =>
                     onBookExperience(atvTour?.id || 'quad-bike-atv', {
                       duration: selectedAtvDuration,
-                      machine: `${selectedAtvCc} Raptor (${selectedAtvRider === 'single' ? 'Single' : 'Double'} • ${selectedAtvTerrain === 'inside_circle' ? 'Circle Track' : 'Open Desert'})`,
+                      machine: `${selectedAtvCc === '220cc' ? '250 CC' : '350 CC'} Quad Bike (${selectedAtvRider === 'single' ? 'Single' : 'Double'} • ${selectedAtvTerrain === 'inside_circle' ? 'Circle Track' : 'Open Desert'})`,
                       timeSlot: selectedAtvSlot,
                       quadRider: selectedAtvRider,
                       quadTerrain: selectedAtvTerrain,

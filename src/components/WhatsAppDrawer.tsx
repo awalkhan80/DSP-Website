@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { WhatsAppLogo } from './icons/WhatsAppLogo';
 
 interface WhatsAppDrawerProps {
   isOpen: boolean;
@@ -37,10 +38,10 @@ export const WhatsAppDrawer: React.FC<WhatsAppDrawerProps> = ({ isOpen, onClose,
         <button
           type="button"
           onClick={() => (isOpen ? onClose() : onOpen())}
-          className="w-14 h-14 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-xl shadow-emerald-600/30 flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 cursor-pointer relative"
+          className="w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-xl shadow-emerald-600/30 flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 cursor-pointer relative p-2"
           aria-label="WhatsApp VIP Concierge"
         >
-          <span className="material-symbols-outlined text-[28px]">chat</span>
+          <WhatsAppLogo className="w-10 h-10" />
           <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#EA580C] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
             1
           </span>
