@@ -210,6 +210,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [drawerVoucherAuto, setDrawerVoucherAuto] = useState(true);
   const [drawerInstantConfirm, setDrawerInstantConfirm] = useState(true);
 
+  // Drawer itinerary state for timeline steps
+  const [drawerItinerary, setDrawerItinerary] = useState<{ time: string; title: string; description: string }[]>([]);
+
   // Capacity stats mock data mapping
   const [capacities, setCapacities] = useState<Record<string, { booked: number; max: number }>>({
     'evening-desert-safari': { booked: 38, max: 45 },
@@ -610,7 +613,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   // Open Edit Drawer for an existing tour
-  const handleOpenEdit = (tour: Experience) => {
+  const handleOpenEdit = (tour: Experience, focusSection?: string) => {
     setSelectedTour(tour);
     setDrawerMode('edit');
     setDrawerTitle(tour.title);
@@ -624,7 +627,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setDrawerTiming(tour.departureTime || '02:30 PM - 09:30 PM');
     setDrawerPickup(tour.hotelPickup ? 'Doorstep Home & Hotel Pickup across Dubai & Sharjah' : 'Desert Base Camp Meeting Point');
     setDrawerFeatured(tour.featured ?? true);
+
+    if (tour.itinerary && tour.itinerary.length > 0) {
+      setDrawerItinerary(tour.itinerary.map((item) => ({ ...item })));
+    } else {
+      setDrawerItinerary([
+        { time: '02:30 PM - 03:30 PM', title: 'Doorstep 4x4 Pickup', description: 'Air-conditioned Land Cruiser pick up from your hotel or home in Dubai/Sharjah.' },
+        { time: '04:00 PM - 05:00 PM', title: 'Red Dune Bashing & Sandboarding', description: 'Thrilling 30-45 mins dune bashing over Lahbab red sand dunes and sandboarding.' },
+        { time: '05:30 PM - 06:15 PM', title: 'Sunset Dune Photography', description: 'Golden hour stop atop high dunes for panoramic sunset photos.' },
+        { time: '06:30 PM - 09:00 PM', title: '5-Star Bedouin Camp Hospitality', description: 'Arabic coffee, BBQ buffet dinner, shisha, camel rides, falcon photos & 3 live dance shows.' },
+        { time: '09:00 PM - 09:45 PM', title: 'Hotel Drop-Off', description: 'Comfortable chauffeur drop-off directly back to your residence.' },
+      ]);
+    }
+
     setIsDrawerOpen(true);
+
+    if (focusSection === 'itinerary') {
+      setTimeout(() => {
+        const el = document.getElementById('drawer-itinerary-section');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 200);
+    }
   };
 
   // Open Drawer to create a new tour
@@ -642,7 +667,81 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setDrawerTiming('03:30 PM - 07:30 PM');
     setDrawerPickup('Doorstep Home & Hotel Pickup across Dubai & Sharjah');
     setDrawerFeatured(true);
+
+    setDrawerItinerary([
+      { time: '02:30 PM - 03:30 PM', title: 'Doorstep 4x4 Pickup', description: 'Air-conditioned Land Cruiser pick up from your hotel or home in Dubai/Sharjah.' },
+      { time: '04:00 PM - 05:00 PM', title: 'Red Dune Bashing & Sandboarding', description: 'Thrilling 30-45 mins dune bashing over Lahbab red sand dunes and sandboarding.' },
+      { time: '05:30 PM - 06:15 PM', title: 'Sunset Dune Photography', description: 'Golden hour stop atop high dunes for panoramic sunset photos.' },
+      { time: '06:30 PM - 09:00 PM', title: '5-Star Bedouin Camp Hospitality', description: 'Arabic coffee, BBQ buffet dinner, shisha, camel rides, falcon photos & 3 live dance shows.' },
+      { time: '09:00 PM - 09:45 PM', title: 'Hotel Drop-Off', description: 'Comfortable chauffeur drop-off directly back to your residence.' },
+    ]);
+
     setIsDrawerOpen(true);
+  };
+
+  // Itinerary Helper Functions
+  const handleAddItineraryStep = () => {
+    setDrawerItinerary((prev) => [
+      ...prev,
+      {
+        time: `Step ${prev.length + 1}`,
+        title: 'New Timeline Activity',
+        description: 'Provide details for this activity step...',
+      },
+    ]);
+  };
+
+  const handleUpdateItineraryStep = (index: number, field: 'time' | 'title' | 'description', value: string) => {
+    setDrawerItinerary((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
+  const handleRemoveItineraryStep = (index: number) => {
+    setDrawerItinerary((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleMoveItineraryStep = (index: number, direction: 'up' | 'down') => {
+    setDrawerItinerary((prev) => {
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= prev.length) return prev;
+      const updated = [...prev];
+      const temp = updated[index];
+      updated[index] = updated[targetIndex];
+      updated[targetIndex] = temp;
+      return updated;
+    });
+  };
+
+  const handleLoadItineraryPreset = (presetType: 'safari' | 'offroad' | 'city' | 'clear') => {
+    if (presetType === 'clear') {
+      setDrawerItinerary([]);
+      return;
+    }
+    if (presetType === 'safari') {
+      setDrawerItinerary([
+        { time: '02:30 PM - 03:30 PM', title: 'Doorstep 4x4 Pickup', description: 'Air-conditioned Land Cruiser pick up from your hotel or home in Dubai/Sharjah.' },
+        { time: '04:00 PM - 05:00 PM', title: 'Red Dune Bashing & Sandboarding', description: 'Thrilling 30-45 mins dune bashing over Lahbab red sand dunes and sandboarding.' },
+        { time: '05:30 PM - 06:15 PM', title: 'Sunset Dune Photography', description: 'Golden hour stop atop high dunes for panoramic sunset photos.' },
+        { time: '06:30 PM - 09:00 PM', title: '5-Star Bedouin Camp Hospitality', description: 'Arabic coffee, BBQ buffet dinner, shisha, camel rides, falcon photos & 3 live dance shows.' },
+        { time: '09:00 PM - 09:45 PM', title: 'Hotel Drop-Off', description: 'Comfortable chauffeur drop-off directly back to your residence.' },
+      ]);
+    } else if (presetType === 'offroad') {
+      setDrawerItinerary([
+        { time: '0-15 Min', title: 'Gear Fitting & Safety Briefing', description: 'Full helmet, goggles fitting, and professional briefing on vehicle throttle & safety controls.' },
+        { time: '15-45 Min', title: 'Self-Drive Quad or Buggy Run', description: 'Ride across open red dunes or circle track with lead marshal guide escort.' },
+        { time: '45-60 Min', title: 'High Dune Sunset Photo Stop & Refreshment', description: 'Stop at cresting dunes for photos and chilled mineral water.' },
+      ]);
+    } else if (presetType === 'city') {
+      setDrawerItinerary([
+        { time: '09:00 AM', title: 'Hotel Chauffeur Pickup', description: 'Luxury Mercedes or SUV pick-up from your hotel lobby.' },
+        { time: '09:30 AM - 11:30 AM', title: 'Old Dubai & Gold Souk Heritage Walk', description: 'Al Fahidi Fort, Abra boat creek crossing, Gold & Spice Souk guided walk.' },
+        { time: '12:00 PM - 01:30 PM', title: 'Modern Dubai Landmarks', description: 'Photo stops at Burj Al Arab, Palm Jumeirah, Atlantis, and Dubai Marina.' },
+        { time: '02:00 PM', title: 'Burj Khalifa & Dubai Mall Drop-Off', description: 'Conclude tour at Dubai Mall / Burj Khalifa entrance or return to hotel.' },
+      ]);
+    }
   };
 
   // Save changes from drawer
@@ -651,6 +750,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       showToast('Please enter a tour title.');
       return;
     }
+
+    const cleanItinerary = drawerItinerary.filter(
+      (step) => step.title.trim() !== '' || step.time.trim() !== ''
+    );
 
     if (drawerMode === 'edit' && selectedTour) {
       const updated: Experience = {
@@ -666,9 +769,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         duration: drawerDuration,
         departureTime: drawerTiming,
         featured: drawerFeatured,
+        itinerary: cleanItinerary,
       };
       onUpdateExperience(updated);
-      showToast(`Updated "${drawerTitle}" (AED ${drawerPrice}) successfully!`);
+      showToast(`Updated "${drawerTitle}" (AED ${drawerPrice}) & itinerary timeline!`);
     } else {
       const newId = 'tour-' + Date.now();
       const newExp: Experience = {
@@ -697,13 +801,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         departureTime: drawerTiming,
         hotelPickup: true,
         featured: drawerFeatured,
+        itinerary: cleanItinerary,
       };
       onAddExperience(newExp);
       setCapacities((prev) => ({
         ...prev,
         [newId]: { booked: 0, max: 30 },
       }));
-      showToast(`Created new tour "${drawerTitle}" with live capacity!`);
+      showToast(`Created new tour "${drawerTitle}" with itinerary timeline!`);
     }
     setIsDrawerOpen(false);
   };
@@ -1905,8 +2010,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           <div className="flex items-center gap-1.5 shrink-0">
                             <button
                               type="button"
+                              onClick={() => handleOpenEdit(tour, 'itinerary')}
+                              className="px-2 py-1 rounded-lg bg-[#FFDCC3] border border-[#8D4B00]/20 flex items-center gap-1 text-[#2F1500] font-bold text-[10px] shadow-2xs hover:bg-[#FFCBB0] cursor-pointer"
+                              title="Edit & Add Itinerary Steps"
+                            >
+                              <span className="material-symbols-outlined text-[14px]">route</span>
+                              <span>Itinerary ({tour.itinerary?.length || 0})</span>
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => handleOpenEdit(tour)}
-                              className="w-8 h-8 rounded-lg bg-white border border-[#E9E1DF] flex items-center justify-center text-[#1E1B1A] hover:text-[#8D4B00] shadow-2xs"
+                              className="w-8 h-8 rounded-lg bg-white border border-[#E9E1DF] flex items-center justify-center text-[#1E1B1A] hover:text-[#8D4B00] shadow-2xs cursor-pointer"
                               title="Edit tour"
                             >
                               <span className="material-symbols-outlined text-[16px]">edit</span>
@@ -2042,6 +2156,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 <div className="flex items-center justify-end gap-2">
                                   <button
                                     type="button"
+                                    onClick={() => handleOpenEdit(tour, 'itinerary')}
+                                    className="px-2.5 py-1 rounded-lg bg-[#FFDCC3] hover:bg-[#FFCBB0] border border-[#8D4B00]/20 text-[#2F1500] font-bold text-[11px] transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+                                    title="Edit & Add Itinerary Steps"
+                                  >
+                                    <span className="material-symbols-outlined text-[16px]">route</span>
+                                    <span>Itinerary ({tour.itinerary?.length || 0})</span>
+                                  </button>
+                                  <button
+                                    type="button"
                                     onClick={() => handleOpenEdit(tour)}
                                     className="p-1.5 rounded-lg bg-[#F5ECEA] hover:bg-[#EFE6E4] text-[#554336] hover:text-[#1E1B1A] transition-colors cursor-pointer"
                                     title="Quick Edit Parameters"
@@ -2137,13 +2260,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <p className="text-xs text-[#554336] line-clamp-2">{exp.description}</p>
                       </div>
                       <div className="mt-4 pt-3 border-t border-[#E9E1DF] flex items-center justify-between">
-                        <span className="text-[11px] text-[#554336]">{exp.duration}</span>
-                        <button
-                          onClick={() => handleOpenEdit(exp)}
-                          className="text-xs font-bold text-[#8D4B00] hover:underline cursor-pointer"
-                        >
-                          Modify Rate
-                        </button>
+                        <span className="text-[11px] text-[#554336] font-medium">{exp.duration}</span>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => handleOpenEdit(exp, 'itinerary')}
+                            className="text-xs font-bold text-[#8D4B00] hover:underline cursor-pointer flex items-center gap-1"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">route</span>
+                            <span>Itinerary ({exp.itinerary?.length || 0})</span>
+                          </button>
+                          <button
+                            onClick={() => handleOpenEdit(exp)}
+                            className="text-xs font-bold text-[#8D4B00] hover:underline cursor-pointer"
+                          >
+                            Modify Rate
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -3635,6 +3767,157 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 onChange={(e) => setDrawerPickup(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-lg bg-[#F5ECEA] text-xs text-[#1E1B1A] focus:outline-none focus:ring-2 focus:ring-[#8D4B00] border border-[#E9E1DF]"
               />
+            </div>
+
+            {/* EXPEDITION ITINERARY TIMELINE BUILDER */}
+            <div id="drawer-itinerary-section" className="p-4 rounded-xl bg-[#FBF2F0] border border-[#8D4B00]/30 space-y-3 shadow-2xs">
+              <div className="flex items-center justify-between border-b border-[#E9E1DF] pb-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[#8D4B00] text-[20px]">route</span>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-serif font-bold text-sm text-[#1E1B1A]">Expedition Itinerary Timeline</span>
+                      <span className="px-2 py-0.2 rounded-full bg-[#8D4B00] text-white text-[10px] font-bold">
+                        {drawerItinerary.length} Steps
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-[#554336]">Customer viewable schedule &amp; time breakdown</span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleAddItineraryStep}
+                  className="px-2.5 py-1.5 rounded-lg bg-[#8D4B00] hover:bg-[#B15F00] text-white text-xs font-bold transition-all flex items-center gap-1 cursor-pointer shadow-xs"
+                >
+                  <span className="material-symbols-outlined text-[14px]">add</span>
+                  <span>Add Step</span>
+                </button>
+              </div>
+
+              {/* Preset Template Controls */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                <span className="text-[10px] text-[#554336] font-bold shrink-0 uppercase tracking-wider">Presets:</span>
+                <button
+                  type="button"
+                  onClick={() => handleLoadItineraryPreset('safari')}
+                  className="px-2 py-1 rounded bg-white border border-[#E9E1DF] hover:bg-[#F5ECEA] text-[10px] font-bold text-[#8D4B00] shrink-0 cursor-pointer"
+                >
+                  Desert Safari
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleLoadItineraryPreset('offroad')}
+                  className="px-2 py-1 rounded bg-white border border-[#E9E1DF] hover:bg-[#F5ECEA] text-[10px] font-bold text-[#8D4B00] shrink-0 cursor-pointer"
+                >
+                  Quad &amp; Buggy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleLoadItineraryPreset('city')}
+                  className="px-2 py-1 rounded bg-white border border-[#E9E1DF] hover:bg-[#F5ECEA] text-[10px] font-bold text-[#8D4B00] shrink-0 cursor-pointer"
+                >
+                  City Excursion
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleLoadItineraryPreset('clear')}
+                  className="px-2 py-1 rounded bg-white border border-red-200 hover:bg-red-50 text-[10px] font-bold text-red-600 shrink-0 cursor-pointer ml-auto"
+                >
+                  Clear All
+                </button>
+              </div>
+
+              {/* Itinerary Step Cards List */}
+              {drawerItinerary.length === 0 ? (
+                <div className="p-4 rounded-lg bg-white border border-dashed border-[#E9E1DF] text-center text-xs text-[#554336]">
+                  No itinerary steps added yet. Click <strong>+ Add Step</strong> or select a preset above.
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+                  {drawerItinerary.map((step, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3 rounded-lg bg-white border border-[#E9E1DF] shadow-2xs space-y-2 relative group"
+                    >
+                      {/* Step Header with Reorder and Delete controls */}
+                      <div className="flex items-center justify-between gap-2 border-b border-stone-100 pb-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-5 h-5 rounded-full bg-[#FFDCC3] text-[#2F1500] text-[10px] font-bold flex items-center justify-center shrink-0">
+                            {idx + 1}
+                          </span>
+                          <span className="text-[11px] font-bold text-[#8D4B00]">Timeline Event #{idx + 1}</span>
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            disabled={idx === 0}
+                            onClick={() => handleMoveItineraryStep(idx, 'up')}
+                            className="p-1 rounded hover:bg-stone-100 text-stone-600 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
+                            title="Move Up"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">arrow_upward</span>
+                          </button>
+                          <button
+                            type="button"
+                            disabled={idx === drawerItinerary.length - 1}
+                            onClick={() => handleMoveItineraryStep(idx, 'down')}
+                            className="p-1 rounded hover:bg-stone-100 text-stone-600 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
+                            title="Move Down"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">arrow_downward</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveItineraryStep(idx)}
+                            className="p-1 rounded hover:bg-red-50 text-red-600 cursor-pointer ml-1"
+                            title="Delete Step"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">delete</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Step Inputs */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div className="sm:col-span-1">
+                          <label className="text-[10px] font-bold text-[#554336] block mb-0.5">Time / Duration</label>
+                          <input
+                            type="text"
+                            value={step.time}
+                            onChange={(e) => handleUpdateItineraryStep(idx, 'time', e.target.value)}
+                            placeholder="02:30 PM - 03:30 PM"
+                            className="w-full px-2.5 py-1.5 rounded bg-[#F5ECEA] text-xs font-bold text-[#1E1B1A] border border-[#E9E1DF] focus:outline-none focus:ring-1 focus:ring-[#8D4B00]"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-2">
+                          <label className="text-[10px] font-bold text-[#554336] block mb-0.5">Step Heading / Title</label>
+                          <input
+                            type="text"
+                            value={step.title}
+                            onChange={(e) => handleUpdateItineraryStep(idx, 'title', e.target.value)}
+                            placeholder="e.g. Red Dune Bashing & Sandboarding"
+                            className="w-full px-2.5 py-1.5 rounded bg-[#F5ECEA] text-xs font-bold text-[#1E1B1A] border border-[#E9E1DF] focus:outline-none focus:ring-1 focus:ring-[#8D4B00]"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-bold text-[#554336] block mb-0.5">Activity Details &amp; Description</label>
+                        <textarea
+                          rows={2}
+                          value={step.description}
+                          onChange={(e) => handleUpdateItineraryStep(idx, 'description', e.target.value)}
+                          placeholder="Describe what guests experience during this timeline window..."
+                          className="w-full px-2.5 py-1.5 rounded bg-[#F5ECEA] text-xs text-[#1E1B1A] border border-[#E9E1DF] focus:outline-none focus:ring-1 focus:ring-[#8D4B00] resize-none"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Display & Automation Toggles */}
