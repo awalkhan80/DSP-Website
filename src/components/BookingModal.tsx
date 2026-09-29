@@ -10,6 +10,59 @@ import {
 } from '../data/safaris';
 import { WhatsAppLogo } from './icons/WhatsAppLogo';
 
+
+function getTimeSlotsForExperience(expId: string, isQuad: boolean, isBuggy: boolean): string[] {
+  if (isQuad || isBuggy) {
+    return [
+      '07:30 AM (Sunrise Desert Run)',
+      '09:00 AM (Cool Morning)',
+      '10:30 AM (Mid-Morning Track)',
+      '03:30 PM (Afternoon Dunes)',
+      '04:30 PM (Golden Sunset Slot)',
+      '05:30 PM (Twilight & Stargazing)',
+    ];
+  }
+  if (expId === 'burj-khalifa-124-125') {
+    return [
+      '10:00 AM (Morning Panorama)',
+      '02:00 PM (Afternoon Clear View)',
+      '04:30 PM (Prime Sunset - High Demand)',
+      '06:30 PM (Evening Skyline & City Lights)',
+      '08:30 PM (Night Panorama)',
+    ];
+  }
+  if (expId === 'burj-khalifa-fountain-lake-ride') {
+    return [
+      '06:00 PM (Sunset Fountain Show)',
+      '07:00 PM (Evening Fountain Display)',
+      '08:00 PM (Prime Gala Fountain Show)',
+      '09:00 PM (Night Lake Abra Cruise)',
+      '10:00 PM (Late Night Water Dance)',
+    ];
+  }
+  if (expId === 'skydive-dubai-tandem-palm') {
+    return [
+      '07:30 AM (Sunrise Early Jump DZ)',
+      '09:00 AM (Morning Clear Skies)',
+      '10:30 AM (Mid-Morning Tandem)',
+      '12:00 PM (Noon Sky Dive Session)',
+    ];
+  }
+  if (expId === 'miracle-garden-global-village-combo') {
+    return [
+      '02:30 PM (Recommended Dual Itinerary)',
+      '03:00 PM (Afternoon Departure)',
+      '03:30 PM (Evening-Focused Tour)',
+    ];
+  }
+  return [
+    '03:00 PM (Afternoon / Golden Sunset)',
+    '05:00 AM (Crisp Sunrise Run)',
+    '08:30 AM (Morning City / Safari Excursion)',
+    'VIP Custom Convoy Timing',
+  ];
+}
+
 interface BookingModalProps {
   initialExperienceId?: string;
   initialDate?: string;
@@ -124,6 +177,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     !isBuggyTour &&
     currentExperience.category !== 'city-tours';
 
+
+  // Sync valid time slots when selected experience changes
+  useEffect(() => {
+    const validSlots = getTimeSlotsForExperience(selectedExperienceId, isQuadTour, isBuggyTour);
+    if (!validSlots.includes(timeSlot)) {
+      setTimeSlot(validSlots[0]);
+    }
+  }, [selectedExperienceId, isQuadTour, isBuggyTour]);
+
   // Enforce meeting point vs private transfer for quad & buggy, and cap add-on durations on shared safari
   useEffect(() => {
     if (isQuadTour || isBuggyTour) {
@@ -146,8 +208,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   // Sync initial machine props if provided
   useEffect(() => {
     if (initialMachine) {
-      if (initialMachine.includes('350cc')) setQuadEngine('350cc');
-      else if (initialMachine.includes('220cc')) setQuadEngine('220cc');
+      if (initialMachine.includes('350cc') || initialMachine.includes('350 CC')) setQuadEngine('350cc');
+      else if (initialMachine.includes('220cc') || initialMachine.includes('250 CC') || initialMachine.includes('220 CC')) setQuadEngine('220cc');
 
       if (initialMachine.toLowerCase().includes('double')) setQuadRider('double');
       else if (initialMachine.toLowerCase().includes('single')) setQuadRider('single');
@@ -202,8 +264,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     const privateCarBase = calculatePrivateVehiclePrice(totalGuests);
     const ticketsTotal = totalGuests * 130;
     totalAED = privateCarBase + ticketsTotal;
+  } else if (currentExperience.priceUnit === 'Car Price') {
+    // Flat Car Pricing (e.g. Private Desert Safari VIP)
+    totalAED = currentExperience.priceAED;
   } else {
-    // Regular Safari or City Excursion
+    // Regular Safari or City Excursion (Per person)
     const basePricePerAdult = currentExperience.priceAED;
     const basePricePerChild = Math.round(currentExperience.priceAED * 0.7);
     totalAED = adults * basePricePerAdult + children * basePricePerChild;
@@ -648,58 +713,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   onChange={(e) => setTimeSlot(e.target.value)}
                   className="w-full text-xs sm:text-sm font-semibold text-stone-900 outline-none bg-transparent cursor-pointer"
                 >
-                  {isQuadTour || isBuggyTour ? (
-                    <>
-                      <option value="07:30 AM (Sunrise Desert Run)">07:30 AM (Sunrise Desert Run)</option>
-                      <option value="09:00 AM (Cool Morning)">09:00 AM (Cool Morning)</option>
-                      <option value="10:30 AM (Mid-Morning Track)">10:30 AM (Mid-Morning Track)</option>
-                      <option value="03:30 PM (Afternoon Dunes)">03:30 PM (Afternoon Dunes)</option>
-                      <option value="04:30 PM (Golden Sunset Slot)">04:30 PM (Golden Sunset Slot)</option>
-                      <option value="05:30 PM (Twilight &amp; Stargazing)">05:30 PM (Twilight &amp; Stargazing)</option>
-                    </>
-                  ) : currentExperience.id === 'burj-khalifa-124-125' ? (
-                    <>
-                      <option value="10:00 AM (Morning Panorama)">10:00 AM (Morning Panorama)</option>
-                      <option value="02:00 PM (Afternoon Clear View)">02:00 PM (Afternoon Clear View)</option>
-                      <option value="04:30 PM (Prime Sunset - High Demand)">04:30 PM (Prime Sunset - High Demand)</option>
-                      <option value="06:30 PM (Evening Skyline & City Lights)">06:30 PM (Evening Skyline & City Lights)</option>
-                      <option value="08:30 PM (Night Panorama)">08:30 PM (Night Panorama)</option>
-                    </>
-                  ) : currentExperience.id === 'burj-khalifa-fountain-lake-ride' ? (
-                    <>
-                      <option value="06:00 PM (Sunset Fountain Show)">06:00 PM (Sunset Fountain Show)</option>
-                      <option value="07:00 PM (Evening Fountain Display)">07:00 PM (Evening Fountain Display)</option>
-                      <option value="08:00 PM (Prime Gala Fountain Show)">08:00 PM (Prime Gala Fountain Show)</option>
-                      <option value="09:00 PM (Night Lake Abra Cruise)">09:00 PM (Night Lake Abra Cruise)</option>
-                      <option value="10:00 PM (Late Night Water Dance)">10:00 PM (Late Night Water Dance)</option>
-                    </>
-                  ) : currentExperience.id === 'skydive-dubai-tandem-palm' ? (
-                    <>
-                      <option value="07:30 AM (Sunrise Early Jump DZ)">07:30 AM (Sunrise Early Jump DZ)</option>
-                      <option value="09:00 AM (Morning Clear Skies)">09:00 AM (Morning Clear Skies)</option>
-                      <option value="10:30 AM (Mid-Morning Tandem)">10:30 AM (Mid-Morning Tandem)</option>
-                      <option value="12:00 PM (Noon Sky Dive Session)">12:00 PM (Noon Sky Dive Session)</option>
-                    </>
-                  ) : currentExperience.id === 'miracle-garden-global-village-combo' ? (
-                    <>
-                      <option value="02:30 PM (Recommended Dual Itinerary)">02:30 PM (Recommended Dual Itinerary)</option>
-                      <option value="03:00 PM (Afternoon Departure)">03:00 PM (Afternoon Departure)</option>
-                      <option value="03:30 PM (Evening-Focused Tour)">03:30 PM (Evening-Focused Tour)</option>
-                    </>
-                  ) : (
-                    <>
-                      <option value="03:00 PM (Afternoon / Golden Sunset)">
-                        03:00 PM (Afternoon / Golden Sunset)
-                      </option>
-                      <option value="05:00 AM (Crisp Sunrise Run)">
-                        05:00 AM (Crisp Sunrise Run)
-                      </option>
-                      <option value="08:30 AM (Morning City / Safari Excursion)">
-                        08:30 AM (Morning City / Safari Excursion)
-                      </option>
-                      <option value="VIP Custom Convoy Timing">VIP Custom Convoy Timing</option>
-                    </>
-                  )}
+                  {getTimeSlotsForExperience(selectedExperienceId, isQuadTour, isBuggyTour).map((slot) => (
+                    <option key={slot} value={slot}>
+                      {slot}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -1401,6 +1419,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     {addOnBuggy && `Can-Am Buggy (${addOnBuggyDuration}) `}
                     {addOnFalcon && `Falcon Photo `}
                     {addOnVipTable && `VIP Table `}
+                  </span>
+                </div>
+              )}
+              {!isQuadTour && !isBuggyTour && (
+                <div className="flex justify-between border-b border-stone-100 pb-1.5">
+                  <span className="text-stone-500">Guests:</span>
+                  <span className="font-bold text-stone-900">
+                    {adults} Adult{adults > 1 ? 's' : ''}{children > 0 ? `, ${children} Child${children > 1 ? 'ren' : ''}` : ''}
                   </span>
                 </div>
               )}
