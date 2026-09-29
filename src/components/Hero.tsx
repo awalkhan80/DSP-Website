@@ -38,8 +38,16 @@ export const Hero: React.FC<HeroProps> = ({
   // Filter experiences by active tab
   const filteredExperiences = allExperiences.filter((exp) => exp.category === activeTab);
   const [selectedExperienceId, setSelectedExperienceId] = useState<string>(
-    filteredExperiences[0]?.id || 'evening-desert-safari'
+    allExperiences.find((e) => e.category === activeTab)?.id || 'evening-desert-safari'
   );
+
+  React.useEffect(() => {
+    if (!filteredExperiences.some((e) => e.id === selectedExperienceId)) {
+      if (filteredExperiences.length > 0) {
+        setSelectedExperienceId(filteredExperiences[0].id);
+      }
+    }
+  }, [activeTab, filteredExperiences, selectedExperienceId]);
 
   // Update selected experience when tab changes
   const handleTabChange = (tab: 'desert-safaris' | 'city-tours' | 'buggies' | 'private-convoys') => {
