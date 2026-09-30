@@ -98,6 +98,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   const [step, setStep] = useState<'customize' | 'details' | 'confirmation'>('customize');
   const [bookingRef, setBookingRef] = useState<string>('');
+  const [emailSendingStatus, setEmailSendingStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [emailSendError, setEmailSendError] = useState<string>('');
 
   const currentExperience: Experience =
     allExperiences.find((e) => e.id === selectedExperienceId) || allExperiences[0] || EXPERIENCES[0];
@@ -240,11 +242,70 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const rateInfo = CURRENCY_RATES[currency];
   const convertedTotal = Math.round(totalAED * rateInfo.rate);
 
+  const sendBookingConfirmationEmail = async (refCode: string) => {
+    if (!guestEmail || !guestEmail.includes('@')) return;
+    setEmailSendingStatus('sending');
+    setEmailSendError('');
+    try {
+      const response = await fetch('/api/send-booking-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingRef: refCode,
+          guestName: guestName.trim() || 'Valued Guest',
+          guestEmail: guestEmail.trim(),
+          guestPhone: guestPhone.trim(),
+          experienceTitle: currentExperience.title,
+          tourDate: safariDate,
+          timeSlot: timeSlot,
+          adults: isQuadTour || isBuggyTour ? 1 : adults,
+          children: isQuadTour || isBuggyTour ? 0 : children,
+          transferType:
+            transferType === 'meeting_point'
+              ? 'Direct to Desert Meeting Point (Lahbab Base Camp)'
+              : transferType === 'private_4x4'
+              ? 'Private 4x4 Luxury Transfer'
+              : 'Shared 4x4 Home/Hotel Pickup',
+          pickupLocation:
+            transferType === 'meeting_point'
+              ? 'Lahbab Desert Meeting Point (Free Parking & GPS Pin provided)'
+              : `${pickupAddressType === 'hotel' ? 'Hotel Lobby' : 'Home Residence'}: ${hotelOrHomeAddress}`,
+          hotelRoom: roomOrVillaNumber,
+          totalAED: totalAED,
+          currency: currency,
+          convertedTotal: convertedTotal,
+          paymentMethod: 'Cash on Pickup / Card on Arrival (0% Deposit)',
+          specialRequests: specialRequests,
+          machine: isQuadTour
+            ? `${quadQuantity}x ${quadEngine === '220cc' ? '250 CC' : '350 CC'} Quad Bike (${quadRider === 'single' ? 'Single' : 'Double'}, ${quadTerrain === 'inside_circle' ? 'Circle Track' : 'Open Dunes'})`
+            : isBuggyTour
+            ? `${buggyQuantity}x ${buggyModel === 'canam' ? 'Can-Am Maverick' : 'Polaris RZR'} (${buggySeater})`
+            : undefined,
+          duration: duration === '30m' ? '30 Minutes' : '1 Hour',
+          itinerary: currentExperience.itinerary,
+        }),
+      });
+
+      const resJson = await response.json();
+      if (response.ok && resJson.success) {
+        setEmailSendingStatus('sent');
+      } else {
+        setEmailSendingStatus('error');
+        setEmailSendError(resJson.error || 'Failed to dispatch confirmation email');
+      }
+    } catch (err: any) {
+      console.warn('Error dispatching booking confirmation email:', err);
+      setEmailSendingStatus('error');
+      setEmailSendError(err?.message || 'Network connection error');
+    }
+  };
+
   const handleConfirmBooking = (e: React.FormEvent) => {
     e.preventDefault();
     const randomRef = 'PHX-' + Math.floor(100000 + Math.random() * 900000);
     setBookingRef(randomRef);
     setStep('confirmation');
+    sendBookingConfirmationEmail(randomRef);
   };
 
   const handleSendToWhatsApp = () => {
@@ -1431,6 +1492,61 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 </span>
               </div>
             </div>
+
+            {/* Email Confirmation Dispatch Status Card */}
+            {guestEmail && (
+              <div className="p-3.5 rounded-xl border text-left text-xs space-y-1.5 transition-all bg-stone-50 border-stone-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[18px] text-[#EA580C]">mail</span>
+                    <span className="font-bold text-stone-900">Email Confirmation &amp; PDF Voucher</span>
+                  </div>
+                  {emailSendingStatus === 'sending' && (
+                    <span className="text-[11px] font-bold text-amber-600 flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                      Dispatching email...
+                    </span>
+                  )}
+                  {emailSendingStatus === 'sent' && (
+                    <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                      Sent to {guestEmail}
+                    </span>
+                  )}
+                  {emailSendingStatus === 'error' && (
+                    <span className="text-[11px] font-bold text-red-600 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">error</span>
+                      Delivery pending
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-stone-600 text-[11px] leading-relaxed">
+                  {emailSendingStatus === 'sent' ? (
+                    <>
+                      Official booking voucher and safari timeline details have been sent to <strong>{guestEmail}</strong> (and operator dispatch). Please check your inbox or spam folder.
+                    </>
+                  ) : emailSendingStatus === 'sending' ? (
+                    <>Generating official booking voucher email for <strong>{guestEmail}</strong>...</>
+                  ) : (
+                    <>
+                      {emailSendError ? `Notice: ${emailSendError}. ` : ''}You can resend the voucher email anytime.
+                    </>
+                  )}
+                </p>
+
+                {emailSendingStatus !== 'sending' && (
+                  <button
+                    type="button"
+                    onClick={() => sendBookingConfirmationEmail(bookingRef)}
+                    className="mt-1 text-[11px] font-bold text-[#EA580C] hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">refresh</span>
+                    <span>Resend Confirmation Email</span>
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Actions */}
             <div className="space-y-2 pt-2">

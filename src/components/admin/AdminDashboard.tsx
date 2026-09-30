@@ -324,6 +324,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }, 3800);
   };
 
+  // Gmail SMTP Testing
+  const [testingSmtp, setTestingSmtp] = useState(false);
+  const handleTestSmtp = async () => {
+    setTestingSmtp(true);
+    try {
+      const res = await fetch('/api/test-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: adminSession?.email || 'awalgsm@gmail.com' }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(`✅ Test email dispatched successfully to ${adminSession?.email || 'awalgsm@gmail.com'}!`);
+      } else {
+        showToast(`❌ SMTP Error: ${data.details || data.error || 'Failed to dispatch'}`);
+      }
+    } catch (err: any) {
+      showToast(`❌ Network Error: ${err.message}`);
+    } finally {
+      setTestingSmtp(false);
+    }
+  };
+
   // --- BACKUP & RESTORE RECOVERY ENGINE ---
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -3048,6 +3071,63 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       Protected by Brute-Force Rate Limiting (5 Attempts)
                     </div>
                     <div className="text-[11px] text-stone-500">Session Token Active &bull; Remember Me Enabled</div>
+                  </div>
+                </div>
+
+                {/* Gmail SMTP Notification Gateway Panel */}
+                <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-emerald-50 to-[#FBF2F0] border border-emerald-200/80 shadow-2xs space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-100 pb-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                        <span className="material-symbols-outlined text-[20px]">mail</span>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-sm font-bold text-[#1E1B1A]">Gmail Automated Email Gateway</h4>
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Live &amp; Connected
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-[#554336] mt-0.5">
+                          Sender Address: <strong className="text-[#1E1B1A]">awalgsm@gmail.com</strong> (Google App Password Active)
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={testingSmtp}
+                      onClick={handleTestSmtp}
+                      className="px-3.5 py-2 rounded-lg bg-[#8D4B00] hover:bg-[#B15F00] text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50 flex items-center gap-1.5 shrink-0 cursor-pointer"
+                    >
+                      {testingSmtp ? (
+                        <>
+                          <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                          <span>Dispatching...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="material-symbols-outlined text-[16px]">send</span>
+                          <span>Send Test Email</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs text-[#554336]">
+                    <div className="p-2.5 rounded-lg bg-white border border-[#E9E1DF] space-y-0.5">
+                      <span className="text-[10px] font-bold text-[#8D4B00] uppercase block">Guest Booking Vouchers</span>
+                      <p className="text-[11px] text-[#1E1B1A] font-medium">Automatic branded HTML vouchers sent upon booking.</p>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-white border border-[#E9E1DF] space-y-0.5">
+                      <span className="text-[10px] font-bold text-[#8D4B00] uppercase block">Operator Dispatch Alerts</span>
+                      <p className="text-[11px] text-[#1E1B1A] font-medium">Instant alerts sent to awalgsm@gmail.com for new leads.</p>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-white border border-[#E9E1DF] space-y-0.5">
+                      <span className="text-[10px] font-bold text-[#8D4B00] uppercase block">Resend &amp; PDF Delivery</span>
+                      <p className="text-[11px] text-[#1E1B1A] font-medium">Guests and marshals can trigger instant resends anytime.</p>
+                    </div>
                   </div>
                 </div>
 
