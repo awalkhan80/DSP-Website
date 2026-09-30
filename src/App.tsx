@@ -9,6 +9,7 @@ import { DEFAULT_OFF_ROAD_PRICING, EXPERIENCES, REVIEWS } from './data/safaris';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { SignatureExpeditions } from './components/SignatureExpeditions';
+import { PriceMatchComparisonSection } from './components/PriceMatchComparisonSection';
 import { AdrenalineBuggySection } from './components/AdrenalineBuggySection';
 import { CityToursSection } from './components/CityToursSection';
 import { TravelGuidesSection } from './components/TravelGuidesSection';
@@ -366,6 +367,12 @@ export default function App() {
           onBookExperience={(id) => handleOpenBooking(id)}
           onViewItinerary={handleViewItinerary}
           experiences={experiences}
+        />
+
+        <PriceMatchComparisonSection
+          currency={currency}
+          onBookExperience={(id) => handleOpenBooking(id)}
+          onOpenWhatsApp={() => setWhatsAppOpen(true)}
         />
 
         <AdrenalineBuggySection
