@@ -1,88 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  <!-- Homepage -->
   <url>
     <loc>https://desertsafaridxbpro.com/</loc>
-    <lastmod>2025-05-18</lastmod>
+    <lastmod>2026-09-30</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://lh3.googleusercontent.com/aida-public/AB6AXuAnHfQ_xD50mSdKpb_AX87krGRMEnUDwIXco_BEGwEs4j-EpVpiuGkmIUB5RwaW2iC42DL2UjCqzYVjEnvSEtZA-pMdChCLUsegIFFlflTsUd2y3BvsvfP5Q2Qunr7sWjRY9BCYTi9ANBMbBZ2SZ2Ps4ve8rYtJGe19JPv4az0YV1li5eXxA6Qd7PkZWZ3hpkfjU0G-jePPYEo66vWaKMQgeOdgBW4H_xBquYIVqQu8oHMDw6l00wWd8g</image:loc>
-      <image:title>The Phoenix Dubai Luxury Desert Safari Red Dunes</image:title>
-      <image:caption>Evening Desert Safari with Lahbab Red Dune Bashing and Bedouin Camp in Dubai</image:caption>
+      <image:loc>https://desertsafaridxbpro.com/images/hero-safari.jpg</image:loc>
+      <image:title>Dubai Red Dune Desert Safari with BBQ Dinner</image:title>
+      <image:caption>Authentic Dubai Lahbab Red Dunes 4x4 desert safari adventure</image:caption>
     </image:image>
   </url>
-
-  <!-- Evening Desert Safari -->
   <url>
-    <loc>https://desertsafaridxbpro.com/#evening-desert-safari</loc>
-    <lastmod>2025-05-18</lastmod>
+    <loc>https://desertsafaridxbpro.com/evening-desert-safari</loc>
+    <lastmod>2026-09-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://desertsafaridxbpro.com/images/evening-safari.jpg</image:loc>
+      <image:title>Dubai Evening Desert Safari Rates &amp; Packages</image:title>
+    </image:image>
   </url>
-
-  <!-- Dune Buggy & Quad Bike Tours -->
   <url>
-    <loc>https://desertsafaridxbpro.com/#quad-and-buggy-rentals</loc>
-    <lastmod>2025-05-18</lastmod>
+    <loc>https://desertsafaridxbpro.com/dune-buggy-dubai</loc>
+    <lastmod>2026-09-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://desertsafaridxbpro.com/images/dune-buggy.jpg</image:loc>
+      <image:title>Can-Am &amp; Polaris Dune Buggy Rental Dubai Desert</image:title>
+    </image:image>
   </url>
-
-  <!-- Morning Desert Safari -->
   <url>
-    <loc>https://desertsafaridxbpro.com/#morning-desert-safari</loc>
-    <lastmod>2025-05-18</lastmod>
+    <loc>https://desertsafaridxbpro.com/quad-biking-dubai</loc>
+    <lastmod>2026-09-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://desertsafaridxbpro.com/images/quad-bike.jpg</image:loc>
+      <image:title>Desert Safari with Quad Bike Dubai</image:title>
+    </image:image>
   </url>
-
-  <!-- Private VIP Safari -->
   <url>
-    <loc>https://desertsafaridxbpro.com/#private-vip-safari</loc>
-    <lastmod>2025-05-18</lastmod>
+    <loc>https://desertsafaridxbpro.com/abu-dhabi-city-tour-ferrari-world</loc>
+    <lastmod>2026-09-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://desertsafaridxbpro.com/images/abu-dhabi-ferrari.jpg</image:loc>
+      <image:title>Abu Dhabi City Tour with Ferrari World Tickets</image:title>
+    </image:image>
   </url>
-
-  <!-- Dubai City Tour & Sightseeing -->
   <url>
-    <loc>https://desertsafaridxbpro.com/#city-tours</loc>
-    <lastmod>2025-05-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <!-- Desert Safari Travel Guides & Knowledge Base -->
-  <url>
-    <loc>https://desertsafaridxbpro.com/#travel-guides</loc>
-    <lastmod>2025-05-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- High-Intent Frequently Asked Questions -->
-  <url>
-    <loc>https://desertsafaridxbpro.com/#faqs</loc>
-    <lastmod>2025-05-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- Guest Reviews & Testimonials -->
-  <url>
-    <loc>https://desertsafaridxbpro.com/#reviews</loc>
-    <lastmod>2025-05-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <!-- Direct DTCM Operator Info -->
-  <url>
-    <loc>https://desertsafaridxbpro.com/#direct-operator</loc>
-    <lastmod>2025-05-18</lastmod>
+    <loc>https://desertsafaridxbpro.com/faq</loc>
+    <lastmod>2026-09-30</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
 </urlset>

@@ -1,193 +1,193 @@
 import React, { useEffect } from 'react';
-import { EXPERIENCES, REVIEWS } from '../data/safaris';
 
-export const JsonLdStructuredData: React.FC = () => {
+interface JsonLdStructuredDataProps {
+  tours?: Array<{
+    id: string;
+    name: string;
+    description: string;
+    price: number | string;
+    image?: string;
+  }>;
+}
+
+export const JsonLdStructuredData: React.FC<JsonLdStructuredDataProps> = ({ tours = [] }) => {
   useEffect(() => {
-    // 1. Organization & LocalBusiness (TravelAgency) Schema
-    const localBusinessSchema = {
-      '@context': 'https://schema.org',
-      '@type': ['TravelAgency', 'LocalBusiness'],
-      '@id': 'https://desertsafaridxbpro.com/#organization',
-      name: 'The Phoenix Desert Safari Dubai',
-      legalName: 'The Phoenix Tourism LLC',
-      alternateName: ['Phoenix Desert Safari', 'Desert Safari DXB Pro'],
-      description:
-        'Official DTCM-licensed Dubai desert safari tour operator offering luxury Arabian dune expeditions, Can-Am Maverick dune buggies, quad bike rentals, and private convoys.',
-      url: 'https://desertsafaridxbpro.com',
-      telephone: '+971561505270',
-      email: 'concierge@phoenixdesertsafari.com',
-      image: [
-        'https://lh3.googleusercontent.com/aida-public/AB6AXuAnHfQ_xD50mSdKpb_AX87krGRMEnUDwIXco_BEGwEs4j-EpVpiuGkmIUB5RwaW2iC42DL2UjCqzYVjEnvSEtZA-pMdChCLUsegIFFlflTsUd2y3BvsvfP5Q2Qunr7sWjRY9BCYTi9ANBMbBZ2SZ2Ps4ve8rYtJGe19JPv4az0YV1li5eXxA6Qd7PkZWZ3hpkfjU0G-jePPYEo66vWaKMQgeOdgBW4H_xBquYIVqQu8oHMDw6l00wWd8g',
-      ],
-      priceRange: 'AED 75 - AED 1500',
-      currenciesAccepted: 'AED, USD, EUR, GBP',
-      paymentAccepted: 'Cash, Credit Card, Apple Pay',
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: 'DAMAC XL Tower, Business Bay',
-        addressLocality: 'Dubai',
-        addressRegion: 'Dubai',
-        postalCode: '00000',
-        addressCountry: 'AE',
-      },
-      geo: {
-        '@type': 'GeoCoordinates',
-        latitude: 25.1856,
-        longitude: 55.2708,
-      },
-      openingHoursSpecification: [
-        {
-          '@type': 'OpeningHoursSpecification',
-          dayOfWeek: [
-            'Monday',
-            'Tuesday',
-            'Wednesday',
-            'Thursday',
-            'Friday',
-            'Saturday',
-            'Sunday',
-          ],
-          opens: '00:00',
-          closes: '23:59',
-        },
-      ],
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '5.0',
-        reviewCount: '1840',
-        bestRating: '5',
-        worstRating: '1',
-      },
-      sameAs: [
-        'https://www.tripadvisor.com',
-        'https://www.instagram.com/phoenixdesertsafari',
-      ],
-    };
-
-    // 2. Product & Tour Schemas
-    const productSchemas = {
-      '@context': 'https://schema.org',
-      '@type': 'ItemList',
-      itemListElement: EXPERIENCES.map((exp, idx) => ({
-        '@type': 'ListItem',
-        position: idx + 1,
-        item: {
-          '@type': ['Product', 'TouristTrip'],
-          '@id': `https://desertsafaridxbpro.com/#${exp.id}`,
-          name: `${exp.title} - Dubai Desert Safari`,
-          description: exp.description,
-          image: exp.image,
-          touristType: ['Adventure', 'Couples', 'Families', 'Luxury'],
-          offers: {
-            '@type': 'Offer',
-            price: exp.priceAED.toString(),
-            priceCurrency: 'AED',
-            availability: 'https://schema.org/InStock',
-            validFrom: '2025-01-01',
-            url: `https://desertsafaridxbpro.com/#${exp.id}`,
-          },
-          aggregateRating: {
-            '@type': 'AggregateRating',
-            ratingValue: '5.0',
-            reviewCount: '420',
-          },
-        },
-      })),
-    };
-
-    // 3. FAQPage Schema
-    const faqSchema = {
-      '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      mainEntity: [
-        {
-          '@type': 'Question',
-          name: 'What is the best desert safari in Dubai: Morning or Evening?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'The Evening Desert Safari is the most popular choice for first-time visitors because it includes 45-minute dune bashing on high Red Lahbab dunes, sunset photography stops, camel rides, sandboarding, and an authentic Bedouin desert camp with live BBQ dinner buffet, Tanoura dancing, fire shows, and belly dancing. The Morning Desert Safari is ideal for early risers seeking cool sunrise lighting.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'How much does a Dubai desert safari cost in 2025?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Standard Evening Desert Safaris at The Phoenix start from AED 120 per adult including 4x4 hotel pickup and buffet dinner. Morning Desert Safaris start from AED 450 per vehicle, and exclusive Private VIP Desert Safaris start from AED 850 per vehicle.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'Do I need a driving license to drive a dune buggy or quad bike in Dubai?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'No driving license is required. Self-drive dune buggies (1000cc Can-Am Maverick Turbo) and quad bikes (250 CC Quad Bikes) operate off-road in designated desert tracks under professional marshal escort.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'What should I wear for a desert safari in Dubai?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Wear loose-fitting, comfortable cotton clothing, sunglasses, and open sandals or flip-flops. During winter months (November to March), bring a light jacket or shawl as desert temperatures drop after sunset.',
-          },
-        },
-      ],
-    };
-
-    // 4. BreadcrumbList Schema
-    const breadcrumbSchema = {
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        {
-          '@type': 'ListItem',
-          position: 1,
-          name: 'Home',
-          item: 'https://desertsafaridxbpro.com/',
-        },
-        {
-          '@type': 'ListItem',
-          position: 2,
-          name: 'Desert Safaris',
-          item: 'https://desertsafaridxbpro.com/#desert-safaris',
-        },
-        {
-          '@type': 'ListItem',
-          position: 3,
-          name: 'Dune Buggy & Quad Bikes',
-          item: 'https://desertsafaridxbpro.com/#quad-and-buggy-rentals',
-        },
-        {
-          '@type': 'ListItem',
-          position: 4,
-          name: 'UAE City Sightseeing',
-          item: 'https://desertsafaridxbpro.com/#city-tours',
-        },
-      ],
-    };
-
-    // Inject into document head
-    const scriptId = 'phoenix-json-ld-schemas';
-    let scriptElement = document.getElementById(scriptId) as HTMLScriptElement | null;
-    if (!scriptElement) {
-      scriptElement = document.createElement('script');
-      scriptElement.id = scriptId;
-      scriptElement.type = 'application/ld+json';
-      document.head.appendChild(scriptElement);
+    const existingScript = document.getElementById('dynamic-jsonld-schema');
+    if (existingScript) {
+      existingScript.remove();
     }
 
-    scriptElement.textContent = JSON.stringify([
-      localBusinessSchema,
-      productSchemas,
-      faqSchema,
-      breadcrumbSchema,
-    ]);
+    const script = document.createElement('script');
+    script.id = 'dynamic-jsonld-schema';
+    script.type = 'application/ld+json';
+
+    // High-Intent AEO Question-Answer Database tailored for Google AI Overviews, Perplexity & Voice Search
+    const faqs = [
+      {
+        question: "How much does a desert safari cost in Dubai?",
+        answer: "Standard evening desert safari rates start from AED 75 to AED 120 per person, including 4x4 dune bashing, camel riding, sandboarding, live entertainment shows, and a BBQ buffet dinner. VIP desert safari packages with table service range from AED 150 to AED 250, while quad bike and dune buggy add-ons range from AED 150 to AED 450."
+      },
+      {
+        question: "What is included in an evening desert safari in Dubai?",
+        answer: "An evening desert safari includes 4x4 Land Cruiser hotel pickup and drop-off from Dubai and Sharjah, 30–45 minutes of red dune bashing at Lahbab Desert, sandboarding, sunset photo stops, camel riding, unlimited soft drinks, Arabic coffee (Gahwa), live Tanoura dance, fire show, belly dance, and an international BBQ buffet dinner (vegetarian and non-vegetarian)."
+      },
+      {
+        question: "How do I make a desert safari Dubai online booking?",
+        answer: "You can book directly online via WhatsApp at +971 56 150 5270 or through our secure website at desertsafaridxbpro.com with instant confirmation, best price guarantee, and pay-on-pickup options in cash or card."
+      },
+      {
+        question: "Do I need a driving license to drive a dune buggy or quad bike in Dubai?",
+        answer: "No UAE or international driving license is required to drive dune buggies or quad bikes in Dubai. Full safety gear (helmet, goggles), vehicle briefings, and guided desert tracks are provided. Drivers must be at least 16 years old to operate solo vehicles."
+      },
+      {
+        question: "What is the cost of an Abu Dhabi city tour with Ferrari World tickets?",
+        answer: "An Abu Dhabi city tour with Ferrari World tickets typically starts from AED 280 to AED 399 per person. Packages include round-trip hotel transfers from Dubai, visits to the Sheikh Zayed Grand Mosque, Abu Dhabi Corniche, and standard admission tickets to Ferrari World with access to Formula Rossa and all signature rides."
+      },
+      {
+        question: "What should I wear for a Dubai desert safari?",
+        answer: "Wear lightweight, breathable cotton clothing and open sandals, flip-flops, or slip-on shoes because sand easily gets inside sneakers. From November to March (winter), bring a light jacket or cardigan, as desert temperatures drop significantly after sunset."
+      }
+    ];
+
+    const graph = [
+      // 1. AEO: FAQ Schema
+      {
+        "@type": "FAQPage",
+        "@id": "https://desertsafaridxbpro.com/#faq-schema",
+        "mainEntity": faqs.map((faq) => ({
+          "@type": "Question",
+          "name": faq.question,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": faq.answer
+          }
+        }))
+      },
+      // 2. Breadcrumbs Schema
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://desertsafaridxbpro.com/#breadcrumbs",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://desertsafaridxbpro.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Dubai Desert Safaris",
+            "item": "https://desertsafaridxbpro.com/evening-desert-safari"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Dune Buggy & Quad Biking",
+            "item": "https://desertsafaridxbpro.com/dune-buggy-dubai"
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "name": "Abu Dhabi Tour with Ferrari World",
+            "item": "https://desertsafaridxbpro.com/abu-dhabi-city-tour-ferrari-world"
+          }
+        ]
+      },
+      // 3. GEO / Commercial Products & Offers
+      {
+        "@type": "Product",
+        "@id": "https://desertsafaridxbpro.com/#evening-desert-safari",
+        "name": "Dubai Evening Desert Safari with BBQ Dinner & Dune Bashing",
+        "description": "Top-rated 6-hour Lahbab red dune evening safari with 4x4 dune bashing, camel riding, sandboarding, live entertainment shows, and 5-star international BBQ buffet dinner.",
+        "image": "https://desertsafaridxbpro.com/images/hero-safari.jpg",
+        "brand": {
+          "@type": "Brand",
+          "name": "Desert Safari DXB Pro"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "75",
+          "priceCurrency": "AED",
+          "availability": "https://schema.org/InStock",
+          "priceValidUntil": "2027-12-31",
+          "url": "https://desertsafaridxbpro.com/evening-desert-safari"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "reviewCount": "890",
+          "bestRating": "5",
+          "worstRating": "1"
+        }
+      },
+      {
+        "@type": "Product",
+        "@id": "https://desertsafaridxbpro.com/#dune-buggy-quad",
+        "name": "Dubai Dune Buggy & Quad Biking Desert Adventure",
+        "description": "High-powered Can-Am Maverick and Polaris RZR desert dune buggy and quad bike rentals in Dubai red dunes with transfers and safety equipment.",
+        "image": "https://desertsafaridxbpro.com/images/dune-buggy.jpg",
+        "brand": {
+          "@type": "Brand",
+          "name": "Desert Safari DXB Pro"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "299",
+          "priceCurrency": "AED",
+          "availability": "https://schema.org/InStock",
+          "priceValidUntil": "2027-12-31",
+          "url": "https://desertsafaridxbpro.com/dune-buggy-dubai"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.8",
+          "reviewCount": "420",
+          "bestRating": "5",
+          "worstRating": "1"
+        }
+      },
+      {
+        "@type": "Product",
+        "@id": "https://desertsafaridxbpro.com/#abu-dhabi-ferrari-world",
+        "name": "Abu Dhabi City Tour with Ferrari World Tickets",
+        "description": "Full day Abu Dhabi sightseeing tour including Sheikh Zayed Grand Mosque, Corniche, and standard admission tickets to Ferrari World Yas Island.",
+        "image": "https://desertsafaridxbpro.com/images/abu-dhabi-ferrari.jpg",
+        "brand": {
+          "@type": "Brand",
+          "name": "Desert Safari DXB Pro"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "280",
+          "priceCurrency": "AED",
+          "availability": "https://schema.org/InStock",
+          "priceValidUntil": "2027-12-31",
+          "url": "https://desertsafaridxbpro.com/abu-dhabi-city-tour-ferrari-world"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "reviewCount": "215",
+          "bestRating": "5",
+          "worstRating": "1"
+        }
+      }
+    ];
+
+    script.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": graph
+    });
+
+    document.head.appendChild(script);
 
     return () => {
-      // Clean up on unmount if needed
+      script.remove();
     };
-  }, []);
+  }, [tours]);
 
   return null;
 };
+
+export default JsonLdStructuredData;

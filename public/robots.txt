@@ -1,7 +1,52 @@
+# Robots.txt for Desert Safari DXB Pro (https://desertsafaridxbpro.com)
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /admin/
 Disallow: /api/
+Disallow: /home02
+Disallow: /home02/
 
-# Sitemaps
+# Major Search Engine Crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: bingbot
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+# Generative AI & Answer Engine Crawlers (AEO / GEO Optimization)
+User-agent: GPTBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+# XML Sitemap Location
 Sitemap: https://desertsafaridxbpro.com/sitemap.xml

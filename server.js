@@ -1,37 +1,50 @@
 import express from 'express';
+import compression from 'compression';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const distPath = path.resolve(__dirname, 'dist');
 
-// Serve static assets from the Vite build output
-if (fs.existsSync(distPath)) {
-  app.use(express.static(distPath, {
-    maxAge: '1y',
-    immutable: true,
-    setHeaders: (res, filePath) => {
-      if (filePath.endsWith('.html')) {
-        res.setHeader('Cache-Control', 'no-cache');
-      }
+// Security & SEO Caching Headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
+// Enable Gzip/Brotli compression for fast Core Web Vitals & PageSpeed
+app.use(compression());
+
+// Serve static assets with caching headers
+app.use(express.static(path.join(__dirname, 'dist'), {
+  maxAge: '1y',
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html') || filePath.endsWith('sitemap.xml') || filePath.endsWith('robots.txt')) {
+      res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
     }
-  }));
+  }
+}));
 
-  // Single Page Application (SPA) catch-all fallback
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
-  });
-} else {
-  app.get('*', (req, res) => {
-    res.status(503).send('Application is building or dist folder not found. Please run "npm run build".');
-  });
-}
+// Direct route for sitemap.xml fallback if not in dist
+app.get('/sitemap.xml', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'sitemap.xml'));
+});
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server listening on port ${PORT}`);
+// Direct route for robots.txt fallback if not in dist
+app.get('/robots.txt', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'robots.txt'));
+});
+
+// SPA Fallback for client routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
+app.listen(PORT, () => {
+  console.log(`Desert Safari DXB Pro production server listening on http://localhost:${PORT}`);
 });
