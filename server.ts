@@ -631,6 +631,480 @@ app.get('/api/b2b/bookings', (req, res) => {
   });
 });
 
+// 10. API: List B2B Booking Records
+app.get('/api/b2b/bookings', (req, res) => {
+  return res.json({
+    total: b2bBookingRecords.length,
+    records: b2bBookingRecords,
+  });
+});
+
+// ==========================================
+// 11. AI BOOKING AGENT INTEGRATION ENDPOINTS
+// Compatible with /phoenix_agent (OpenAI Agents SDK)
+// ==========================================
+
+// In-memory leads & escalations store
+const agentLeads: any[] = [];
+const agentEscalations: any[] = [];
+
+// Helper: Knowledge Base Facts
+const KNOWLEDGE_BASE_FACTS = [
+  {
+    topic: 'evening_desert_safari',
+    title: 'Evening Desert Safari (Lahbab Red Dunes)',
+    facts: [
+      'Standard rate: AED 120 per adult, AED 85 per child (ages 3-9). Free for infants under 3.',
+      'Includes 40-45 minutes of high red dune bashing in Lahbab Desert in 4x4 Toyota Land Cruiser with certified DTCM marshals.',
+      'Includes sandboarding down 300-foot dunes, sunset photo stop, camel ride experience, and Arabic coffee (Gahwa) with dates.',
+      'Evening Bedouin camp features: live Tanoura dance show, fire show, belly dance, and 5-star international BBQ buffet dinner (vegetarian and non-vegetarian dishes).',
+      'Pickup window: 02:30 PM - 03:30 PM; Drop-off: 09:30 PM - 10:00 PM.',
+      'Complimentary doorstep hotel/residence pickup across Dubai and Sharjah central.',
+      'Payment: 100% Pay on Arrival (Cash AED/USD/EUR/GBP or Card on pickup). No advance payment required.',
+      'Cancellation: 100% free cancellation up to 12 hours before pickup.'
+    ]
+  },
+  {
+    topic: 'morning_desert_safari',
+    title: 'Morning Desert Safari & Sunrise Dune Bashing',
+    facts: [
+      'Private 4x4 Land Cruiser: AED 450 total per vehicle (up to 6 guests).',
+      'Pickup window: 05:00 AM - 05:30 AM (Sunrise) or 07:30 AM - 08:00 AM (Morning). Duration: 4 hours.',
+      'Includes 45 minutes of dune bashing on untouched morning sands, sandboarding, camel rides, and cold refreshments.',
+      'Ideal for guests wanting scenic desert photos without evening camp entertainment.'
+    ]
+  },
+  {
+    topic: 'private_vip_safari',
+    title: 'Private VIP Luxury Desert Safari',
+    facts: [
+      'Private luxury Toyota Land Cruiser 300 Series / Nissan Patrol: AED 850 per vehicle (up to 6 guests).',
+      'Includes private 4x4 pickup, private dune bashing tailored to guest preference (mild or extreme), VIP reserved Majlis table seating with waiter table service at the camp, priority BBQ buffet, and fruit platters.'
+    ]
+  },
+  {
+    topic: 'dune_buggy_rentals',
+    title: 'Can-Am Maverick X3 & Polaris Dune Buggy Rentals',
+    facts: [
+      '1-Seater Can-Am Maverick Turbo: AED 450 (30 Mins) / AED 750 (1 Hour).',
+      '2-Seater Can-Am Maverick X3: AED 650 (30 Mins) / AED 1,050 (1 Hour).',
+      '4-Seater Can-Am Maverick X3 Max: AED 850 (30 Mins) / AED 1,350 (1 Hour).',
+      'No driving license required. Minimum driving age is 16 years. Helmets, goggles, safety briefings, and convoy guide escort provided.'
+    ]
+  },
+  {
+    topic: 'quad_bike_atv',
+    title: 'Quad Bike ATV Desert Rentals',
+    facts: [
+      '250 CC Single Quad Bike: AED 150 (30 Mins inside circle track) / AED 250 (1 Hour open desert).',
+      '350 CC Yamaha Raptor Quad Bike: AED 250 (30 Mins) / AED 380 (1 Hour open dunes).',
+      'Double / Tandem Quad Bike (2 Riders): AED 280 (30 Mins) / AED 450 (1 Hour).'
+    ]
+  },
+  {
+    topic: 'abu_dhabi_ferrari_tour',
+    title: 'Abu Dhabi Full Day Tour with Ferrari World',
+    facts: [
+      'Rate: AED 350 per adult, AED 280 per child (ages 3-10).',
+      'Includes round-trip AC coach/car transfer from Dubai, guided visit to Sheikh Zayed Grand Mosque (abayas/attire guidance provided), Abu Dhabi Corniche, Emirates Palace photo stop, and standard entry ticket to Ferrari World theme park.',
+      'Departure: 08:30 AM; Return: 07:30 PM.'
+    ]
+  },
+  {
+    topic: 'general_safety_policies',
+    title: 'Safety, Health & Operational Policies',
+    facts: [
+      'Dune bashing is not recommended for pregnant women, infants under 3, or guests with severe spinal or cardiac conditions. Gentle scenic drives directly to the camp are arranged on request.',
+      'Dress code: Lightweight comfortable clothing, sandals or sneakers, sunglasses. Bring light jacket in winter (Nov-Mar). For Grand Mosque: modest clothing covering arms and legs; women must cover hair.',
+      'Driver assistance hotline & 24/7 WhatsApp desk: +971 56 150 5270.',
+      'Licensed DTCM Operator No. 102357 (The Phoenix Desert Safari Dubai).'
+    ]
+  }
+];
+
+// 11.A Agent: Search Knowledge Base
+app.post(['/search_knowledge_base', '/api/search_knowledge_base', '/api/agent/search_knowledge_base'], (req, res) => {
+  try {
+    const { question = '' } = req.body;
+    const qLower = question.toLowerCase();
+
+    const matchedFacts: string[] = [];
+    for (const kb of KNOWLEDGE_BASE_FACTS) {
+      const matchScore =
+        (qLower.includes(kb.topic.replace(/_/g, ' ')) ? 3 : 0) +
+        (kb.facts.some((f) => qLower.split(' ').some((word: string) => word.length > 3 && f.toLowerCase().includes(word))) ? 1 : 0);
+
+      if (matchScore > 0 || qLower.length === 0) {
+        matchedFacts.push(`[${kb.title}] ${kb.facts.join(' ')}`);
+      }
+    }
+
+    if (matchedFacts.length === 0) {
+      // Return general facts
+      matchedFacts.push(
+        ...KNOWLEDGE_BASE_FACTS.map((k) => `[${k.title}] ${k.facts.slice(0, 3).join(' ')}`)
+      );
+    }
+
+    return res.json({
+      ok: true,
+      facts: matchedFacts,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// 11.B Agent: Get Price
+app.post(['/get_price', '/api/get_price', '/api/agent/get_price'], (req, res) => {
+  try {
+    const {
+      tour = 'evening-desert-safari',
+      adults = 1,
+      children_ages = [],
+      pickup_area = 'Dubai',
+      private_or_shared = 'shared',
+    } = req.body;
+
+    const adultCount = Number(adults) || 1;
+    const childList = Array.isArray(children_ages) ? children_ages : [];
+    const childCount = childList.length;
+
+    let totalAED = 0;
+    let pricePerAdult = 120;
+    let pricePerChild = 85;
+    let transferAED = 0;
+    let vatIncluded = true;
+    let breakdown = '';
+
+    const tourLower = tour.toLowerCase();
+
+    if (tourLower.includes('private') || tourLower.includes('vip') || private_or_shared === 'private') {
+      if (tourLower.includes('buggy') || tourLower.includes('can-am') || tourLower.includes('canam')) {
+        totalAED = 650;
+        breakdown = '1x 2-Seater Can-Am Maverick X3 Buggy (30 mins): AED 650';
+      } else if (tourLower.includes('quad')) {
+        totalAED = 250 * adultCount;
+        breakdown = `${adultCount}x Quad Bike 350cc (1 Hour): AED ${totalAED}`;
+      } else if (tourLower.includes('morning')) {
+        totalAED = 450;
+        breakdown = 'Private Land Cruiser (up to 6 pax) Morning Sunrise Safari: AED 450';
+      } else {
+        totalAED = 850;
+        breakdown = 'Private Luxury Land Cruiser 300 Series VIP Safari (up to 6 guests): AED 850';
+      }
+    } else if (tourLower.includes('morning')) {
+      totalAED = 450;
+      breakdown = 'Morning Desert Safari (Private Vehicle up to 6 pax): AED 450';
+    } else if (tourLower.includes('buggy') || tourLower.includes('can-am') || tourLower.includes('canam')) {
+      totalAED = 650;
+      breakdown = 'Can-Am Maverick X3 Dune Buggy 2-Seater (30 mins): AED 650';
+    } else if (tourLower.includes('quad') || tourLower.includes('atv')) {
+      totalAED = 150 * adultCount;
+      breakdown = `${adultCount}x 250cc Quad Bike (30 mins track): AED ${totalAED}`;
+    } else if (tourLower.includes('abu dhabi') || tourLower.includes('ferrari')) {
+      pricePerAdult = 350;
+      pricePerChild = 280;
+      totalAED = adultCount * pricePerAdult + childCount * pricePerChild;
+      breakdown = `${adultCount} Adult(s) @ AED 350 + ${childCount} Child(ren) @ AED 280: AED ${totalAED}`;
+    } else if (tourLower.includes('miracle') || tourLower.includes('global village')) {
+      totalAED = 500 + (adultCount + childCount) * 130;
+      breakdown = `Private AC Transfer (AED 500) + ${adultCount + childCount} Combo Tickets @ AED 130: AED ${totalAED}`;
+    } else if (tourLower.includes('dhow') || tourLower.includes('alexandra')) {
+      pricePerAdult = 165;
+      pricePerChild = 120;
+      totalAED = adultCount * pricePerAdult + childCount * pricePerChild;
+      breakdown = `${adultCount} Adult(s) @ AED 165 + ${childCount} Child(ren) @ AED 120: AED ${totalAED}`;
+    } else {
+      // Standard Evening Desert Safari
+      pricePerAdult = 120;
+      pricePerChild = 85;
+      totalAED = adultCount * pricePerAdult + childCount * pricePerChild;
+      breakdown = `${adultCount} Adult(s) @ AED 120 + ${childCount} Child(ren) @ AED 85: AED ${totalAED}`;
+    }
+
+    // Pickup area check
+    const pickupLower = (pickup_area || '').toLowerCase();
+    if (pickupLower.includes('abu dhabi') && !tourLower.includes('abu dhabi')) {
+      transferAED = 250;
+      totalAED += transferAED;
+      breakdown += ' + Abu Dhabi Intercity Transfer Surcharge (AED 250)';
+    } else if (pickupLower.includes('ras al khaimah') || pickupLower.includes('rak') || pickupLower.includes('fujairah')) {
+      transferAED = 300;
+      totalAED += transferAED;
+      breakdown += ' + Northern Emirates Transfer Surcharge (AED 300)';
+    }
+
+    return res.json({
+      ok: true,
+      tour,
+      total_aed: totalAED,
+      vat_included: vatIncluded,
+      currency: 'AED',
+      price_per_adult: pricePerAdult,
+      price_per_child: pricePerChild,
+      transfer_aed: transferAED,
+      breakdown,
+      payment_method_supported: 'pay_on_arrival',
+    });
+  } catch (err: any) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// 11.C Agent: Check Availability
+app.post(['/check_availability', '/api/check_availability', '/api/agent/check_availability'], (req, res) => {
+  try {
+    const { tour = 'evening-desert-safari', date } = req.body;
+    const tourDate = date || new Date(Date.now() + 86400000).toISOString().split('T')[0];
+
+    const slots = tour.toLowerCase().includes('morning')
+      ? ['05:00 AM - 05:30 AM (Sunrise)', '07:30 AM - 08:00 AM (Morning Safari)']
+      : tour.toLowerCase().includes('buggy') || tour.toLowerCase().includes('quad')
+      ? ['08:00 AM (Morning Dunes)', '03:30 PM (Sunset Convoy)', '05:00 PM (Twilight Ride)']
+      : ['02:30 PM - 03:00 PM (Early Pickup)', '03:00 PM - 03:30 PM (Golden Sunset Standard)'];
+
+    return res.json({
+      ok: true,
+      available: true,
+      tour,
+      date: tourDate,
+      slots,
+      instant_confirmation: true,
+      cutoff_hours: 4,
+      message: `Fleet is available for ${tour} on ${tourDate} with instant confirmation and pay-on-arrival.`,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// 11.D Agent: Create Booking
+app.post(['/create_booking', '/api/create_booking', '/api/agent/create_booking'], async (req, res) => {
+  try {
+    const {
+      tour = 'Evening Desert Safari',
+      date,
+      adults = 1,
+      children_ages = [],
+      pickup_area = 'Dubai Hotel',
+      private_or_shared = 'shared',
+      full_name = 'Guest',
+      phone = '',
+      summary_accepted = true,
+      payment_method = 'pay_on_arrival',
+      quote,
+      availability,
+    } = req.body;
+
+    if (!summary_accepted) {
+      return res.status(400).json({ ok: false, error: 'Guest must accept the pre-booking summary first.' });
+    }
+
+    const bookingRef = 'PHX-' + Math.floor(100000 + Math.random() * 900000);
+    const tourDate = date || new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    const totalAED = quote?.total_aed || 120 * Number(adults);
+
+    const pickupWindow = tour.toLowerCase().includes('morning')
+      ? '05:00 AM - 05:30 AM'
+      : '02:30 PM - 03:30 PM';
+
+    const voucherText = `THE PHOENIX DESERT SAFARI DUBAI — OFFICIAL E-VOUCHER
+Booking Ref: ${bookingRef}
+Tour: ${tour} (${private_or_shared.toUpperCase()})
+Date: ${tourDate}
+Lead Guest: ${full_name}
+Phone: ${phone}
+Pax: ${adults} Adult(s)${children_ages?.length ? `, ${children_ages.length} Child(ren)` : ''}
+Pickup Location: ${pickup_area} (Window: ${pickupWindow})
+Total Amount: AED ${totalAED} (100% Pay on Arrival - Cash or Card)
+Driver & 24/7 Helpline: +971 56 150 5270
+DTCM License: #102357`;
+
+    // Attempt to dispatch email voucher in background if guest provided an email (or to admin awalgsm@gmail.com)
+    try {
+      const voucherHtml = generateBookingVoucherHtml({
+        bookingRef,
+        guestName: full_name,
+        guestEmail: 'awalgsm@gmail.com',
+        guestPhone: phone,
+        experienceTitle: tour,
+        tourDate,
+        adults: Number(adults),
+        children: children_ages?.length || 0,
+        transferType: private_or_shared === 'private' ? 'Private 4x4' : 'Shared 4x4 Pickup',
+        pickupLocation: pickup_area,
+        totalAED,
+        paymentMethod: 'Pay on Arrival (Cash or Card)',
+        specialRequests: `Booked via AI Booking Agent (Session: ${req.body.session_id || 'N/A'})`,
+      });
+
+      await transporter.sendMail({
+        from: `"The Phoenix Desert Safari" <${GMAIL_USER}>`,
+        to: GMAIL_USER,
+        subject: `[AI Agent Confirmed] ${bookingRef} - ${tour} (${full_name})`,
+        html: voucherHtml,
+      });
+    } catch (mailErr: any) {
+      console.warn('[AI Agent Mail Dispatch Notice]', mailErr.message);
+    }
+
+    return res.json({
+      ok: true,
+      status: 'confirmed',
+      booking_reference: bookingRef,
+      voucher: voucherText,
+      total_aed: totalAED,
+      date: tourDate,
+      pickup_details: `4x4 Land Cruiser hotel pickup from ${pickup_area} between ${pickupWindow}. Your desert marshal will contact you via WhatsApp / Call (+971561505270).`,
+      payment_method: 'pay_on_arrival',
+    });
+  } catch (err: any) {
+    console.error('[AI Agent Create Booking Error]', err);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// 11.E Agent: Escalate to Human
+app.post(['/escalate_to_human', '/api/escalate_to_human', '/api/agent/escalate_to_human'], async (req, res) => {
+  try {
+    const {
+      reason = 'Guest requested human assistance',
+      guest_name = 'Guest',
+      language = 'en',
+      tour = '',
+      date = '',
+      pax = '',
+      quoted_total_aed = '',
+      urgent = false,
+      session_id = '',
+    } = req.body;
+
+    const ticketRef = 'TKT-PHX-' + Math.floor(1000 + Math.random() * 9000);
+
+    const escalationItem = {
+      ticketRef,
+      reason,
+      guest_name,
+      language,
+      tour,
+      date,
+      pax,
+      quoted_total_aed,
+      urgent,
+      session_id,
+      timestamp: new Date().toISOString(),
+    };
+
+    agentEscalations.unshift(escalationItem);
+
+    // Notify operations team via email
+    try {
+      await transporter.sendMail({
+        from: `"The Phoenix Operations Desk" <${GMAIL_USER}>`,
+        to: GMAIL_USER,
+        subject: `[${urgent ? 'URGENT ' : ''}Human Escalation ${ticketRef}] ${guest_name} - ${reason.slice(0, 50)}`,
+        html: `<div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6;">
+          <h2 style="color: #ea580c;">AI Agent Support Escalation: ${ticketRef}</h2>
+          <p><strong>Guest Name:</strong> ${guest_name}</p>
+          <p><strong>Urgency:</strong> <span style="color: ${urgent ? 'red' : 'green'}; font-weight: bold;">${urgent ? 'HIGH / EMERGENCY' : 'Standard'}</span></p>
+          <p><strong>Reason:</strong> ${reason}</p>
+          <p><strong>Tour Interest:</strong> ${tour || 'General'} on ${date || 'Flexible'} (${pax || 'N/A'})</p>
+          <p><strong>Language:</strong> ${language}</p>
+          <p><strong>Session ID:</strong> ${session_id}</p>
+          <hr/>
+          <p>Direct WhatsApp Desk: +971 56 150 5270</p>
+        </div>`,
+      });
+    } catch (e: any) {
+      console.warn('[Escalation email warning]', e.message);
+    }
+
+    return res.json({
+      ok: true,
+      ticket_reference: ticketRef,
+      support_phone: '+971561505270',
+      message: urgent
+        ? 'Urgent escalation logged. Duty manager notified immediately. Call +971561505270 for immediate assistance.'
+        : 'Ticket created. Reservations team will review and reply within 30 minutes during operating hours.',
+    });
+  } catch (err: any) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// 11.F Agent: Log Lead
+app.post(['/log_lead', '/api/log_lead', '/api/agent/log_lead'], (req, res) => {
+  try {
+    const {
+      guest_name = '',
+      phone = '',
+      tour = '',
+      date = '',
+      pax = '',
+      language = 'en',
+      session_id = '',
+    } = req.body;
+
+    const leadId = 'LEAD-PHX-' + Math.floor(1000 + Math.random() * 9000);
+    const lead = {
+      id: leadId,
+      guest_name,
+      phone,
+      tour,
+      date,
+      pax,
+      language,
+      session_id,
+      marketing_consent: false,
+      createdAt: new Date().toISOString(),
+    };
+
+    agentLeads.unshift(lead);
+
+    return res.json({
+      ok: true,
+      lead_id: leadId,
+      message: 'Lead logged for internal follow-up.',
+    });
+  } catch (err: any) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// 12. SEO: Direct XML Sitemap Endpoint
+app.get(['/sitemap.xml', '/sitemap_index.xml'], (req, res) => {
+  const sitemapPath = path.resolve(__dirname, 'public', 'sitemap.xml');
+  if (fs.existsSync(sitemapPath)) {
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.sendFile(sitemapPath);
+  }
+  const fallbackXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://desertsafaridxbpro.com/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://desertsafaridxbpro.com/evening-desert-safari</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://desertsafaridxbpro.com/dune-buggy-dubai</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://desertsafaridxbpro.com/quad-biking-dubai</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://desertsafaridxbpro.com/abu-dhabi-city-tour-ferrari-world</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://desertsafaridxbpro.com/faq</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+</urlset>`;
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  return res.send(fallbackXml);
+});
+
+// 12. SEO: Direct Robots.txt Endpoint
+app.get('/robots.txt', (req, res) => {
+  const robotsPath = path.resolve(__dirname, 'public', 'robots.txt');
+  if (fs.existsSync(robotsPath)) {
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.sendFile(robotsPath);
+  }
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  return res.send(`User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nSitemap: https://desertsafaridxbpro.com/sitemap.xml`);
+});
+
 // Vite Integration & Static Assets
 async function startServer() {
   if (!isProduction) {

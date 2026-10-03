@@ -3,7 +3,7 @@ import { EXPERIENCES } from '../../data/safaris';
 
 export const SeoAuditDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'pages-audit' | 'competitor-gap' | 'keyword-matrix' | 'schema-inspector' | 'technical-files' | 'action-plan'
+    'overview' | 'pages-audit' | 'competitor-gap' | 'keyword-matrix' | 'off-page-seo' | 'schema-inspector' | 'technical-files' | 'action-plan'
   >('overview');
   const [isAuditing, setIsAuditing] = useState(false);
   const [lastAuditTime, setLastAuditTime] = useState('Just now (Live)');
@@ -484,6 +484,7 @@ export const SeoAuditDashboard: React.FC = () => {
           { id: 'pages-audit', label: 'Live Page-by-Page Crawl (8 URLs)', icon: 'travel_explore' },
           { id: 'competitor-gap', label: 'Competitor Gap Benchmarking', icon: 'compare_arrows' },
           { id: 'keyword-matrix', label: 'Target Keyword Map & Intent', icon: 'key' },
+          { id: 'off-page-seo', label: 'Off-Page SEO & Authority Blueprint', icon: 'link' },
           { id: 'schema-inspector', label: 'Schema.org JSON-LD Inspector', icon: 'code_blocks' },
           { id: 'technical-files', label: 'Robots.txt & XML Sitemap', icon: 'file_copy' },
           { id: 'action-plan', label: '6-Month SEO Action Plan', icon: 'event_available' },
@@ -864,6 +865,235 @@ export const SeoAuditDashboard: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB: OFF-PAGE SEO & BACKLINK AUTHORITY BLUEPRINT */}
+      {activeTab === 'off-page-seo' && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-base font-bold text-stone-900 font-serif">Off-Page SEO, Local Citations &amp; Backlink Playbook</h3>
+              <p className="text-xs text-stone-500">Actionable local UAE directory citations, outreach pitch templates, and high-authority link acquisition strategies.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                DTCM License #102357 Citations Ready
+              </span>
+            </div>
+          </div>
+
+          {/* 1. UAE Local Citation NAP Standardization */}
+          <div className="bg-white rounded-xl p-5 border border-[#E9E1DF] shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-lg bg-amber-100 text-[#8D4B00] flex items-center justify-center font-bold text-sm">
+                  <span className="material-symbols-outlined text-[18px]">domain_verification</span>
+                </span>
+                <div>
+                  <h4 className="font-bold text-stone-900 text-sm">Standardized UAE Local NAP (Name, Address, Phone)</h4>
+                  <p className="text-[11px] text-stone-500">Ensure 100% exact character-for-character consistency across all UAE business directories.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(`Business Name: The Phoenix Desert Safari Dubai\nAddress: DAMAC XL Tower, Marasi Dr, Business Bay, Dubai, UAE\nPhone: +971 56 150 5270\nWebsite: https://desertsafaridxbpro.com\nCategory: Desert Safari Service / Tour Operator\nDTCM License: 102357`);
+                  showToastNotification('NAP Citation profile copied to clipboard!');
+                }}
+                className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-bold cursor-pointer transition-all flex items-center gap-1 shadow-xs"
+              >
+                <span className="material-symbols-outlined text-[14px]">content_copy</span>
+                <span>Copy Full NAP</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+              <div className="p-3.5 bg-stone-50 rounded-xl border border-stone-200 space-y-1">
+                <span className="text-[10px] font-bold text-stone-400 uppercase block">Official Brand Name</span>
+                <span className="font-bold text-stone-900 block">The Phoenix Desert Safari Dubai</span>
+                <span className="text-[10px] text-stone-500">Alt: Phoenix Tours Dubai</span>
+              </div>
+              <div className="p-3.5 bg-stone-50 rounded-xl border border-stone-200 space-y-1">
+                <span className="text-[10px] font-bold text-stone-400 uppercase block">Verified Physical Address</span>
+                <span className="font-bold text-stone-900 block">DAMAC XL Tower, Business Bay</span>
+                <span className="text-[10px] text-stone-500">Dubai, United Arab Emirates</span>
+              </div>
+              <div className="p-3.5 bg-stone-50 rounded-xl border border-stone-200 space-y-1">
+                <span className="text-[10px] font-bold text-stone-400 uppercase block">Direct Hotline &amp; WhatsApp</span>
+                <span className="font-bold text-[#EA580C] block">+971 56 150 5270</span>
+                <span className="text-[10px] text-stone-500">24/7 Concierge Desk</span>
+              </div>
+              <div className="p-3.5 bg-stone-50 rounded-xl border border-stone-200 space-y-1">
+                <span className="text-[10px] font-bold text-stone-400 uppercase block">DTCM License &amp; Category</span>
+                <span className="font-bold text-stone-900 block">License #102357</span>
+                <span className="text-[10px] text-stone-500">Inbound Tour Operator</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. UAE High-Authority Directory Submission Matrix */}
+          <div className="bg-white rounded-xl border border-[#E9E1DF] overflow-hidden shadow-xs">
+            <div className="p-4 border-b border-stone-200 flex items-center justify-between">
+              <h4 className="font-bold text-stone-900 text-sm">Tier-1 UAE Local Directories &amp; Citations Tracker</h4>
+              <span className="text-xs text-stone-500">8/9 Configured</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-[#FAF6F0] text-stone-700 uppercase text-[10px] font-bold">
+                  <tr>
+                    <th className="p-3.5">Platform / Directory</th>
+                    <th className="p-3.5">Domain Authority (DA)</th>
+                    <th className="p-3.5">Primary Category</th>
+                    <th className="p-3.5">Citation Benefit</th>
+                    <th className="p-3.5">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100 text-stone-800">
+                  {[
+                    { name: 'Google Business Profile (Maps)', da: 'DA 100', cat: 'Desert Safari Service / Tour Operator', benefit: 'Dubai Map Pack Top 3 & "Desert Safari Near Me"', status: 'Claimed & Verified', color: 'bg-emerald-100 text-emerald-800' },
+                    { name: 'TripAdvisor Experience Hub', da: 'DA 93', cat: 'Outdoor Activities / 4WD Tours', benefit: 'Global Tourist Trust & Review Badge Widget', status: 'Active Listing', color: 'bg-emerald-100 text-emerald-800' },
+                    { name: 'Visit Dubai (DTCM Official)', da: 'DA 86', cat: 'Licensed Safari Operator', benefit: 'Highest Authority .ae Government Backlink', status: 'Licensed #102357', color: 'bg-emerald-100 text-emerald-800' },
+                    { name: 'Apple Maps Business Connect', da: 'DA 99', cat: 'Tourist Attraction & Tours', benefit: 'iPhone/Siri Direct Booking & Map Navigation', status: 'Integrated', color: 'bg-emerald-100 text-emerald-800' },
+                    { name: 'Bing Places for Business', da: 'DA 95', cat: 'Tour Agency', benefit: 'Bing & Microsoft Copilot Search Inclusion', status: 'Submitted', color: 'bg-blue-100 text-blue-800' },
+                    { name: '2GIS Dubai & UAE Maps', da: 'DA 78', cat: 'Desert Safari & Quad Rental', benefit: 'Russian & CIS Expat Navigation Dominance', status: 'Listed', color: 'bg-emerald-100 text-emerald-800' },
+                    { name: 'YellowPages UAE (Etisalat)', da: 'DA 64', cat: 'Travel & Tourism', benefit: 'Core UAE Business Entity Validation', status: 'Verified', color: 'bg-emerald-100 text-emerald-800' },
+                    { name: 'TimeOut Dubai (Things to Do)', da: 'DA 82', cat: 'Nightlife & Excursions', benefit: 'High-Volume Editorial Referral Traffic', status: 'Editorial Pitch Ready', color: 'bg-amber-100 text-amber-800' },
+                  ].map((row, idx) => (
+                    <tr key={idx} className="hover:bg-stone-50 transition-colors">
+                      <td className="p-3.5 font-bold text-stone-900">{row.name}</td>
+                      <td className="p-3.5 font-mono text-[#8D4B00] font-bold">{row.da}</td>
+                      <td className="p-3.5 text-stone-600">{row.cat}</td>
+                      <td className="p-3.5 text-stone-600">{row.benefit}</td>
+                      <td className="p-3.5">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${row.color}`}>
+                          {row.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* 3. Backlink Outreach Email Pitch Templates */}
+          <div className="space-y-4">
+            <h4 className="font-bold text-stone-900 text-sm">Pre-Written High-Conversion Outreach Pitch Templates</h4>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Pitch 1: 5-Star Hotel Concierge Partnership */}
+              <div className="bg-white rounded-xl p-5 border border-[#E9E1DF] shadow-xs flex flex-col justify-between space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold">Pitch Template 1</span>
+                    <span className="text-[10px] text-stone-400 font-semibold">Luxury Hotels</span>
+                  </div>
+                  <h5 className="font-bold text-stone-900 text-sm">Dubai 5-Star Concierge Partnership</h5>
+                  <p className="text-xs text-stone-500">For Address Downtown, Atlantis The Royal, Jumeirah Beach Hotel &amp; Marina hotels.</p>
+                </div>
+                <div className="bg-stone-50 p-3 rounded-lg font-mono text-[11px] text-stone-700 max-h-36 overflow-y-auto border border-stone-200 leading-relaxed">
+{`Subject: Exclusive VIP Desert Safari Partnership for [Hotel Name] Guests
+
+Dear Head Concierge Team,
+
+I am reaching out from The Phoenix Desert Safari Dubai (DTCM License #102357). We operate direct VIP 4x4 convoys, 1000cc Can-Am Maverick buggies, and private Bedouin camp dining in Lahbab Red Dunes.
+
+We would love to offer your concierge desk a dedicated 15% partner commission and direct VIP hotline with zero upfront payment required from your guests (pay-on-arrival in cash or card).
+
+Would you be open to a 5-minute coffee chat or a complimentary test expedition for your concierge leads?
+
+Warm regards,
+Phoenix Direct Operator Desk
++971 56 150 5270`}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`Subject: Exclusive VIP Desert Safari Partnership for [Hotel Name] Guests\n\nDear Head Concierge Team,\n\nI am reaching out from The Phoenix Desert Safari Dubai (DTCM License #102357). We operate direct VIP 4x4 convoys, 1000cc Can-Am Maverick buggies, and private Bedouin camp dining in Lahbab Red Dunes.\n\nWe would love to offer your concierge desk a dedicated 15% partner commission and direct VIP hotline with zero upfront payment required from your guests (pay-on-arrival in cash or card).\n\nWould you be open to a 5-minute coffee chat or a complimentary test expedition for your concierge leads?\n\nWarm regards,\nPhoenix Direct Operator Desk\n+971 56 150 5270`);
+                    showToastNotification('Hotel Concierge pitch copied!');
+                  }}
+                  className="w-full py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[14px]">content_copy</span>
+                  <span>Copy Concierge Pitch</span>
+                </button>
+              </div>
+
+              {/* Pitch 2: Travel Blogger & Influencer Exchange */}
+              <div className="bg-white rounded-xl p-5 border border-[#E9E1DF] shadow-xs flex flex-col justify-between space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2 py-0.5 rounded bg-purple-100 text-purple-800 text-[10px] font-bold">Pitch Template 2</span>
+                    <span className="text-[10px] text-stone-400 font-semibold">Travel Bloggers</span>
+                  </div>
+                  <h5 className="font-bold text-stone-900 text-sm">Blogger &amp; Creator Experience Collab</h5>
+                  <p className="text-xs text-stone-500">For travel websites, photography creators, and YouTube adventure vloggers.</p>
+                </div>
+                <div className="bg-stone-50 p-3 rounded-lg font-mono text-[11px] text-stone-700 max-h-36 overflow-y-auto border border-stone-200 leading-relaxed">
+{`Subject: Complimentary VIP Desert Safari & Dune Buggy in Dubai for [Blog/Channel Name]
+
+Hi [Name],
+
+Loved your recent guide on [Article Topic]. 
+
+We are The Phoenix Desert Safari Dubai, a direct licensed safari operator in Lahbab Red Dunes. We’d love to host you (and a guest) for a complimentary Sunset Can-Am Dune Buggy and VIP Camp Dinner expedition during your Dubai visit.
+
+In return, we would appreciate an honest mention or review in your upcoming Dubai travel itinerary with a link to our website.
+
+Let us know your travel dates and we'll arrange luxury hotel pickup!
+
+Best,
+The Phoenix PR Team`}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`Subject: Complimentary VIP Desert Safari & Dune Buggy in Dubai for [Blog/Channel Name]\n\nHi [Name],\n\nLoved your recent guide on [Article Topic]. \n\nWe are The Phoenix Desert Safari Dubai, a direct licensed safari operator in Lahbab Red Dunes. We’d love to host you (and a guest) for a complimentary Sunset Can-Am Dune Buggy and VIP Camp Dinner expedition during your Dubai visit.\n\nIn return, we would appreciate an honest mention or review in your upcoming Dubai travel itinerary with a link to our website.\n\nLet us know your travel dates and we'll arrange luxury hotel pickup!\n\nBest,\nThe Phoenix PR Team\nhttps://desertsafaridxbpro.com`);
+                    showToastNotification('Travel Blogger pitch copied!');
+                  }}
+                  className="w-full py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[14px]">content_copy</span>
+                  <span>Copy Blogger Pitch</span>
+                </button>
+              </div>
+
+              {/* Pitch 3: UAE Press Release & Travel Editorial */}
+              <div className="bg-white rounded-xl p-5 border border-[#E9E1DF] shadow-xs flex flex-col justify-between space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">Pitch Template 3</span>
+                    <span className="text-[10px] text-stone-400 font-semibold">Press Release</span>
+                  </div>
+                  <h5 className="font-bold text-stone-900 text-sm">UAE Tourism Media Release</h5>
+                  <p className="text-xs text-stone-500">For Zawya, Gulf News, Khaleej Times, and Middle East Travel news desks.</p>
+                </div>
+                <div className="bg-stone-50 p-3 rounded-lg font-mono text-[11px] text-stone-700 max-h-36 overflow-y-auto border border-stone-200 leading-relaxed">
+{`FOR IMMEDIATE RELEASE: The Phoenix Desert Safari Launches Direct-to-Consumer Fleet in Dubai Red Dunes
+
+DUBAI, UAE — The Phoenix Desert Safari Dubai (License #102357) announced its 2026 fleet expansion featuring high-performance Can-Am Maverick X3 buggies and 5-star VIP Bedouin camp dining in Lahbab Red Dunes.
+
+By eliminating third-party OTA middleman markups, Phoenix provides guests transparent pay-on-arrival rates starting at AED 120 with zero deposit required.
+
+For media inquiries, press kits, or high-res assets:
+Email: info@desertsafaridxbpro.com
+Phone: +971 56 150 5270`}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`FOR IMMEDIATE RELEASE: The Phoenix Desert Safari Launches Direct-to-Consumer Fleet in Dubai Red Dunes\n\nDUBAI, UAE — The Phoenix Desert Safari Dubai (License #102357) announced its 2026 fleet expansion featuring high-performance Can-Am Maverick X3 buggies and 5-star VIP Bedouin camp dining in Lahbab Red Dunes.\n\nBy eliminating third-party OTA middleman markups, Phoenix provides guests transparent pay-on-arrival rates starting at AED 120 with zero deposit required.\n\nFor media inquiries, press kits, or high-res assets:\nEmail: info@desertsafaridxbpro.com\nPhone: +971 56 150 5270\nWebsite: https://desertsafaridxbpro.com`);
+                    showToastNotification('Press Release template copied!');
+                  }}
+                  className="w-full py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[14px]">content_copy</span>
+                  <span>Copy Press Release</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

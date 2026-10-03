@@ -1,61 +1,128 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <!-- 1. Homepage Hub -->
   <url>
     <loc>https://desertsafaridxbpro.com/</loc>
-    <lastmod>2026-09-30</lastmod>
+    <lastmod>2026-10-03</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://desertsafaridxbpro.com/images/hero-safari.jpg</image:loc>
-      <image:title>Dubai Red Dune Desert Safari with BBQ Dinner</image:title>
-      <image:caption>Authentic Dubai Lahbab Red Dunes 4x4 desert safari adventure</image:caption>
+      <image:loc>https://desertsafaridxbpro.com/logo.svg</image:loc>
+      <image:title>The Phoenix Desert Safari Dubai - DTCM Licensed Operator</image:title>
+      <image:caption>Authentic Dubai Lahbab Red Dunes 4x4 desert safari adventure with VIP camp</image:caption>
     </image:image>
   </url>
+
+  <!-- 2. Evening Desert Safari (Core High-Intent) -->
   <url>
     <loc>https://desertsafaridxbpro.com/evening-desert-safari</loc>
-    <lastmod>2026-09-30</lastmod>
+    <lastmod>2026-10-03</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.95</priority>
     <image:image>
-      <image:loc>https://desertsafaridxbpro.com/images/evening-safari.jpg</image:loc>
-      <image:title>Dubai Evening Desert Safari Rates &amp; Packages</image:title>
+      <image:loc>https://lh3.googleusercontent.com/aida-public/AB6AXuAnHfQ_xD50mSdKpb_A</image:loc>
+      <image:title>Dubai Evening Desert Safari with Red Dune Bashing &amp; BBQ Dinner</image:title>
+      <image:caption>45-minute Lahbab red dune bashing, camel trekking, sandboarding and live shows</image:caption>
     </image:image>
   </url>
+
+  <!-- 3. Dune Buggy Dubai (High Commercial Intent) -->
   <url>
     <loc>https://desertsafaridxbpro.com/dune-buggy-dubai</loc>
-    <lastmod>2026-09-30</lastmod>
+    <lastmod>2026-10-03</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.95</priority>
     <image:image>
-      <image:loc>https://desertsafaridxbpro.com/images/dune-buggy.jpg</image:loc>
-      <image:title>Can-Am &amp; Polaris Dune Buggy Rental Dubai Desert</image:title>
+      <image:loc>https://lh3.googleusercontent.com/aida-public/AB6AXuDhLKdZSpsI-THhAJCL</image:loc>
+      <image:title>Can-Am Maverick X3 &amp; Polaris RZR Dune Buggy Rental Dubai</image:title>
+      <image:caption>Self-drive 1000cc turbo dune buggy tour in high red dunes with instructor guide</image:caption>
     </image:image>
   </url>
+
+  <!-- 4. Quad Biking Dubai ATV -->
   <url>
     <loc>https://desertsafaridxbpro.com/quad-biking-dubai</loc>
-    <lastmod>2026-09-30</lastmod>
+    <lastmod>2026-10-03</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.90</priority>
     <image:image>
-      <image:loc>https://desertsafaridxbpro.com/images/quad-bike.jpg</image:loc>
-      <image:title>Desert Safari with Quad Bike Dubai</image:title>
+      <image:loc>https://lh3.googleusercontent.com/aida-public/AB6AXuCx_MJlPnOvvZCL_s2z</image:loc>
+      <image:title>Desert Safari with Quad Bike Dubai (250cc &amp; 350cc)</image:title>
+      <image:caption>Yamaha quad biking in open desert dunes and private desert track</image:caption>
     </image:image>
   </url>
+
+  <!-- 5. Private VIP Luxury Safari -->
+  <url>
+    <loc>https://desertsafaridxbpro.com/private-vip-safari</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://lh3.googleusercontent.com/aida-public/AB6AXuD3cf4jPrAC-DN5Da2v</image:loc>
+      <image:title>Private VIP Desert Safari in Luxury Land Cruiser 300 Series</image:title>
+      <image:caption>Dedicated private 4x4 convoy, private table service and premium dining</image:caption>
+    </image:image>
+  </url>
+
+  <!-- 6. Abu Dhabi City Tour with Ferrari World -->
   <url>
     <loc>https://desertsafaridxbpro.com/abu-dhabi-city-tour-ferrari-world</loc>
-    <lastmod>2026-09-30</lastmod>
+    <lastmod>2026-10-03</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
     <image:image>
-      <image:loc>https://desertsafaridxbpro.com/images/abu-dhabi-ferrari.jpg</image:loc>
-      <image:title>Abu Dhabi City Tour with Ferrari World Tickets</image:title>
+      <image:loc>https://lh3.googleusercontent.com/aida-public/AB6AXuBXPfyCuA5lyqU7evGI</image:loc>
+      <image:title>Abu Dhabi City Tour with Sheikh Zayed Grand Mosque &amp; Ferrari World</image:title>
+      <image:caption>Round-trip transfer from Dubai to Sheikh Zayed Mosque and Ferrari World tickets</image:caption>
     </image:image>
   </url>
+
+  <!-- 7. Miracle Garden & Global Village Combo -->
+  <url>
+    <loc>https://desertsafaridxbpro.com/miracle-garden-global-village-combo</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&amp;fit=crop&amp;w=1200&amp;q=80</image:loc>
+      <image:title>Dubai Miracle Garden &amp; Global Village Combo Tour with Private Transfers</image:title>
+      <image:caption>Doorstep private car transfer and admission tickets to both iconic attractions</image:caption>
+    </image:image>
+  </url>
+
+  <!-- 8. Alexandra Dhow Cruise Dubai Marina -->
+  <url>
+    <loc>https://desertsafaridxbpro.com/alexandra-dhow-cruise-dubai-marina</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://traveldesk-djbmfrc9edfxb9ec.z01.azurefd.net/photos/3666-fhd.webp</image:loc>
+      <image:title>Alexandra Dhow Cruise Dubai Marina 5-Star Dinner Cruise</image:title>
+      <image:caption>Luxury wooden dhow cruise past Marina skyline, JBR and Ain Dubai with buffet dinner</image:caption>
+    </image:image>
+  </url>
+
+  <!-- 9. AYA Universe Dubai -->
+  <url>
+    <loc>https://desertsafaridxbpro.com/aya-universe-dubai-experience</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://traveldesk-djbmfrc9edfxb9ec.z01.azurefd.net/photos/4354-fhd.webp</image:loc>
+      <image:title>AYA Universe Dubai Immersive Light &amp; Sound Experience Tickets</image:title>
+      <image:caption>Interactive sensory cosmos zones at WAFI City Mall Dubai</image:caption>
+    </image:image>
+  </url>
+
+  <!-- 10. FAQ & Knowledge Base (AEO & AI Search Snippets) -->
   <url>
     <loc>https://desertsafaridxbpro.com/faq</loc>
-    <lastmod>2026-09-30</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
   </url>
 </urlset>
