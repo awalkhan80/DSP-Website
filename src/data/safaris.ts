@@ -1,4 +1,4 @@
-import { Currency, Experience, OffRoadPricingConfig, Review } from '../types';
+import type { Currency, Experience, OffRoadPricingConfig, Review } from '../types';
 
 export const DEFAULT_OFF_ROAD_PRICING: OffRoadPricingConfig = {
   quad220cc: {
@@ -549,3 +549,4 @@ export const CURRENCY_RATES: Record<Currency, { rate: number; symbol: string }> 
   EUR: { rate: 0.252, symbol: '€' },
   GBP: { rate: 0.215, symbol: '£' }
 };
+

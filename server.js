@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
+import { mountPhoenixAgent } from './agent/routes.mjs';
 
 dotenv.config();
 
@@ -14,10 +15,12 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 const distPath = path.resolve(__dirname, 'dist');
 
-app.use(express.json());
+app.use(express.json({ limit: '32kb' }));
+if (process.env.TRUST_PROXY_HOPS) app.set('trust proxy', Number(process.env.TRUST_PROXY_HOPS));
+mountPhoenixAgent(app);
 
 const GMAIL_USER = (process.env.GMAIL_USER || 'awalgsm@gmail.com').trim();
-const GMAIL_PASS = (process.env.GMAIL_APP_PASSWORD || process.env.GMAIL_PASS || 'qxgd dcbf rskx bjbr').replace(/\s+/g, '');
+const GMAIL_PASS = (process.env.GMAIL_APP_PASSWORD || process.env.GMAIL_PASS || '').replace(/\s+/g, '');
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -203,6 +206,11 @@ function generateBookingVoucherHtml(data) {
   `;
 }
 
+// Browser-submitted totals cannot authorize a booking or a confirmation email.
+app.post('/api/send-booking-email', (_req, res) => {
+  res.status(410).json({ error: 'Use the booking assistant to verify live availability and create your reservation.' });
+});
+
 app.post('/api/send-booking-email', async (req, res) => {
   try {
     const data = req.body;
@@ -343,3 +351,4 @@ if (fs.existsSync(distPath)) {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server listening on port ${PORT}`);
 });
+

@@ -1,0 +1,231 @@
+{
+  "source": "src/data/safaris.ts",
+  "notice": "Website reference catalogue only. Starting rates are not final quotes. Approved database products control all bookings.",
+  "tours": [
+    {
+      "id": "evening-desert-safari",
+      "title": "Evening Desert Safari",
+      "description": "The quintessential Dubai safari. Thrilling dune bashing in Red Lahbab sands, traditional Bedouin camp hospitality, live BBQ dinner buffet, and captivating cultural shows.",
+      "startingPriceAED": 120,
+      "priceUnit": "From",
+      "highlights": [
+        "45-min Dune Bashing",
+        "Sunset Photo Stop",
+        "Camel Trek Experience",
+        "Sandboarding Thrill",
+        "BBQ Buffet & Drinks",
+        "Fire & Belly Dancing"
+      ],
+      "departureTime": "02:30 PM - 03:15 PM",
+      "returnTime": "09:30 PM",
+      "hotelPickup": true,
+      "vehicleType": "Toyota Land Cruiser 4x4"
+    },
+    {
+      "id": "morning-desert-safari",
+      "title": "Morning Desert Safari",
+      "description": "Ideal for travelers tight on schedule or those wishing to beat the midday warmth. Witness magical first light over pristine windswept crests with coffee and dates.",
+      "startingPriceAED": 450,
+      "priceUnit": "From",
+      "highlights": [
+        "Sunrise Golden Dune Run",
+        "Camel Ride Experience",
+        "High Dune Sandboarding",
+        "Arabic Coffee & Dates",
+        "Chilled Refreshments",
+        "Pickup 05:00 - 05:30 AM"
+      ],
+      "departureTime": "05:00 AM - 05:30 AM",
+      "returnTime": "09:00 AM - 09:30 AM",
+      "hotelPickup": true,
+      "vehicleType": "Luxury 4x4 Land Cruiser"
+    },
+    {
+      "id": "private-vip-safari",
+      "title": "Private Desert Safari VIP",
+      "description": "An exclusive private Land Cruiser solely reserved for your family or group. Includes dedicated desert guide, custom pickup schedules, VIP camp seating and table-side service.",
+      "startingPriceAED": 850,
+      "priceUnit": "Car Price",
+      "highlights": [
+        "Dedicated Private 4x4",
+        "Custom Pick-up Timing",
+        "VIP Table Dining Service",
+        "Falcon Photography",
+        "Shisha on Table Included",
+        "Up to 6 Guests Total"
+      ],
+      "departureTime": "Flexible (Your Choice)",
+      "returnTime": "Flexible (Up to 10:00 PM)",
+      "hotelPickup": true,
+      "vehicleType": "Private VIP Land Cruiser 300 Series"
+    },
+    {
+      "id": "quad-bike-atv",
+      "title": "Quad Bike ATV Rental",
+      "description": "Conquer open desert dunes on high-performance 250 CC to 350 CC Quad Bikes. Full freedom in open desert dunes with helmet, goggles, and safety guide escort. Direct desert meeting point (free) or private 4x4 luxury transfer available.",
+      "startingPriceAED": 150,
+      "priceUnit": "/ Session",
+      "highlights": [
+        "250 CC & 350 CC Quad Bikes",
+        "Helmet & Goggles Included",
+        "Direct Meeting Point (Free)",
+        "Private 4x4 Chauffeur Option",
+        "Lead Desert Marshall",
+        "Comprehensive Safety Brief"
+      ],
+      "hotelPickup": false,
+      "vehicleType": "250 CC Quad Bike ATV"
+    },
+    {
+      "id": "can-am-buggy-safari",
+      "title": "Can-Am Dune Buggy Safari",
+      "description": "Drive 2-seater or 4-seater Can-Am Maverick X3 Turbo buggies with roll cages, 4-point harnesses, and desert guides. Direct meeting point at Lahbab camp or private 4x4 luxury transfer available.",
+      "startingPriceAED": 700,
+      "priceUnit": "From / 30m",
+      "highlights": [
+        "Can-Am Maverick X3 Turbo",
+        "2-Seater & 4-Seater Options",
+        "Direct Meeting Point (Free)",
+        "Private 4x4 Chauffeur Option",
+        "Roll-Cage & Race Harness",
+        "Full Tank High-Octane Fuel"
+      ],
+      "hotelPickup": false,
+      "vehicleType": "Can-Am Maverick X3 Turbo 1000cc"
+    },
+    {
+      "id": "dubai-half-day-city-tour",
+      "title": "Dubai Half-Day City Tour",
+      "description": "Witness the transformation from ancient fishing village to glittering metropolis. Includes Burj Al Arab photo stop, Dubai Frame, Gold & Spice Souk, and Dubai Mall.",
+      "startingPriceAED": 75,
+      "priceUnit": "From",
+      "highlights": [
+        "AC Transport & Tour Guide",
+        "Abra Boat Crossing at Creek",
+        "Burj Al Arab & Jumeirah Beach",
+        "Gold & Spice Souk Walk",
+        "Dubai Frame Panorama Stop",
+        "Zabeel Palace Pass"
+      ],
+      "departureTime": "08:30 AM - 09:00 AM",
+      "returnTime": "02:30 PM",
+      "hotelPickup": true,
+      "vehicleType": "Luxury AC Mini-Coach"
+    },
+    {
+      "id": "abu-dhabi-tour-from-dubai",
+      "title": "Abu Dhabi Tour from Dubai",
+      "description": "Full-day capital journey featuring the awe-inspiring Sheikh Zayed Grand Mosque, Emirates Palace photo opportunity, Abu Dhabi Corniche, and Ferrari World Yas Island.",
+      "startingPriceAED": 150,
+      "priceUnit": "From",
+      "highlights": [
+        "Mosque Entry Pass & Dress Assistance",
+        "Roundtrip Dubai Hotel Pick & Drop",
+        "Emirates Palace & Etihad Towers",
+        "Abu Dhabi Corniche Promenade",
+        "Heritage Village Cultural Visit",
+        "Ferrari World Yas Island Stop"
+      ],
+      "departureTime": "08:00 AM - 08:30 AM",
+      "returnTime": "05:00 PM",
+      "hotelPickup": true,
+      "vehicleType": "Executive Coach with Free WiFi"
+    },
+    {
+      "id": "marina-luxury-dhow-cruise",
+      "title": "Marina Luxury Dhow Cruise",
+      "description": "Sail along Dubai Marina's world-renowned skyline. Enjoy an international 5-star buffet dinner, soft drinks, ambient music, and live Tanoura dance performances.",
+      "startingPriceAED": 110,
+      "priceUnit": "From",
+      "highlights": [
+        "International Multi-Cuisine Buffet",
+        "Upper Deck Open Air Sightseeing",
+        "Ain Dubai & Marina Mall Views",
+        "Live Tanoura Folk Performance",
+        "Unlimited Soft Drinks, Tea & Coffee",
+        "Red Carpet Welcome Drink"
+      ],
+      "departureTime": "08:00 PM (Boarding 07:30 PM)",
+      "returnTime": "10:30 PM",
+      "hotelPickup": true,
+      "vehicleType": "Traditional Double-Decker Wooden Dhow"
+    },
+    {
+      "id": "burj-khalifa-124-125",
+      "title": "Burj Khalifa At The Top (124th & 125th Floor)",
+      "description": "Ascend to the 124th and 125th floors of the iconic Burj Khalifa in high-speed double-deck elevators at 10m/s. Experience 360-degree panoramic glass views over Dubai, Arabian Gulf, outdoor observation terrace, and state-of-the-art telescopes.",
+      "startingPriceAED": 175,
+      "priceUnit": "/ Person",
+      "highlights": [
+        "Levels 124 & 125 Admission (AED 175)",
+        "Fastest Double-Deck Elevators (10m/s)",
+        "360° Glass Panoramic Views of Dubai",
+        "Outdoor Observation Terrace Access",
+        "High-Powered Digital Telescopes",
+        "Direct Dubai Mall Ground Floor Entry"
+      ],
+      "departureTime": "Daily (Every 30 mins from 08:30 AM)",
+      "returnTime": "Flexible Visit",
+      "hotelPickup": false,
+      "vehicleType": "Direct Gate (Dubai Mall LG Floor)"
+    },
+    {
+      "id": "burj-khalifa-fountain-lake-ride",
+      "title": "Burj Khalifa Fountain Lake Ride",
+      "description": "Glide across the 30-acre Burj Lake on a traditional wooden motorized Abra. Witness the world largest choreographed fountain dancing to Arabic and international hits right next to your boat with illuminated water jets rising 140 meters high.",
+      "startingPriceAED": 100,
+      "priceUnit": "/ Person",
+      "highlights": [
+        "Front-Row Fountain Lake Cruise (AED 100)",
+        "Traditional Wooden Abra Boat Experience",
+        "Towering 140m Water Jets Up Close",
+        "Direct Sightline to Burj Khalifa LED Show",
+        "Best Photography Angles Guaranteed",
+        "Dedicated Express Boarding Pontoon"
+      ],
+      "departureTime": "05:45 PM - 11:15 PM (Every 30 Mins)",
+      "returnTime": "30 Min Session",
+      "hotelPickup": false,
+      "vehicleType": "Traditional Electric Lake Abra"
+    },
+    {
+      "id": "skydive-dubai-tandem-palm",
+      "title": "Sky Dive Dubai Tandem Palm Jumeirah",
+      "description": "The pinnacle of skydiving in Dubai. Freefall at over 120 mph (190 km/h) harnessed to a world-class USPA-licensed tandem master from 13,000 feet directly above the legendary Palm Jumeirah. Includes dedicated camera flyer with high-definition video and photo package.",
+      "startingPriceAED": 2700,
+      "priceUnit": "/ Person",
+      "highlights": [
+        "13,000 Feet Tandem Skydiving (AED 2700)",
+        "Iconic Palm Jumeirah Dropzone (Premium DZ)",
+        "60-Second 120mph Freefall Thrill",
+        "Dedicated Video & Photo Package Included",
+        "USPA-Certified Master Instructor",
+        "Commemorative Flight Certificate"
+      ],
+      "departureTime": "Morning Slots (07:00 AM - 11:30 AM)",
+      "returnTime": "Flexible",
+      "hotelPickup": false,
+      "vehicleType": "Twin Otter Drop Aircraft"
+    },
+    {
+      "id": "miracle-garden-global-village-combo",
+      "title": "Miracle Garden + Global Village Combo",
+      "description": "Dual iconic Dubai attraction combo featuring a dedicated private luxury vehicle (AED 500 base for up to 2 pax, +AED 50 for each extra pax after 2) and official combo entry tickets (AED 130 per person). Explore 150 million blooming flowers at Dubai Miracle Garden in the afternoon, followed by 90+ cultural country pavilions and night shows at Global Village.",
+      "startingPriceAED": 500,
+      "priceUnit": "Car + Tkts",
+      "highlights": [
+        "Private Dedicated Car for Your Group (AED 500 for 1-2 Pax)",
+        "+AED 50 for Each Additional Pax after 2 Pax",
+        "Combo Entry Tickets Included (AED 130 / Person)",
+        "150 Million Blooming Flowers & Emirates A380",
+        "Global Village 90+ Country Pavilions & Shows",
+        "Doorstep Hotel / Residence Pick-Up & Drop-Off",
+        "Flexible Chauffeur Waiting Time"
+      ],
+      "departureTime": "02:00 PM - 03:00 PM",
+      "returnTime": "09:30 PM - 10:00 PM",
+      "hotelPickup": true,
+      "vehicleType": "Private AC Executive Car / SUV"
+    }
+  ]
+}
