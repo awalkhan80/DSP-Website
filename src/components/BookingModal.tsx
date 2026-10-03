@@ -302,10 +302,19 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   const handleConfirmBooking = (e: React.FormEvent) => {
     e.preventDefault();
-    const randomRef = 'PHX-' + Math.floor(100000 + Math.random() * 900000);
-    setBookingRef(randomRef);
-    setStep('confirmation');
-    sendBookingConfirmationEmail(randomRef);
+    const request = {
+      tour: currentExperience.title, date: safariDate, adults, children,
+      transferPreference: transferType, pickupLocation: hotelOrHomeAddress,
+      name: guestName, phone: guestPhone,
+      ...(isQuadTour ? { quadEngine, quadRider, quadTerrain, quadQuantity, duration } : {}),
+      ...(isBuggyTour ? { buggyModel, buggySeater, buggyQuantity, duration } : {}),
+      ...(isDesertSafariTour ? { addOnQuad, addOnBuggy, addOnFalcon, addOnVipTable, addOnQuadTerrain, addOnQuadDuration, addOnBuggyDuration } : {}),
+      specialRequests,
+    };
+    window.dispatchEvent(new CustomEvent('phoenix:booking-enquiry', { detail: {
+      message: 'Please check the current price and availability for my pay-on-arrival booking request: ' + JSON.stringify(request)
+    } }));
+    onClose();
   };
 
   const handleSendToWhatsApp = () => {
@@ -1407,7 +1416,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#D97706] hover:brightness-105 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-orange-500/25 cursor-pointer transition-all active:scale-98 flex items-center gap-1.5"
               >
                 <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                <span>Confirm &amp; Generate Voucher</span>
+                <span>Check availability with assistant</span>
               </button>
             </div>
           </form>
@@ -1572,3 +1581,4 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     </div>
   );
 };
+

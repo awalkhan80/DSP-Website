@@ -22,6 +22,7 @@ import { BookingModal } from './components/BookingModal';
 import { ItineraryModal } from './components/ItineraryModal';
 import { ReviewModal } from './components/ReviewModal';
 import { WhatsAppDrawer } from './components/WhatsAppDrawer';
+import { TourAssistant } from './components/TourAssistant';
 import { InfoModal } from './components/InfoModal';
 import { AdminDashboard, CMSConfig } from './components/admin/AdminDashboard';
 import { AdminLoginModal } from './components/admin/AdminLoginModal';
@@ -460,6 +461,8 @@ export default function App() {
         />
       )}
 
+      <TourAssistant />
+
       {/* UltraMsg WhatsApp Direct Concierge Drawer */}
       <WhatsAppDrawer
         isOpen={whatsAppOpen}
@@ -477,3 +480,4 @@ export default function App() {
     </div>
   );
 }
+
