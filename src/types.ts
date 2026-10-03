@@ -23,6 +23,72 @@ export interface Experience {
     title: string;
     description: string;
   }[];
+  // B2B.Tickets / Supplier Reseller Properties
+  inventorySource?: 'direct' | 'b2b_tickets';
+  b2bTourId?: number;
+  b2bOfferId?: number;
+  b2bSupplierPriceAED?: number;
+  b2bMarkupPercent?: number;
+  b2bStatus?: 'active' | 'inactive';
+}
+
+export interface B2BTourRaw {
+  id: number;
+  name: string;
+  heroImage?: {
+    srcSet?: {
+      sizes?: { src: string; width: number; height: number }[];
+    }[];
+  };
+  categories?: { name: string; url: string }[];
+  salesDescription?: string;
+  termsAndConditions?: string;
+  cancellationPolicy?: string;
+  offers?: B2BOfferRaw[];
+  googlePlacesRating?: number;
+  totalRating?: number;
+  totalRatingsCount?: number;
+}
+
+export interface B2BOfferRaw {
+  id: number;
+  name: string;
+  code?: string;
+  numberOfHours?: number;
+  description?: string;
+  pricingPeriods?: {
+    id: number;
+    pricePerAdult: number;
+    pricePerChild: number;
+    recPricePerAdult: number;
+    recPricePerChild: number;
+    currency: string;
+    isBookable: boolean;
+  }[];
+  timeSlots?: {
+    id: number;
+    name: string;
+    startTime: number;
+    endTime: number;
+  }[];
+}
+
+export interface B2BBookingRecord {
+  id: string;
+  phoenixRef: string;
+  b2bBookingId?: number | string;
+  tourId: number | string;
+  tourName: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  tourDate: string;
+  pax: number;
+  totalAED: number;
+  supplierCostAED: number;
+  profitMarginAED: number;
+  status: 'confirmed' | 'pending' | 'cancelled';
+  createdAt: string;
 }
 
 export interface Review {

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Experience } from '../types';
+import { PhoenixLogo } from './icons/PhoenixLogo';
 
 interface FooterProps {
   onSelectExperience: (experienceId: string) => void;
@@ -32,12 +33,8 @@ export const Footer: React.FC<FooterProps> = ({
           {/* Column 1: Brand & Licenses */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <a href="#">
-                <img
-                  alt="The Phoenix Desert Safari Dubai Logo"
-                  className="h-10 w-auto object-contain"
-                  src="https://lh3.googleusercontent.com/aida/AEtjO1UAlnx-CA70htzzvoRrCEmkQmvTfyhb6aC0CW-1w6rCjbU9LPi_1PcCFxZ-zHAO02VU2USkvo5iZNpQMZzHgaa75YOYe9zfGbE3YVAlapHQLDilHR9yROJKtW7IlDrS6gKpB-GHJxALLTh_i0A67sU-4QyT-5eE4hUsQi7e8U4Kzo3V6zXL4kzSyvGqYkkuVYu1WoOqX6u63N-ysJqZMlOoEdjK3zmJ1AEk_rWRu-OYXmwJxESOERYd6zVi"
-                />
+              <a href="#" className="cursor-pointer">
+                <PhoenixLogo className="h-10 w-auto" />
               </a>
             </div>
             <p className="text-xs text-stone-600 leading-relaxed">

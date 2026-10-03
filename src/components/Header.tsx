@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Currency } from '../types';
 import { CURRENCY_RATES } from '../data/safaris';
 import { WhatsAppLogo } from './icons/WhatsAppLogo';
+import { PhoenixLogo } from './icons/PhoenixLogo';
 
 interface HeaderProps {
   currency: Currency;
@@ -132,13 +133,9 @@ export const Header: React.FC<HeaderProps> = ({
               e.preventDefault();
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="flex items-center group"
+            className="flex items-center group cursor-pointer"
           >
-            <img
-              alt="The Phoenix Desert Safari Dubai Logo"
-              className="h-11 w-auto object-contain transition-transform group-hover:scale-102"
-              src="https://lh3.googleusercontent.com/aida/AEtjO1UAlnx-CA70htzzvoRrCEmkQmvTfyhb6aC0CW-1w6rCjbU9LPi_1PcCFxZ-zHAO02VU2USkvo5iZNpQMZzHgaa75YOYe9zfGbE3YVAlapHQLDilHR9yROJKtW7IlDrS6gKpB-GHJxALLTh_i0A67sU-4QyT-5eE4hUsQi7e8U4Kzo3V6zXL4kzSyvGqYkkuVYu1WoOqX6u63N-ysJqZMlOoEdjK3zmJ1AEk_rWRu-OYXmwJxESOERYd6zVi"
-            />
+            <PhoenixLogo className="h-10 sm:h-11 w-auto" />
           </a>
         </div>
 

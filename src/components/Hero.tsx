@@ -81,7 +81,7 @@ export const Hero: React.FC<HeroProps> = ({
 
   const bgImageUrl =
     heroImage ||
-    'https://lh3.googleusercontent.com/aida/AEtjO1XhYTIm6i_lgiqgiHMctjmM6WOhkzihEl1WR6AUT1AvGVtCpbttGjyrmbnYUegujMEQtDFsUaCvXxB7QPFlPXRFkznTeSdPeoLy40cUupg_ikW7Sqrlnc_ZTVDnvk-KdFd-3YUT2NPnjB1X_6Bzy1CSvT8faI-OBIsGG8vnvWeTvGcvqGR_lyk-212F0dmwNcb04VN71vxKCLC2Oafz9CkYbjvweLjwOesvIjIceQnU4Mvz5TMS1bqwYsE0';
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuCwh3IxGfRyabThS2IkAAkO8dgF-efStfsRxJ1OeVcgXu3uJ4GtgqV_Ma90tHpmLrmvedQGkOkh0VKcZlNh8e5DBmZy2TtfVPWAKzOJ2cZlwKwdVahe2FQVZ-BwAqh3Pi2Cpg_Y--XbSM36LrxiBL5HqQ55NT_aE_KkRfbdCo1qqbXXXhkZNoiG6yGKjm_Dzi9nmdUz_ADZ9vR_MmbdmkTNoWUG5oPjljsrmRK8AUVCrFZWyKzGs4vZ_A';
 
   return (
     <section className="relative w-full min-h-[942px] flex flex-col justify-end -mt-20 overflow-hidden bg-[#FFF9F2]">

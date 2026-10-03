@@ -318,22 +318,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Floating Operator Portal Quick-Access Switcher */}
-      <div className="fixed bottom-6 left-6 z-40">
-        <button
-          type="button"
-          onClick={handleOpenAdmin}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-stone-900/90 hover:bg-stone-900 text-amber-300 hover:text-white text-xs font-bold shadow-2xl border border-amber-500/40 backdrop-blur-md transition-all cursor-pointer hover:scale-105 active:scale-95 group"
-          title={adminSession ? "Operator Admin Dashboard (Authenticated)" : "Secure Operator Admin Login"}
-        >
-          <span className="material-symbols-outlined text-[18px] text-amber-400 group-hover:rotate-12 transition-transform">
-            {adminSession ? 'admin_panel_settings' : 'lock'}
-          </span>
-          <span>{adminSession ? 'Admin Portal' : 'Admin Login'}</span>
-          <span className={`w-2 h-2 rounded-full ${adminSession ? 'bg-emerald-400' : 'bg-amber-400'} animate-pulse ml-0.5`}></span>
-        </button>
-      </div>
-
       {/* Sticky Header with Announcement Bar & Navigation */}
       <Header
         currency={currency}

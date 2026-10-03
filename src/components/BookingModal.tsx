@@ -306,6 +306,30 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     setBookingRef(randomRef);
     setStep('confirmation');
     sendBookingConfirmationEmail(randomRef);
+
+    // If B2B.Tickets inventory source, sync booking with supplier gateway
+    if (currentExperience.inventorySource === 'b2b_tickets' || currentExperience.b2bOfferId) {
+      fetch('/api/b2b/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phoenixRef: randomRef,
+          tourId: currentExperience.b2bTourId || currentExperience.id,
+          tourName: currentExperience.title,
+          offerId: currentExperience.b2bOfferId || 1221,
+          date: safariDate,
+          paxAdults: adults,
+          paxChildren: children,
+          leadGuestName: guestName,
+          leadGuestEmail: guestEmail,
+          leadGuestPhone: guestPhone,
+          hotelName: hotelOrHomeAddress,
+          roomNumber: roomOrVillaNumber,
+          totalSellingAED: totalAED,
+          supplierCostAED: (currentExperience.b2bSupplierPriceAED || 125) * adults,
+        }),
+      }).catch((e) => console.warn('B2B supplier booking dispatch warning:', e));
+    }
   };
 
   const handleSendToWhatsApp = () => {

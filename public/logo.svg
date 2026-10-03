@@ -1,0 +1,20 @@
+<svg viewBox="0 0 320 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="50%" stop-color="#D97706" />
+      <stop offset="100%" stop-color="#B45309" />
+    </linearGradient>
+    <linearGradient id="flame" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EA580C" />
+      <stop offset="100%" stop-color="#9A3412" />
+    </linearGradient>
+  </defs>
+  <circle cx="40" cy="40" r="36" fill="#1C1917" stroke="url(#gold)" stroke-width="2" />
+  <path d="M40 16C43 22 48 26 54 28C48 30 45 32 45 37C45 33 42 30 38 30C35 30 32 32 30 34C30 29 34 24 40 16Z" fill="url(#gold)" />
+  <path d="M40 26C46 32 57 35 65 40C56 41 51 48 49 56C48 49 44 45 38 45C31 45 26 50 17 40C27 37 34 32 40 26Z" fill="url(#gold)" />
+  <path d="M40 37C43 42 48 46 55 49C49 51 47 56 45 63C44 58 41 54 36 54C31 54 27 58 25 63C24 57 21 51 16 49C23 46 28 42 31 37C35 41 37 41 40 37Z" fill="url(#flame)" />
+  <circle cx="40" cy="29" r="3" fill="#FEF3C7" />
+  <text x="90" y="44" font-family="'Playfair Display', Georgia, serif" font-size="24" font-weight="900" letter-spacing="2" fill="#1C1917">THE PHOENIX</text>
+  <text x="92" y="60" font-family="'Plus Jakarta Sans', sans-serif" font-size="10.5" font-weight="800" letter-spacing="3" fill="#D97706">DESERT SAFARI DUBAI</text>
+</svg>

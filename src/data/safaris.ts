@@ -423,7 +423,7 @@ export const EXPERIENCES: Experience[] = [
     priceAED: 2700,
     priceUnit: '/ Person',
     description: 'The pinnacle of skydiving in Dubai. Freefall at over 120 mph (190 km/h) harnessed to a world-class USPA-licensed tandem master from 13,000 feet directly above the legendary Palm Jumeirah. Includes dedicated camera flyer with high-definition video and photo package.',
-    image: 'https://images.unsplash.com/photo-1521673845931-7b0fb2a73dd7?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=1200&q=80',
     altText: 'Tandem skydiver in freefall over the Palm Jumeirah island in Dubai with blue ocean and skyline in the background',
     highlights: [
       '13,000 Feet Tandem Skydiving (AED 2700)',
@@ -476,6 +476,79 @@ export const EXPERIENCES: Experience[] = [
       { time: '06:00 PM', title: 'Transfer to Global Village', description: 'Short scenic drive arriving at Global Village as evening illumination begins.' },
       { time: '06:30 PM', title: 'Global Village Cultural Pavilions', description: '3.5 hours sampling street delicacies, shopping authentic crafts from 90+ cultures, and enjoying cultural stage shows.' },
       { time: '10:00 PM', title: 'Comfortable Private Drop-off', description: 'Relax in your dedicated private car with direct drop-off back at your doorstep.' }
+    ]
+  },
+  {
+    id: 'alexandra-dhow-cruise-dubai-marina',
+    category: 'city-tours',
+    categoryLabel: 'B2B Partner Attractions',
+    title: 'Alexandra Dhow Cruise Dubai Marina',
+    subtitle: '5-Star Dinner Cruise & Live Show',
+    badge: 'B2B Supplier Sync',
+    badgeColor: 'from-blue-600 to-indigo-600',
+    duration: '2 Hours',
+    priceAED: 165,
+    priceUnit: '/ Person',
+    description: 'Luxury wooden dhow dinner cruise gliding along the illuminated Dubai Marina skyline, JBR, and Ain Dubai. Includes full international buffet, live vocal singer, and panoramic upper deck seating.',
+    image: 'https://traveldesk-djbmfrc9edfxb9ec.z01.azurefd.net/photos/3666-fhd.webp',
+    altText: 'Alexandra Dhow Cruise gliding through Dubai Marina skyline at night',
+    highlights: [
+      '5-Star International Buffet Dinner',
+      'Dubai Marina & Ain Dubai Skyline Views',
+      'Live Vocalist & Cultural Entertainment',
+      'Instant B2B Supplier E-Voucher',
+      'Direct Reporting at Dubai Marina Yacht Club'
+    ],
+    departureTime: '08:30 PM',
+    returnTime: '10:45 PM',
+    hotelPickup: false,
+    inventorySource: 'b2b_tickets',
+    b2bTourId: 5,
+    b2bOfferId: 1221,
+    b2bSupplierPriceAED: 125,
+    b2bMarkupPercent: 32,
+    b2bStatus: 'active',
+    itinerary: [
+      { time: '08:15 PM', title: 'Boarding at Dubai Marina Yacht Club', description: 'Welcome drinks and priority boarding to your reserved upper deck table.' },
+      { time: '09:00 PM', title: 'Marina Cruise Departure & Buffet Dinner', description: 'Sail past luxury yachts, towering skyscrapers, and JBR beachfront while enjoying chef-curated cuisine.' },
+      { time: '10:00 PM', title: 'Live Entertainment & Sightseeing', description: 'Live singer performance under the illuminated stars with views of Ain Dubai Ferris Wheel.' },
+      { time: '10:45 PM', title: 'Return & Disembarkation', description: 'Gentle docking back at Dubai Marina promenade.' }
+    ]
+  },
+  {
+    id: 'aya-universe-dubai-experience',
+    category: 'city-tours',
+    categoryLabel: 'B2B Partner Attractions',
+    title: 'AYA Universe Dubai',
+    subtitle: 'Immersive Futuristic Light & Sound Park',
+    badge: 'B2B Live Ticket',
+    badgeColor: 'from-purple-600 to-indigo-600',
+    duration: '2 Hours',
+    priceAED: 135,
+    priceUnit: '/ Person',
+    description: 'Step into an ethereal realm of light, sound, and cosmic wonders across 12 unique interactive immersive zones located at WAFI City Mall Dubai.',
+    image: 'https://traveldesk-djbmfrc9edfxb9ec.z01.azurefd.net/photos/4354-fhd.webp',
+    altText: 'AYA Universe Dubai luminous glowing chambers and interactive light installations',
+    highlights: [
+      '12 Interactive Sensory Cosmos Zones',
+      'State-of-the-Art Sound & Projection Mapping',
+      'Instant Mobile Barcode Entry Ticket',
+      'Located at WAFI City Mall Dubai',
+      'All Ages Welcomed'
+    ],
+    departureTime: 'Flexible Open Timings',
+    returnTime: '10:00 PM Close',
+    hotelPickup: false,
+    inventorySource: 'b2b_tickets',
+    b2bTourId: 20,
+    b2bOfferId: 1310,
+    b2bSupplierPriceAED: 115,
+    b2bMarkupPercent: 17,
+    b2bStatus: 'active',
+    itinerary: [
+      { time: 'Zone 1 - Aurora', description: 'Walk through cascading gesture-controlled cosmic pools and luminous waves.', title: 'Aurora Gateway' },
+      { time: 'Zone 2 - Flora & Fauna', description: 'Interactive bio-luminescent gardens reacting to human movement.', title: 'The Source' },
+      { time: 'Zone 3 - Harmonia & Cosmos', description: '360-degree mirrored infinity spectacle with celestial symphonies.', title: 'Cosmic Chamber' }
     ]
   }
 ];

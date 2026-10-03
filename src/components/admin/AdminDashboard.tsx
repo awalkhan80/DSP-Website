@@ -3,6 +3,8 @@ import { Experience, OffRoadPricingConfig } from '../../types';
 import { DEFAULT_OFF_ROAD_PRICING, EXPERIENCES, getBuggyPrice, getQuadBikePrice } from '../../data/safaris';
 import { SeoAuditDashboard } from './SeoAuditDashboard';
 import { AdminSession } from '../../utils/adminAuth';
+import { PhoenixLogo } from '../icons/PhoenixLogo';
+import { B2BIntegrationManager } from './B2BIntegrationManager';
 
 export interface CMSConfig {
   heroTitle: string;
@@ -93,7 +95,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   // Navigation tabs
   const [activeNav, setActiveNav] = useState<
-    'overview-analytics' | 'homepage-cms' | 'tour-catalog-pricing' | 'offroad-pricing' | 'bookings-convoys' | 'customer-inquiries-whatsapp' | 'seo-audit' | 'backup-restore' | 'settings'
+    'overview-analytics' | 'homepage-cms' | 'tour-catalog-pricing' | 'b2b-integration' | 'offroad-pricing' | 'bookings-convoys' | 'customer-inquiries-whatsapp' | 'seo-audit' | 'backup-restore' | 'settings'
   >('tour-catalog-pricing');
 
   // Off-Road Pricing local state
@@ -938,15 +940,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   }}
                   title="Switch to Storefront"
                 >
-                  <img
-                    alt="The Phoenix Desert Safari Dubai"
-                    className="h-8 w-auto object-contain"
-                    src="https://lh3.googleusercontent.com/aida/AEtjO1WMOvN0UE4dKOt2_C2Bu_0t6NHzbp2rJE9uqBBHV2kORBDSkbxPnV1hCrfcGuBGlprkOTzW4ojdptdQ955bvogDjBpQfSwWSDgZhQS-G2RdCUY9KHTKGAsBavdkzOx5ZzWuoeqPzD--gQcwnTSQ_-uDS0DutDuPQMSR-cWsuzYU8xjSXxAR3Lk0Au4-2UzfCS9DfoA4Jx_mLcvFHnfGrnoA0OBdJmoUEpGX9OB0yF0PrZWxKaEZYmqBxrd0"
-                  />
-                  <div className="flex flex-col">
-                    <span className="font-serif font-bold text-base text-[#1E1B1A] leading-tight">The Phoenix</span>
-                    <span className="text-[9px] text-[#8D4B00] font-bold uppercase tracking-wider">Desert Safari Dubai</span>
-                  </div>
+                  <PhoenixLogo className="h-8 w-auto" />
                 </div>
                 <button
                   type="button"
@@ -963,6 +957,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 {[
                   { id: 'homepage-cms', label: 'Homepage CMS & Showcase', icon: 'view_quilt', badge: 'Live' },
                   { id: 'tour-catalog-pricing', label: 'Tour Pricing & Slots', icon: 'explore', badge: `${experiences.length} Tours` },
+                  { id: 'b2b-integration', label: 'B2B Supplier & API Sync', icon: 'hub', badge: 'Agency #1650' },
                   { id: 'offroad-pricing', label: 'Off-Road Machine Rates', icon: 'sports_motorsports', badge: 'Per Vehicle' },
                   { id: 'bookings-convoys', label: 'Bookings & Convoys', icon: 'directions_car', badge: '18 Active' },
                   { id: 'seo-audit', label: 'Technical SEO Audit', icon: 'travel_explore', badge: '98/100' },
@@ -1056,15 +1051,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="flex flex-col gap-6">
           {/* Brand Header */}
           <div className="flex items-center gap-3 px-3 py-2 cursor-pointer" onClick={onSwitchToStorefront} title="Click to view Storefront">
-            <img
-              alt="The Phoenix Desert Safari Dubai luxury brand logo"
-              className="h-8 w-auto object-contain"
-              src="https://lh3.googleusercontent.com/aida/AEtjO1WMOvN0UE4dKOt2_C2Bu_0t6NHzbp2rJE9uqBBHV2kORBDSkbxPnV1hCrfcGuBGlprkOTzW4ojdptdQ955bvogDjBpQfSwWSDgZhQS-G2RdCUY9KHTKGAsBavdkzOx5ZzWuoeqPzD--gQcwnTSQ_-uDS0DutDuPQMSR-cWsuzYU8xjSXxAR3Lk0Au4-2UzfCS9DfoA4Jx_mLcvFHnfGrnoA0OBdJmoUEpGX9OB0yF0PrZWxKaEZYmqBxrd0"
-            />
-            <div className="flex flex-col">
-              <span className="font-serif font-bold text-lg text-[#1E1B1A] leading-tight">The Phoenix</span>
-              <span className="text-[10px] text-[#8D4B00] font-bold uppercase tracking-wider">Desert Safari Dubai</span>
-            </div>
+            <PhoenixLogo className="h-8 w-auto" />
           </div>
 
           <div className="px-3">
@@ -1107,6 +1094,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             >
               <span className="material-symbols-outlined text-[20px]">explore</span>
               Tour Catalog &amp; Pricing
+            </button>
+
+            <button
+              onClick={() => setActiveNav('b2b-integration')}
+              className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
+                activeNav === 'b2b-integration'
+                  ? 'bg-[#8D4B00] text-white shadow-sm'
+                  : 'text-[#554336] hover:bg-[#EFE6E4] hover:text-[#1E1B1A]'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-[20px]">hub</span>
+                <span>B2B Supplier &amp; API Sync</span>
+              </div>
+              <span
+                className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                  activeNav === 'b2b-integration' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-800'
+                }`}
+              >
+                78+ Live
+              </span>
             </button>
 
             <button
@@ -1281,29 +1289,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <span className="material-symbols-outlined text-[24px]">menu</span>
               </button>
               <div className="flex items-center gap-2 min-w-0">
-                <img
-                  alt="The Phoenix Desert Safari Dubai"
-                  className="h-7 w-auto object-contain shrink-0"
-                  src="https://lh3.googleusercontent.com/aida/AEtjO1UZ22OtDC0HMRnV7UxKqG-oBlVkDG8Xyi28iKhQkztrVgOCzDHWMfT2thyIqzbM_HedxCs_EvGtlfwdFEAKJqgs6gf1Mz0g6cl_9ob2Ai23OeAOQSTGcZ8QN1uK-aZRnQ1EN08RBYqdHzRyOz2EI1i7oQoI82KEe-3ZyA3Z1n3ajFslmG1yT-rUMuJOQRmvRRGAwqXGluH6dtgDsP2-gCG0HdyUBrzW1Kybm3unP6ygykurnH0IqqcT3sUv"
-                />
-                <div className="flex flex-col min-w-0">
-                  <span className="font-serif font-bold text-sm text-[#1E1B1A] leading-tight truncate">The Phoenix</span>
-                  <span className="text-[10px] text-[#8D4B00] font-bold uppercase tracking-wider truncate">
-                    {activeNav === 'homepage-cms'
-                      ? 'CMS & Hero'
-                      : activeNav === 'tour-catalog-pricing'
-                      ? `Tours (${experiences.length})`
-                      : activeNav === 'bookings-convoys'
-                      ? 'Bookings'
-                      : activeNav === 'seo-audit'
-                      ? 'SEO Audit'
-                      : activeNav === 'backup-restore'
-                      ? 'Backup & Restore'
-                      : activeNav === 'overview-analytics'
-                      ? 'Analytics'
-                      : 'Admin'}
-                  </span>
-                </div>
+                <PhoenixLogo className="h-7 w-auto" />
               </div>
             </div>
 
@@ -3180,6 +3166,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </button>
               </div>
             </div>
+          )}
+
+          {/* VIEW TAB: B2B.TICKETS / TRAVELDESK API INTEGRATION */}
+          {activeNav === 'b2b-integration' && (
+            <B2BIntegrationManager
+              experiences={experiences}
+              onAddExperience={onAddExperience}
+              onUpdateExperience={onUpdateExperience}
+              onDeleteExperience={onDeleteExperience}
+              showToast={showToast}
+            />
           )}
 
           {/* VIEW TAB 7: SEO & SEARCH DOMINANCE AUDIT */}
