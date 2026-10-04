@@ -800,8 +800,13 @@ app.post(['/get_price', '/api/get_price', '/api/agent/get_price'], (req, res) =>
       totalAED = 650;
       breakdown = 'Can-Am Maverick X3 Dune Buggy 2-Seater (30 mins): AED 650';
     } else if (tourLower.includes('quad') || tourLower.includes('atv')) {
-      totalAED = 150 * adultCount;
-      breakdown = `${adultCount}x 250cc Quad Bike (30 mins track): AED ${totalAED}`;
+      if (tourLower.includes('350') || tourLower.includes('raptor')) {
+        totalAED = 250 * adultCount;
+        breakdown = `${adultCount}x 350cc Yamaha Raptor Quad Bike (30 mins open dunes): AED ${totalAED}`;
+      } else {
+        totalAED = 150 * adultCount;
+        breakdown = `${adultCount}x 250cc Quad Bike (30 mins track): AED ${totalAED}`;
+      }
     } else if (tourLower.includes('abu dhabi') || tourLower.includes('ferrari')) {
       pricePerAdult = 350;
       pricePerChild = 280;

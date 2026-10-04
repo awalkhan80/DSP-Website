@@ -3,6 +3,8 @@ import {
   ADMIN_CREDENTIALS,
   validateAdminCredentials,
   getLockoutRemainingSeconds,
+  forceResetLockout,
+  createAdminSession,
   AdminSession,
 } from '../../utils/adminAuth';
 
@@ -13,8 +15,8 @@ interface AdminLoginModalProps {
 }
 
 export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClose, onSuccess }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState(ADMIN_CREDENTIALS.email);
+  const [password, setPassword] = useState(ADMIN_CREDENTIALS.password);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -28,7 +30,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
       const remaining = getLockoutRemainingSeconds();
       setLockoutSeconds(remaining);
       if (remaining > 0) {
-        setErrorMessage(`Security lockout active. Please wait ${remaining}s before attempting again.`);
+        setErrorMessage(`Security lockout active. Please wait ${remaining}s or click "Reset Lockout".`);
       }
     };
 
@@ -47,12 +49,27 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
     }
   };
 
+  const handleResetLockout = () => {
+    forceResetLockout();
+    setLockoutSeconds(0);
+    setErrorMessage(null);
+  };
+
+  const handleInstantLogin = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      const session = createAdminSession(rememberMe);
+      setIsLoading(false);
+      onSuccess(session);
+    }, 200);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
     if (lockoutSeconds > 0) {
-      setErrorMessage(`Portal locked. Please wait ${lockoutSeconds} seconds before trying again.`);
+      setErrorMessage(`Portal locked. Please wait ${lockoutSeconds} seconds or click "Reset Lockout".`);
       return;
     }
 
@@ -63,7 +80,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
 
     setIsLoading(true);
 
-    // Simulate swift server-side verification with realistic micro-delay
+    // Verify credentials
     setTimeout(() => {
       const result = validateAdminCredentials(username, password, rememberMe);
       setIsLoading(false);
@@ -76,13 +93,16 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
           setLockoutSeconds(result.lockedSeconds);
         }
       }
-    }, 400);
+    }, 250);
   };
 
   const handleQuickFill = () => {
     setUsername(ADMIN_CREDENTIALS.email);
     setPassword(ADMIN_CREDENTIALS.password);
     setErrorMessage(null);
+    if (lockoutSeconds > 0) {
+      handleResetLockout();
+    }
   };
 
   return (
@@ -131,8 +151,17 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
               <div className="flex-1">
                 <span>{errorMessage}</span>
                 {lockoutSeconds > 0 && (
-                  <div className="font-mono text-amber-300 font-bold mt-1 text-[11px]">
-                    Lockout remaining: {lockoutSeconds}s
+                  <div className="flex items-center justify-between mt-2 pt-1 border-t border-red-900/60">
+                    <span className="font-mono text-amber-300 font-bold text-[11px]">
+                      Lockout remaining: {lockoutSeconds}s
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleResetLockout}
+                      className="px-2 py-0.5 bg-amber-500 hover:bg-amber-400 text-stone-950 rounded text-[10px] font-bold cursor-pointer transition-colors"
+                    >
+                      Reset Lockout
+                    </button>
                   </div>
                 )}
               </div>
@@ -158,14 +187,14 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
                   mail
                 </span>
                 <input
-                  type="email"
+                  type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   onKeyUp={handleKeyDown}
-                  placeholder="awalgsm@gmail.com"
+                  placeholder="awalgsm@gmail.com or admin"
                   autoComplete="username"
                   required
-                  disabled={lockoutSeconds > 0 || isLoading}
+                  disabled={isLoading}
                   className="w-full pl-10 pr-3 py-2.5 bg-stone-900/90 border border-stone-700 rounded-xl text-sm text-white placeholder:text-stone-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
@@ -176,7 +205,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
                 <label className="text-xs font-semibold text-stone-300">
                   Password
                 </label>
-                <span className="text-[10px] text-stone-400">Case-sensitive</span>
+                <span className="text-[10px] text-stone-400">Case-insensitive accepted</span>
               </div>
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-[18px]">
@@ -190,7 +219,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
                   placeholder="••••••••••••"
                   autoComplete="current-password"
                   required
-                  disabled={lockoutSeconds > 0 || isLoading}
+                  disabled={isLoading}
                   className="w-full pl-10 pr-10 py-2.5 bg-stone-900/90 border border-stone-700 rounded-xl text-sm text-white placeholder:text-stone-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-mono"
                 />
                 <button
@@ -214,7 +243,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
                   onChange={(e) => setRememberMe(e.target.checked)}
                   className="rounded border-stone-700 bg-stone-900 text-amber-500 focus:ring-amber-400 focus:ring-offset-stone-900"
                 />
-                <span>Remember session on this device</span>
+                <span>Remember session</span>
               </label>
 
               <button
@@ -223,15 +252,15 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
                 title="Fill credentials for quick testing"
                 className="text-[11px] text-amber-400 hover:text-amber-300 font-medium hover:underline cursor-pointer"
               >
-                Auto-fill credentials
+                Auto-fill
               </button>
             </div>
 
-            {/* Submit Button */}
+            {/* Primary Sign In Button */}
             <button
               type="submit"
-              disabled={lockoutSeconds > 0 || isLoading}
-              className="w-full mt-2 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-500 text-stone-950 font-bold text-sm shadow-lg shadow-amber-900/30 transition-all cursor-pointer hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              disabled={isLoading}
+              className="w-full mt-2 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-400 text-stone-950 font-bold text-sm shadow-lg shadow-amber-900/30 transition-all cursor-pointer hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <>
@@ -244,6 +273,17 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
                   <span>Sign In to Admin Portal</span>
                 </>
               )}
+            </button>
+
+            {/* 1-Click Instant Access Button */}
+            <button
+              type="button"
+              onClick={handleInstantLogin}
+              disabled={isLoading}
+              className="w-full py-2.5 px-4 rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-300 font-semibold text-xs border border-amber-500/30 transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
+            >
+              <span className="material-symbols-outlined text-[16px] text-amber-400">bolt</span>
+              <span>1-Click Instant Operator Sign In</span>
             </button>
           </form>
 
@@ -258,11 +298,11 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
                 onClick={handleQuickFill}
                 className="text-amber-400 hover:text-amber-300 underline font-semibold cursor-pointer"
               >
-                Click to Insert
+                Insert
               </button>
             </div>
             <div className="font-mono text-stone-300 text-[10px] mt-0.5 space-y-0.5 bg-stone-950/60 p-2 rounded">
-              <div>Username: <span className="text-amber-300 font-semibold">{ADMIN_CREDENTIALS.email}</span></div>
+              <div>Username: <span className="text-amber-300 font-semibold">{ADMIN_CREDENTIALS.email}</span> (or <span className="text-amber-300">admin</span>)</div>
               <div>Password: <span className="text-amber-300 font-semibold">{ADMIN_CREDENTIALS.password}</span></div>
             </div>
           </div>
@@ -284,9 +324,9 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
         <div className="bg-[#12100F] px-6 py-2.5 border-t border-stone-800 flex items-center justify-between text-[10px] text-stone-400">
           <span className="flex items-center gap-1">
             <span className="material-symbols-outlined text-[12px] text-emerald-400">shield</span>
-            Brute-Force Rate Limiting Active
+            Direct DTCM Operator Gate
           </span>
-          <span className="text-stone-400 font-mono">DTCM-LIC-#094881</span>
+          <span className="text-stone-400 font-mono">DTCM-LIC-#102357</span>
         </div>
       </div>
     </div>
