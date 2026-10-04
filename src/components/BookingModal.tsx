@@ -126,6 +126,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     !isBuggyTour &&
     currentExperience.category !== 'city-tours';
 
+  // Excursion Tickets require advance payment (Burj Khalifa, Skydive, Miracle Garden), while Safaris, City Tours, Cruises, and Buggies are Pay on Arrival
+  const isExcursionTicket =
+    currentExperience.id.includes('burj-khalifa') ||
+    currentExperience.id.includes('skydive') ||
+    currentExperience.id.includes('miracle-garden');
+
   // Enforce meeting point vs private transfer for quad & buggy, and cap add-on durations on shared safari
   useEffect(() => {
     if (isQuadTour || isBuggyTour) {
@@ -232,7 +238,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       totalAED += quadAddonRate * adults;
     }
     if (addOnBuggy) {
-      const buggyAddonRate = addOnBuggyDuration === '30m' ? 350 : 600;
+      const buggyAddonRate = addOnBuggyDuration === '30m' ? 1000 : 1500;
       totalAED += buggyAddonRate;
     }
     if (addOnFalcon) totalAED += 50 * (adults + children);
@@ -274,7 +280,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           totalAED: totalAED,
           currency: currency,
           convertedTotal: convertedTotal,
-          paymentMethod: 'Cash on Pickup / Card on Arrival (0% Deposit)',
+          paymentMethod: isExcursionTicket
+            ? 'Advance Payment Required (Official Barcode Admission Ticket)'
+            : 'Cash on Pickup / Card on Arrival (100% Pay on Arrival)',
           specialRequests: specialRequests,
           machine: isQuadTour
             ? `${quadQuantity}x ${quadEngine === '220cc' ? '250 CC' : '350 CC'} Quad Bike (${quadRider === 'single' ? 'Single' : 'Double'}, ${quadTerrain === 'inside_circle' ? 'Circle Track' : 'Open Dunes'})`
@@ -1111,11 +1119,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                           className="accent-[#EA580C] w-4 h-4 rounded cursor-pointer"
                         />
                         <span className="text-xs font-bold text-stone-900">
-                          Add Can-Am Dune Buggy
+                          Add Can-Am 2-Seater Dune Buggy
                         </span>
                       </label>
                       <span className="text-xs font-bold text-[#EA580C]">
-                        +{addOnBuggyDuration === '30m' ? 'AED 350' : 'AED 600'} / buggy
+                        +{addOnBuggyDuration === '30m' ? 'AED 1,000' : 'AED 1,500'} / buggy
                       </span>
                     </div>
 
@@ -1132,7 +1140,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                                 : 'bg-white text-stone-700 border-stone-200'
                             }`}
                           >
-                            30 Minutes (AED 350)
+                            30 Minutes (AED 1,000)
                           </button>
 
                           {transferType === 'private_4x4' ? (
@@ -1145,7 +1153,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                                   : 'bg-white text-stone-700 border-stone-200'
                               }`}
                             >
-                              1 Hour (AED 600)
+                              1 Hour (AED 1,500)
                             </button>
                           ) : (
                             <span className="text-[10px] text-stone-500 italic">
@@ -1404,18 +1412,32 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               />
             </div>
 
-            {/* Zero Advance Payment Guarantee */}
-            <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 flex items-start gap-2.5">
-              <span className="material-symbols-outlined text-emerald-600 text-[20px] shrink-0 mt-0.5">
-                verified_user
-              </span>
-              <div className="text-xs text-emerald-950">
-                <span className="font-bold block">Zero Upfront Deposit Required</span>
-                <span>
-                  Pay on pickup/arrival via Cash (AED, USD, EUR, GBP) or Credit/Debit Card directly to your safari captain.
+            {/* Payment Policy Notice: Advance Only for Excursion Tickets vs 100% Pay on Arrival for Safaris, City Tours, Cruises, Buggies */}
+            {isExcursionTicket ? (
+              <div className="p-3 bg-amber-50 rounded-xl border border-amber-300 flex items-start gap-2.5">
+                <span className="material-symbols-outlined text-amber-600 text-[20px] shrink-0 mt-0.5">
+                  confirmation_number
                 </span>
+                <div className="text-xs text-amber-950">
+                  <span className="font-bold block">Advance Payment Required for Excursion Tickets</span>
+                  <span>
+                    Official attraction and gate tickets (Burj Khalifa, SkyDive Dubai, Miracle Garden) require advance payment to generate official electronic admission barcodes. Secure payment link &amp; instant voucher will be issued immediately.
+                  </span>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 flex items-start gap-2.5">
+                <span className="material-symbols-outlined text-emerald-600 text-[20px] shrink-0 mt-0.5">
+                  verified_user
+                </span>
+                <div className="text-xs text-emerald-950">
+                  <span className="font-bold block">100% Pay on Arrival (Zero Advance Deposit)</span>
+                  <span>
+                    Desert Safaris, Guided City Tours, Dhow Cruises, and Quad/Buggy rentals are paid on arrival via Cash (AED, USD, EUR, GBP) or Credit/Debit Card directly to your chauffeur.
+                  </span>
+                </div>
+              </div>
+            )}
 
             {/* Buttons */}
             <div className="pt-2 flex items-center justify-between border-t border-amber-200">
@@ -1510,7 +1532,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <span className="font-bold text-stone-900">{guestName || 'VIP Traveler'}</span>
               </div>
               <div className="flex justify-between pt-1 text-sm font-bold">
-                <span className="text-stone-900">Total Due on Pickup / Arrival:</span>
+                <span className="text-stone-900">
+                  {isExcursionTicket ? 'Total Amount (Advance Payment Required):' : 'Total Due on Pickup / Arrival:'}
+                </span>
                 <span className="text-[#EA580C]">
                   {currency} {convertedTotal.toLocaleString()} (AED {totalAED})
                 </span>
@@ -1569,6 +1593,18 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     <span>Resend Confirmation Email</span>
                   </button>
                 )}
+              </div>
+            )}
+
+            {isExcursionTicket && (
+              <div className="p-3 bg-amber-50 rounded-xl border border-amber-300 text-left text-xs text-amber-950 space-y-1">
+                <span className="font-bold flex items-center gap-1 text-amber-800">
+                  <span className="material-symbols-outlined text-[16px]">info</span>
+                  Advance Payment for Official Barcodes
+                </span>
+                <p className="text-[11px] leading-relaxed">
+                  To generate and release your official electronic barcode entry tickets for <strong>{currentExperience.title}</strong>, please finalize payment via our 24/7 WhatsApp VIP desk or the secure payment link sent to your email.
+                </p>
               </div>
             )}
 

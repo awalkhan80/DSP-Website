@@ -28,10 +28,10 @@ export const DEFAULT_OFF_ROAD_PRICING: OffRoadPricingConfig = {
     fourSeater60m: 1200,
   },
   buggyCanAm: {
-    twoSeater30m: 700,
-    twoSeater60m: 1000,
-    fourSeater30m: 950,
-    fourSeater60m: 1500,
+    twoSeater30m: 1000,
+    twoSeater60m: 1500,
+    fourSeater30m: 1350,
+    fourSeater60m: 1900,
   },
 };
 
@@ -229,7 +229,7 @@ export const EXPERIENCES: Experience[] = [
     subtitle: 'Turbo High Performance',
     badge: 'High-Horsepower',
     duration: 'Buggy',
-    priceAED: 700,
+    priceAED: 1000,
     priceUnit: 'From / 30m',
     description: 'Drive 2-seater or 4-seater Can-Am Maverick X3 Turbo buggies with roll cages, 4-point harnesses, and desert guides. Direct meeting point at Lahbab camp or private 4x4 luxury transfer available.',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBmUuhU2zvZss3m2z-biFjAJWSc-FFBbo1m6ZnN3dfwWCVNQG6SnfV_9_rKM4lG_4ZxVczonwj4fFA8ROhBmd3wkntbAFTYyWk5iVKcvLmfug4xiWYsSITDwsR4KLWVGBghcaRz5lIZ-3lZl4hKk4yEG5pD_1nxWvvUe2jR7HOnv1ZMSUb2WelPbcAkCKqeglh2mmFr64taMzfh-Z42tEhCHT2lzyKMiOgMV3-AEgDrmDbgWeGZEJmFPw',

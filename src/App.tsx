@@ -22,6 +22,7 @@ import { BookingModal } from './components/BookingModal';
 import { ItineraryModal } from './components/ItineraryModal';
 import { ReviewModal } from './components/ReviewModal';
 import { WhatsAppDrawer } from './components/WhatsAppDrawer';
+import { AiBookingAgentWidget } from './components/AiBookingAgentWidget';
 import { InfoModal } from './components/InfoModal';
 import { AdminDashboard, CMSConfig } from './components/admin/AdminDashboard';
 import { AdminLoginModal } from './components/admin/AdminLoginModal';
@@ -513,6 +514,14 @@ export default function App() {
         isOpen={whatsAppOpen}
         onClose={() => setWhatsAppOpen(false)}
         onOpen={() => setWhatsAppOpen(true)}
+      />
+
+      {/* Phoenix AI Desert Safari Agent Widget */}
+      <AiBookingAgentWidget
+        currency={currency}
+        onOpenBooking={(id) => handleOpenBooking(id)}
+        onOpenWhatsApp={() => setWhatsAppOpen(true)}
+        experiences={experiences}
       />
 
       {/* Privacy, Terms, and Safety Modal */}

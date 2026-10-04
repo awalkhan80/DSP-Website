@@ -113,6 +113,22 @@ export const CityToursSection: React.FC<CityToursSectionProps> = ({
                       </>
                     )}
                   </div>
+
+                  {/* Payment Policy Indicator */}
+                  <div className="pt-2.5 flex items-center justify-between text-[11px] border-t border-stone-100">
+                    <span className="text-stone-500 font-medium">Payment Terms:</span>
+                    <span
+                      className={`font-bold px-2 py-0.5 rounded-full text-[10px] tracking-wide ${
+                        tour.id.includes('burj') || tour.id.includes('skydive') || tour.id.includes('miracle')
+                          ? 'text-amber-800 bg-amber-50 border border-amber-300'
+                          : 'text-emerald-800 bg-emerald-50 border border-emerald-300'
+                      }`}
+                    >
+                      {tour.id.includes('burj') || tour.id.includes('skydive') || tour.id.includes('miracle')
+                        ? 'Advance Payment (Official E-Ticket)'
+                        : '100% Pay on Arrival (Cash or Card)'}
+                    </span>
+                  </div>
                 </div>
               </div>
 

@@ -114,9 +114,14 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
               </div>
 
               <div>
-                <h3 className="text-2xl text-stone-900 font-semibold font-serif">
-                  {atvTour?.title || 'Quad Bike ATV Rental'}
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-2xl text-stone-900 font-semibold font-serif">
+                    {atvTour?.title || 'Quad Bike ATV Rental'}
+                  </h3>
+                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300 shrink-0">
+                    100% Pay on Arrival
+                  </span>
+                </div>
                 <p className="text-sm text-stone-600 leading-relaxed mt-1">
                   Ride 250 CC or 350 CC Quad Bikes. Choose between designated circle tracks or deep open red dune trails with marshals. Helmet, goggles, and fuel included.
                 </p>
@@ -338,9 +343,14 @@ export const AdrenalineBuggySection: React.FC<AdrenalineBuggySectionProps> = ({
               </div>
 
               <div>
-                <h3 className="text-2xl text-stone-900 font-semibold font-serif">
-                  {selectedBuggyModel === 'canam' ? 'Can-Am Maverick X3 Buggy' : 'Polaris RZR Dune Buggy'}
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-2xl text-stone-900 font-semibold font-serif">
+                    {selectedBuggyModel === 'canam' ? 'Can-Am Maverick X3 Buggy' : 'Polaris RZR Dune Buggy'}
+                  </h3>
+                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300 shrink-0">
+                    100% Pay on Arrival
+                  </span>
+                </div>
                 <p className="text-sm text-stone-600 leading-relaxed mt-1">
                   Choose between Can-Am Maverick X3 Turbo (1000cc) or Polaris RZR buggies in 2-seater and 4-seater models with full roll cage, 4-point harness, and escort guide.
                 </p>

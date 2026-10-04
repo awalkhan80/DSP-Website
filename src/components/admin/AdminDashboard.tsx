@@ -5,6 +5,7 @@ import { SeoAuditDashboard } from './SeoAuditDashboard';
 import { AdminSession } from '../../utils/adminAuth';
 import { PhoenixLogo } from '../icons/PhoenixLogo';
 import { B2BIntegrationManager } from './B2BIntegrationManager';
+import { KnowledgeBaseTab } from './KnowledgeBaseTab';
 
 export interface CMSConfig {
   heroTitle: string;
@@ -95,7 +96,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   // Navigation tabs
   const [activeNav, setActiveNav] = useState<
-    'overview-analytics' | 'homepage-cms' | 'tour-catalog-pricing' | 'b2b-integration' | 'offroad-pricing' | 'bookings-convoys' | 'customer-inquiries-whatsapp' | 'seo-audit' | 'backup-restore' | 'settings'
+    'overview-analytics' | 'homepage-cms' | 'tour-catalog-pricing' | 'b2b-integration' | 'offroad-pricing' | 'bookings-convoys' | 'customer-inquiries-whatsapp' | 'seo-audit' | 'backup-restore' | 'ai-knowledge-base' | 'settings'
   >('tour-catalog-pricing');
 
   // Off-Road Pricing local state
@@ -1203,6 +1204,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </button>
 
             <button
+              onClick={() => setActiveNav('ai-knowledge-base')}
+              className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
+                activeNav === 'ai-knowledge-base'
+                  ? 'bg-[#8D4B00] text-white shadow-sm'
+                  : 'text-[#554336] hover:bg-[#EFE6E4] hover:text-[#1E1B1A]'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-[20px]">psychology</span>
+                <span>AI Knowledge File</span>
+              </div>
+              <span
+                className={`text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded ${
+                  activeNav === 'ai-knowledge-base' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
+                }`}
+              >
+                Live
+              </span>
+            </button>
+
+            <button
               onClick={() => setActiveNav('settings')}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
                 activeNav === 'settings'
@@ -1419,6 +1441,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     ? 'SEO Audit & Search Engine Dominance'
                     : activeNav === 'backup-restore'
                     ? 'System Backup & Disaster Recovery'
+                    : activeNav === 'ai-knowledge-base'
+                    ? 'AI Concierge Tour Knowledge Base'
                     : 'System & DTCM Settings'}
                 </span>
               </div>
@@ -1437,6 +1461,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   ? 'Live Technical SEO Audit & Competitor Intelligence'
                   : activeNav === 'backup-restore'
                   ? 'System Backup & Disaster Recovery Vault'
+                  : activeNav === 'ai-knowledge-base'
+                  ? 'AI Knowledge Base File & Calculation Engine'
                   : 'Company Profile & Compliance Settings'}
               </h1>
             </div>
@@ -2989,6 +3015,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
             </div>
           )}
+
+          {/* VIEW TAB: AI CONCIERGE KNOWLEDGE BASE */}
+          {activeNav === 'ai-knowledge-base' && <KnowledgeBaseTab />}
 
           {/* VIEW TAB 6: SETTINGS */}
           {activeNav === 'settings' && (

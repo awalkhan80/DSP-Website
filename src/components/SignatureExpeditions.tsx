@@ -163,11 +163,16 @@ export const SignatureExpeditions: React.FC<SignatureExpeditionsProps> = ({
 
                   {/* Booking Action */}
                   <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-stone-600 text-xs font-medium">
-                      <span className="material-symbols-outlined text-emerald-600 text-[18px]">
-                        done_all
+                    <div className="flex flex-col text-left">
+                      <div className="flex items-center gap-1.5 text-stone-600 text-xs font-medium">
+                        <span className="material-symbols-outlined text-emerald-600 text-[18px]">
+                          done_all
+                        </span>
+                        <span>Doorstep 4x4 Transfer Included</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 w-fit mt-1">
+                        100% Pay on Arrival (Cash/Card)
                       </span>
-                      <span>Home &amp; Hotel Transfer Included</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
