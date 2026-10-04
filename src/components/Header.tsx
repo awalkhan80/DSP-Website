@@ -160,12 +160,28 @@ export const Header: React.FC<HeaderProps> = ({
         </nav>
 
         {/* Right Action Cluster */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
+          {/* Admin Portal Quick Button (Desktop / Tablet) */}
+          {onOpenAdmin && (
+            <button
+              type="button"
+              onClick={onOpenAdmin}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-stone-900 hover:bg-stone-800 text-amber-300 hover:text-amber-200 text-xs font-semibold border border-amber-500/30 transition-all cursor-pointer shadow-xs"
+              title={isAdminLoggedIn ? 'Operator Dashboard (Logged In)' : 'Admin Login (Password: Sunball##12)'}
+            >
+              <span className="material-symbols-outlined text-[16px] text-amber-400">
+                {isAdminLoggedIn ? 'admin_panel_settings' : 'lock'}
+              </span>
+              <span>{isAdminLoggedIn ? 'Dashboard' : 'Admin'}</span>
+              <span className={`w-1.5 h-1.5 rounded-full ${isAdminLoggedIn ? 'bg-emerald-400' : 'bg-amber-400'} animate-pulse`}></span>
+            </button>
+          )}
+
           {/* Book Adventure CTA */}
           <button
             type="button"
             onClick={() => onOpenBooking()}
-            className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#D97706] hover:from-[#C2410C] hover:to-[#EA580C] text-white text-[12px] uppercase tracking-wider font-bold shadow-md shadow-orange-500/20 hover:shadow-orange-500/35 transition-all cursor-pointer active:scale-98"
+            className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#D97706] hover:from-[#C2410C] hover:to-[#EA580C] text-white text-[11px] sm:text-[12px] uppercase tracking-wider font-bold shadow-md shadow-orange-500/20 hover:shadow-orange-500/35 transition-all cursor-pointer active:scale-98"
           >
             Book Adventure
           </button>

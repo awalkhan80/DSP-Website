@@ -247,9 +247,61 @@ export default function App() {
   };
 
   // Admin Authentication Actions
+  // Listen to URL hash/path/search for admin entry & keyboard shortcuts
+  React.useEffect(() => {
+    const handleUrlRoute = () => {
+      const hash = (window.location.hash || '').toLowerCase();
+      const path = (window.location.pathname || '').toLowerCase();
+      const search = (window.location.search || '').toLowerCase();
+
+      const wantsAdmin =
+        hash.includes('admin') ||
+        hash.includes('login') ||
+        path.includes('/admin') ||
+        path.includes('/login') ||
+        path.includes('/dashboard') ||
+        path.includes('/cms') ||
+        search.includes('admin') ||
+        search.includes('login') ||
+        search.includes('view=admin');
+
+      if (wantsAdmin) {
+        if (adminSession) {
+          setCurrentView('admin');
+        } else {
+          setAdminLoginModalOpen(true);
+        }
+      }
+    };
+
+    handleUrlRoute();
+    window.addEventListener('hashchange', handleUrlRoute);
+    window.addEventListener('popstate', handleUrlRoute);
+
+    const handleKey = (e: KeyboardEvent) => {
+      // Shortcut: Alt + A or Ctrl + Shift + A
+      if ((e.altKey && (e.key === 'a' || e.key === 'A')) || (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a'))) {
+        e.preventDefault();
+        handleOpenAdmin();
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+
+    return () => {
+      window.removeEventListener('hashchange', handleUrlRoute);
+      window.removeEventListener('popstate', handleUrlRoute);
+      window.removeEventListener('keydown', handleKey);
+    };
+  }, [adminSession]);
+
   const handleOpenAdmin = () => {
     if (adminSession) {
       setCurrentView('admin');
+      try {
+        window.history.pushState(null, '', '#admin');
+      } catch (e) {
+        // Ignore
+      }
     } else {
       setAdminLoginModalOpen(true);
     }
@@ -259,6 +311,11 @@ export default function App() {
     setAdminSession(session);
     setAdminLoginModalOpen(false);
     setCurrentView('admin');
+    try {
+      window.history.pushState(null, '', '#admin');
+    } catch (e) {
+      // Ignore
+    }
     showToast(`Access Granted. Welcome, ${session.name} (${session.email})`);
   };
 
@@ -266,6 +323,13 @@ export default function App() {
     clearAdminSession();
     setAdminSession(null);
     setCurrentView('storefront');
+    try {
+      if (window.location.hash.includes('admin')) {
+        window.history.pushState(null, '', window.location.pathname);
+      }
+    } catch (e) {
+      // Ignore
+    }
     showToast('Signed out of Operator Admin. Portal locked.');
   };
 
@@ -458,6 +522,13 @@ export default function App() {
           onClose={() => setInfoModalTopic(null)}
         />
       )}
+
+      {/* Operator Admin Login Modal */}
+      <AdminLoginModal
+        isOpen={adminLoginModalOpen}
+        onClose={() => setAdminLoginModalOpen(false)}
+        onSuccess={handleAdminLoginSuccess}
+      />
     </div>
   );
 }
