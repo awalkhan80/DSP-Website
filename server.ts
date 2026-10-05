@@ -1029,6 +1029,148 @@ app.post(['/api/admin/knowledge_base', '/api/admin/knowledge-base'], (req, res) 
   }
 });
 
+// Helper to read tours availability
+function getToursAvailability() {
+  try {
+    const filePath = path.resolve(process.cwd(), 'tours_availability.json');
+    if (fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    }
+  } catch (err: any) {
+    console.warn('Could not read tours_availability.json:', err.message);
+  }
+  return {
+    lastUpdated: new Date().toISOString(),
+    globalRules: { defaultStatus: 'available', defaultCapacity: 60, leadTimeHours: 2 },
+    bulkSchedules: [],
+    dateOverrides: {}
+  };
+}
+
+function saveToursAvailability(data: any) {
+  const filePath = path.resolve(process.cwd(), 'tours_availability.json');
+  data.lastUpdated = new Date().toISOString();
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+  return data;
+}
+
+// Availability Endpoints: Get, Bulk Make Available, Toggle Override, and Reset
+app.get(['/api/availability', '/api/admin/availability'], (req, res) => {
+  const availability = getToursAvailability();
+  return res.json({ ok: true, data: availability });
+});
+
+// Bulk Availability Manager: Make available in bulk for Date From / Date To and Time Slots
+app.post(['/api/availability/bulk', '/api/admin/availability/bulk'], (req, res) => {
+  try {
+    const {
+      tours = ['all'],
+      dateFrom,
+      dateTo,
+      timeSlots = [],
+      status = 'available',
+      capacity = 60,
+      surchargeAED = 0,
+      name = 'Bulk Availability Schedule',
+    } = req.body;
+
+    if (!dateFrom || !dateTo) {
+      return res.status(400).json({ ok: false, error: 'dateFrom and dateTo are required' });
+    }
+
+    const current = getToursAvailability();
+    const newSchedule = {
+      id: `bulk-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+      name: name || `Bulk ${status === 'available' ? 'Open' : 'Block'} (${dateFrom} to ${dateTo})`,
+      appliedAt: new Date().toISOString(),
+      tours: Array.isArray(tours) && tours.length > 0 ? tours : ['all'],
+      dateFrom,
+      dateTo,
+      timeSlots: Array.isArray(timeSlots) && timeSlots.length > 0 ? timeSlots : ['all_slots'],
+      status, // 'available' | 'blocked' | 'limited'
+      capacity: Number(capacity) || 60,
+      surchargeAED: Number(surchargeAED) || 0,
+    };
+
+    current.bulkSchedules = [newSchedule, ...(current.bulkSchedules || [])];
+    saveToursAvailability(current);
+
+    return res.json({
+      ok: true,
+      message: `Bulk availability successfully applied for ${newSchedule.tours.includes('all') ? 'all tours' : `${newSchedule.tours.length} tour(s)`} from ${dateFrom} to ${dateTo}!`,
+      schedule: newSchedule,
+      data: current,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Toggle or override a specific single slot or date
+app.post(['/api/availability/toggle', '/api/admin/availability/toggle'], (req, res) => {
+  try {
+    const { tourId = 'all', date, timeSlot = 'all', status = 'available', capacity = 60 } = req.body;
+    if (!date) {
+      return res.status(400).json({ ok: false, error: 'date is required' });
+    }
+
+    const current = getToursAvailability();
+    if (!current.dateOverrides) current.dateOverrides = {};
+
+    const key = `${date}_${tourId}_${timeSlot}`;
+    current.dateOverrides[key] = {
+      tourId,
+      date,
+      timeSlot,
+      status, // 'available' | 'blocked' | 'limited'
+      capacity: Number(capacity) || 60,
+      updatedAt: new Date().toISOString(),
+    };
+
+    saveToursAvailability(current);
+
+    return res.json({
+      ok: true,
+      message: `Slot updated for ${tourId} on ${date} (${timeSlot}) -> ${status}`,
+      override: current.dateOverrides[key],
+      data: current,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Reset availability to standard open season
+app.post(['/api/availability/reset', '/api/admin/availability/reset'], (req, res) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const sixMonthsLater = new Date(Date.now() + 180 * 86400000).toISOString().split('T')[0];
+    const defaultData = {
+      lastUpdated: new Date().toISOString(),
+      globalRules: { defaultStatus: 'available', defaultCapacity: 60, leadTimeHours: 2 },
+      bulkSchedules: [
+        {
+          id: `bulk-default-${Date.now()}`,
+          name: 'Open Season (All Tours Everywhere)',
+          appliedAt: new Date().toISOString(),
+          tours: ['all'],
+          dateFrom: today,
+          dateTo: sixMonthsLater,
+          timeSlots: ['all_slots'],
+          status: 'available',
+          capacity: 60,
+          surchargeAED: 0,
+        },
+      ],
+      dateOverrides: {},
+    };
+    saveToursAvailability(defaultData);
+    return res.json({ ok: true, message: 'Availability reset to full open season', data: defaultData });
+  } catch (err: any) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // 11.A Agent: Search Knowledge Base
 app.post(['/search_knowledge_base', '/api/search_knowledge_base', '/api/agent/search_knowledge_base'], (req, res) => {
   try {

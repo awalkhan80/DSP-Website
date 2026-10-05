@@ -1,0 +1,56 @@
+{
+  "lastUpdated": "2026-10-05T04:29:00.069Z",
+  "globalRules": {
+    "defaultStatus": "available",
+    "defaultCapacity": 60,
+    "leadTimeHours": 2
+  },
+  "bulkSchedules": [
+    {
+      "id": "bulk-1791174540069-en7r3",
+      "name": "High Season Bulk Open Everywhere",
+      "appliedAt": "2026-10-05T04:29:00.069Z",
+      "tours": [
+        "all"
+      ],
+      "dateFrom": "2026-10-05",
+      "dateTo": "2026-11-30",
+      "timeSlots": [
+        "all_slots"
+      ],
+      "status": "available",
+      "capacity": 80,
+      "surchargeAED": 0
+    },
+    {
+      "id": "bulk-all-tours-q4",
+      "name": "Q4 Peak Season Open Availability",
+      "appliedAt": "2026-10-04T21:30:00.000Z",
+      "tours": [
+        "all"
+      ],
+      "dateFrom": "2026-10-01",
+      "dateTo": "2027-01-31",
+      "timeSlots": [
+        "05:00 AM (Sunrise Desert Run)",
+        "07:30 AM (Sunrise / Morning Run)",
+        "09:00 AM (Cool Morning Safari)",
+        "10:00 AM (Morning Panorama)",
+        "10:30 AM (Mid-Morning Track)",
+        "02:00 PM (Afternoon Clear View)",
+        "02:30 PM (Early Pickup)",
+        "03:00 PM (Golden Sunset Standard)",
+        "03:30 PM (Afternoon Dunes)",
+        "04:30 PM (Golden Sunset Slot)",
+        "05:30 PM (Twilight & Stargazing)",
+        "06:30 PM (Evening Skyline)",
+        "08:00 PM (Night Panorama / Dinner Cruise)",
+        "08:30 PM (Late Night Panorama)"
+      ],
+      "status": "available",
+      "capacity": 75,
+      "surchargeAED": 0
+    }
+  ],
+  "dateOverrides": {}
+}

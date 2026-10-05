@@ -100,6 +100,44 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [bookingRef, setBookingRef] = useState<string>('');
   const [emailSendingStatus, setEmailSendingStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [emailSendError, setEmailSendError] = useState<string>('');
+  const [availabilityData, setAvailabilityData] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/availability')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.ok && data.data) {
+          setAvailabilityData(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const currentSlotStatus = React.useMemo(() => {
+    if (!availabilityData) return 'available';
+    const specificKey = `${safariDate}_${selectedExperienceId}_${timeSlot}`;
+    if (availabilityData.dateOverrides?.[specificKey]) {
+      return availabilityData.dateOverrides[specificKey].status;
+    }
+    const tourDayKey = `${safariDate}_${selectedExperienceId}_all`;
+    if (availabilityData.dateOverrides?.[tourDayKey]) {
+      return availabilityData.dateOverrides[tourDayKey].status;
+    }
+    const allDayKey = `${safariDate}_all_all`;
+    if (availabilityData.dateOverrides?.[allDayKey]) {
+      return availabilityData.dateOverrides[allDayKey].status;
+    }
+    for (const sched of (availabilityData.bulkSchedules || [])) {
+      if (safariDate >= sched.dateFrom && safariDate <= sched.dateTo) {
+        const matchesTour = sched.tours?.includes('all') || sched.tours?.includes(selectedExperienceId);
+        const matchesSlot = sched.timeSlots?.includes('all_slots') || sched.timeSlots?.includes(timeSlot);
+        if (matchesTour && matchesSlot) {
+          return sched.status;
+        }
+      }
+    }
+    return 'available';
+  }, [availabilityData, safariDate, selectedExperienceId, timeSlot]);
 
   const currentExperience: Experience =
     allExperiences.find((e) => e.id === selectedExperienceId) || allExperiences[0] || EXPERIENCES[0];
@@ -797,6 +835,37 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
             </div>
 
+            {/* Live Fleet Availability Indicator */}
+            {currentSlotStatus === 'blocked' ? (
+              <div className="p-3 bg-red-50 border border-red-300 rounded-xl text-xs text-red-950 flex items-start gap-2.5">
+                <span className="material-symbols-outlined text-red-600 text-[20px] shrink-0 mt-0.5">block</span>
+                <div>
+                  <span className="font-bold block">Slot Blackout / Fully Booked</span>
+                  <span>This departure timing on {safariDate} is currently at max capacity or blocked. Please select another timing or date.</span>
+                </div>
+              </div>
+            ) : currentSlotStatus === 'limited' ? (
+              <div className="p-2.5 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-950 flex items-center justify-between">
+                <span className="flex items-center gap-1.5 font-bold">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                  High Demand &bull; Limited Availability ({safariDate})
+                </span>
+                <span className="text-[10px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full">
+                  Fast Selling
+                </span>
+              </div>
+            ) : (
+              <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-950 flex items-center justify-between">
+                <span className="flex items-center gap-1.5 font-bold">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Instant Confirmation Guaranteed ({safariDate})
+                </span>
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+                  Direct Fleet Allotment
+                </span>
+              </div>
+            )}
+
             {/* Guests Counter (For regular safaris & city excursions) */}
             {!isQuadTour && !isBuggyTour && (
               <div className="bg-white p-4 rounded-xl border border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -1213,10 +1282,18 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
               <button
                 type="button"
-                onClick={() => setStep('details')}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#EA580C] to-[#D97706] hover:from-[#C2410C] hover:to-[#EA580C] text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-orange-500/20 cursor-pointer transition-all active:scale-98"
+                onClick={() => {
+                  if (currentSlotStatus === 'blocked') return;
+                  setStep('details');
+                }}
+                disabled={currentSlotStatus === 'blocked'}
+                className={`px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider shadow-lg transition-all active:scale-98 ${
+                  currentSlotStatus === 'blocked'
+                    ? 'bg-stone-300 text-stone-500 cursor-not-allowed shadow-none'
+                    : 'bg-gradient-to-r from-[#EA580C] to-[#D97706] hover:from-[#C2410C] hover:to-[#EA580C] text-white shadow-orange-500/20 cursor-pointer'
+                }`}
               >
-                Continue to Contact Details →
+                {currentSlotStatus === 'blocked' ? 'Timing Blackout / Sold Out' : 'Continue to Contact Details →'}
               </button>
             </div>
           </div>

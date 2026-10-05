@@ -6,6 +6,7 @@ import { AdminSession } from '../../utils/adminAuth';
 import { PhoenixLogo } from '../icons/PhoenixLogo';
 import { B2BIntegrationManager } from './B2BIntegrationManager';
 import { KnowledgeBaseTab } from './KnowledgeBaseTab';
+import { ToursAvailabilityTab } from './ToursAvailabilityTab';
 
 export interface CMSConfig {
   heroTitle: string;
@@ -96,7 +97,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   // Navigation tabs
   const [activeNav, setActiveNav] = useState<
-    'overview-analytics' | 'homepage-cms' | 'tour-catalog-pricing' | 'b2b-integration' | 'offroad-pricing' | 'bookings-convoys' | 'customer-inquiries-whatsapp' | 'seo-audit' | 'backup-restore' | 'ai-knowledge-base' | 'settings'
+    'overview-analytics' | 'homepage-cms' | 'tour-catalog-pricing' | 'tours-availability' | 'b2b-integration' | 'offroad-pricing' | 'bookings-convoys' | 'customer-inquiries-whatsapp' | 'seo-audit' | 'backup-restore' | 'ai-knowledge-base' | 'settings'
   >('tour-catalog-pricing');
 
   // Off-Road Pricing local state
@@ -1098,6 +1099,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </button>
 
             <button
+              onClick={() => setActiveNav('tours-availability')}
+              className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
+                activeNav === 'tours-availability'
+                  ? 'bg-[#8D4B00] text-white shadow-sm'
+                  : 'text-[#554336] hover:bg-[#EFE6E4] hover:text-[#1E1B1A]'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-[20px]">calendar_month</span>
+                <span>Tours Availability</span>
+              </div>
+              <span
+                className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider ${
+                  activeNav === 'tours-availability' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
+                }`}
+              >
+                Bulk
+              </span>
+            </button>
+
+            <button
               onClick={() => setActiveNav('b2b-integration')}
               className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
                 activeNav === 'b2b-integration'
@@ -1431,6 +1453,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     ? 'Homepage CMS & Tour Inventory'
                     : activeNav === 'tour-catalog-pricing'
                     ? 'Tour Catalog & Pricing Matrix'
+                    : activeNav === 'tours-availability'
+                    ? 'Tours Availability & Bulk Slot Engine'
                     : activeNav === 'bookings-convoys'
                     ? 'Bookings & Convoy Dispatch'
                     : activeNav === 'customer-inquiries-whatsapp'
@@ -1451,6 +1475,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   ? 'Expeditions & Showcase Manager'
                   : activeNav === 'tour-catalog-pricing'
                   ? 'Tour Pricing & Capacity Matrix'
+                  : activeNav === 'tours-availability'
+                  ? 'Tours Availability & Bulk Slot Manager'
                   : activeNav === 'bookings-convoys'
                   ? 'Live Booking Vouchers & Convoys'
                   : activeNav === 'customer-inquiries-whatsapp'
@@ -3195,6 +3221,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </button>
               </div>
             </div>
+          )}
+
+          {/* VIEW TAB: TOURS AVAILABILITY & BULK SLOT ENGINE */}
+          {activeNav === 'tours-availability' && (
+            <ToursAvailabilityTab experiences={experiences} />
           )}
 
           {/* VIEW TAB: B2B.TICKETS / TRAVELDESK API INTEGRATION */}
