@@ -17,7 +17,7 @@ const distPath = path.resolve(__dirname, 'dist');
 app.use(express.json());
 
 const GMAIL_USER = (process.env.GMAIL_USER || 'awalgsm@gmail.com').trim();
-const GMAIL_PASS = (process.env.GMAIL_APP_PASSWORD || process.env.GMAIL_PASS || 'qxgd dcbf rskx bjbr').replace(/\s+/g, '');
+const GMAIL_PASS = (process.env.GMAIL_APP_PASSWORD || process.env.GMAIL_PASS || '').replace(/\s+/g, '');
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
