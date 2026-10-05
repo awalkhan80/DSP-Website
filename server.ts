@@ -911,7 +911,10 @@ function calculateTourQuote(msgLower: string) {
   return null;
 }
 
-// 11.0 Agent Conversational Chat Endpoint (Gemini 3.8 Flash + KB Grounding)
+// Global cooldown tracker for Gemini rate limits (429 quota prevention)
+let geminiQuotaCooldownUntil = 0;
+
+// 11.0 Agent Conversational Chat Endpoint (Gemini 3.1 Flash Lite + Multi-Model Failover + KB Grounding)
 app.post(['/api/agent/chat', '/api/chat'], async (req, res) => {
   try {
     const { message = '', history = [] } = req.body;
@@ -922,8 +925,8 @@ app.post(['/api/agent/chat', '/api/chat'], async (req, res) => {
 
     let actionCard: any = deterministicQuote ? deterministicQuote.actionCard : null;
 
-    // Try Gemini generateContent if GEMINI_API_KEY is present
-    if (process.env.GEMINI_API_KEY) {
+    // Try Gemini generateContent if GEMINI_API_KEY is present and not currently in quota cooldown
+    if (process.env.GEMINI_API_KEY && Date.now() > geminiQuotaCooldownUntil) {
       try {
         const ai = new GoogleGenAI();
         const kbJson = getToursKnowledgeBase();
@@ -953,29 +956,55 @@ ${kbContext}`;
 
         const prompt = `${history.map((h: any) => `${h.role === 'user' ? 'Guest' : 'Concierge'}: ${h.text}`).join('\n')}\nGuest: ${message}\nConcierge:`;
 
-        const response = await ai.models.generateContent({
-          model: 'gemini-3.8-flash',
-          contents: prompt,
-          config: {
-            systemInstruction,
-            temperature: 0.65,
-            maxOutputTokens: 600,
-          }
-        });
+        // Multi-model failover: primary is gemini-3.1-flash-lite, fallback to other active models
+        const CANDIDATE_MODELS = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
+        let response: any = null;
 
-        let reply = response.text || '';
-        // If model output is missing or has a calculation glitch, use deterministic reply
-        if (!reply || reply.toLowerCase().includes('total of aed') || reply.endsWith('aed') || reply.endsWith('total of')) {
-          if (deterministicQuote) {
-            reply = deterministicQuote.reply;
-          } else {
-            reply = 'Marhaban! How can I assist you with your Dubai Desert Safari today?';
+        for (const candidateModel of CANDIDATE_MODELS) {
+          try {
+            response = await ai.models.generateContent({
+              model: candidateModel,
+              contents: prompt,
+              config: {
+                systemInstruction,
+                temperature: 0.65,
+                maxOutputTokens: 600,
+              }
+            });
+            if (response && response.text) {
+              break;
+            }
+          } catch (modelErr: any) {
+            const isQuotaError =
+              modelErr?.status === 'RESOURCE_EXHAUSTED' ||
+              modelErr?.message?.includes('429') ||
+              modelErr?.message?.includes('quota');
+
+            if (isQuotaError) {
+              continue; // Try next candidate model smoothly
+            }
+            throw modelErr;
           }
         }
 
-        return res.json({ ok: true, reply, actionCard });
+        if (response && response.text) {
+          let reply = response.text;
+          // If model output is missing or has a calculation glitch, use deterministic reply
+          if (!reply || reply.toLowerCase().includes('total of aed') || reply.endsWith('aed') || reply.endsWith('total of')) {
+            if (deterministicQuote) {
+              reply = deterministicQuote.reply;
+            } else {
+              reply = 'Marhaban! How can I assist you with your Dubai Desert Safari today?';
+            }
+          }
+
+          return res.json({ ok: true, reply, actionCard });
+        } else {
+          // All candidate models hit quota, initiate brief cooldown and use local deterministic knowledge base
+          geminiQuotaCooldownUntil = Date.now() + 60000;
+        }
       } catch (aiErr: any) {
-        console.warn('Gemini chat error, using fallback:', aiErr.message);
+        geminiQuotaCooldownUntil = Date.now() + 60000;
       }
     }
 
