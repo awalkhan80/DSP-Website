@@ -2,16 +2,21 @@
   RewriteEngine On
   RewriteBase /
 
-  # HTTPS Redirection (Hostinger SSL)
+  # 1. Trailing Slash Removal (except root /) to prevent duplicate URL canonical issues
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} (.+)/$
+  RewriteRule ^ %1 [R=301,L]
+
+  # 2. HTTPS Redirection (Hostinger SSL)
   RewriteCond %{HTTPS} off
   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-  # Don't rewrite existing files or directories
+  # 3. Don't rewrite existing files or directories
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
-  # Route all other URLs to index.html for Single Page Application
+  # 4. Route all other URLs to index.html for Single Page Application
   RewriteRule ^ index.html [L]
 </IfModule>
 

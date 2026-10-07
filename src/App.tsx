@@ -27,6 +27,7 @@ import { InfoModal } from './components/InfoModal';
 import { AdminDashboard, CMSConfig } from './components/admin/AdminDashboard';
 import { AdminLoginModal } from './components/admin/AdminLoginModal';
 import { getStoredAdminSession, clearAdminSession, AdminSession } from './utils/adminAuth';
+import { useCanonicalSeo } from './utils/useCanonicalSeo';
 
 export default function App() {
   // Navigation View State: 'storefront' or 'admin'
@@ -109,6 +110,53 @@ export default function App() {
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [whatsAppOpen, setWhatsAppOpen] = useState(false);
   const [infoModalTopic, setInfoModalTopic] = useState<'privacy' | 'terms' | 'safety' | null>(null);
+
+  // Active modal tour ID for deep canonical linking
+  const activeModalTourId = itineraryModalOpen
+    ? itineraryExperienceId
+    : bookingModalOpen
+    ? bookingModalParams.experienceId
+    : undefined;
+
+  // Dynamic Canonical SEO, Title & OpenGraph synchronization based on active section & tour modal
+  useCanonicalSeo(activeSection, activeModalTourId);
+
+  // Dynamic Scroll Observer to update activeSection & rel="canonical" dynamically
+  React.useEffect(() => {
+    if (currentView !== 'storefront') return;
+
+    const sectionIds = [
+      'desert-safaris',
+      'quad-and-buggy-rentals',
+      'city-tours',
+      'travel-guides',
+      'faqs',
+      'reviews',
+      'direct-operator',
+    ];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.25) {
+            setActiveSection(entry.target.id);
+            break;
+          }
+        }
+      },
+      {
+        rootMargin: '-10% 0px -40% 0px',
+        threshold: [0.25, 0.5, 0.75],
+      }
+    );
+
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [currentView]);
 
   // Toast Notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);

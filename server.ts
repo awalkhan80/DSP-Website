@@ -17,6 +17,36 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 app.use(express.json());
 
+// 301 Canonical Normalization & Duplicate URL Prevention Middleware
+app.use((req, res, next) => {
+  // Ignore API requests, assets with file extensions, sitemaps, robots.txt
+  if (
+    req.path.startsWith('/api') ||
+    req.path.includes('.') ||
+    req.path === '/robots.txt' ||
+    req.path === '/sitemap.xml' ||
+    req.path === '/sitemap_index.xml'
+  ) {
+    return next();
+  }
+
+  // 1. Strip trailing slash on subpaths (e.g., /evening-desert-safari/ -> /evening-desert-safari)
+  if (req.path.length > 1 && req.path.endsWith('/')) {
+    const cleanPath = req.path.slice(0, -1);
+    const queryString = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    return res.redirect(301, cleanPath + queryString);
+  }
+
+  // 2. Normalize WWW to non-WWW for desertsafaridxbpro.com
+  const host = req.get('host') || '';
+  if (host.startsWith('www.desertsafaridxbpro.com')) {
+    const queryString = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    return res.redirect(301, `https://desertsafaridxbpro.com${req.path}${queryString}`);
+  }
+
+  next();
+});
+
 // Gmail SMTP Transporter
 const GMAIL_USER = (process.env.GMAIL_USER || 'awalgsm@gmail.com').trim();
 const GMAIL_PASS = (process.env.GMAIL_APP_PASSWORD || process.env.GMAIL_PASS || '').replace(/\s+/g, '');
@@ -1605,16 +1635,153 @@ app.get('/robots.txt', (req, res) => {
   return res.send(`User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nSitemap: https://desertsafaridxbpro.com/sitemap.xml`);
 });
 
+// SEO Route mapping for Server-Side Canonical & Metadata Injection
+const SERVER_ROUTE_SEO_MAP: Record<string, { title: string; description: string }> = {
+  '/': {
+    title: 'Dubai Desert Safari, Dune Buggy & Quad Biking | Rates & Online Booking',
+    description:
+      'Direct tour operator in Dubai offering evening desert safaris, 4x4 dune bashing, VIP desert camps, dune buggy rentals & quad biking. Best price guarantee from AED 75. Hotel pickup included. Book directly via WhatsApp at +971 56 150 5270.',
+  },
+  '/evening-desert-safari': {
+    title: 'Evening Desert Safari Dubai with Red Dune Bashing & 5-Star BBQ Dinner',
+    description:
+      'Book official DTCM-licensed Dubai evening desert safari from AED 120. Includes 45-min Lahbab red dune bashing, camel rides, sandboarding, falcon photography, Tanoura show & live BBQ buffet.',
+  },
+  '/dune-buggy-dubai': {
+    title: 'Can-Am Maverick & Polaris Dune Buggy Rental Dubai | Self Drive 1000cc',
+    description:
+      'Self-drive 1000cc turbo Can-Am Maverick X3 & Polaris RZR buggies in Dubai Red Dunes. No license required. Professional marshals, safety gear & hotel transfer included.',
+  },
+  '/quad-biking-dubai': {
+    title: 'Quad Biking Dubai (250cc & 350cc Raptor) | Desert Safari with ATV Quad',
+    description:
+      'Ride Yamaha 250cc & 350cc Raptor quad bikes in high red dunes. Open desert tracks, instructor guides, safety gear and doorstep hotel pickup.',
+  },
+  '/private-vip-safari': {
+    title: 'Private VIP Desert Safari Dubai in Luxury Land Cruiser 300 Series',
+    description:
+      'Exclusive private VIP desert safari for up to 6 guests at AED 850 flat rate. Dedicated private 4x4 vehicle, VIP table service, premium live BBQ buffet & shows.',
+  },
+  '/abu-dhabi-city-tour-ferrari-world': {
+    title: 'Abu Dhabi City Tour with Sheikh Zayed Grand Mosque & Ferrari World',
+    description:
+      'Full-day Abu Dhabi sightseeing tour from Dubai with Sheikh Zayed Grand Mosque, Emirates Palace photo stop, Corniche, and Ferrari World admission tickets.',
+  },
+  '/miracle-garden-global-village-combo': {
+    title: 'Dubai Miracle Garden & Global Village Combo Tour with Private Transfers',
+    description:
+      'Explore Dubai Miracle Garden flower displays and Global Village international pavilions in one evening. Includes private car transfer and official entry tickets.',
+  },
+  '/alexandra-dhow-cruise-dubai-marina': {
+    title: 'Alexandra Luxury Dhow Cruise Dubai Marina | 5-Star Dinner Cruise & Live Tanoura',
+    description:
+      '2-hour luxury wooden dhow cruise in Dubai Marina, JBR skyline & Ain Dubai with 5-star international buffet, live Tanoura dance, and open-air upper deck.',
+  },
+  '/aya-universe-dubai-experience': {
+    title: 'AYA Universe Dubai Tickets | Immersive Light & Sensory Cosmos Experience',
+    description:
+      'Official tickets to AYA Universe at WAFI City Mall Dubai. 12 immersive cosmic zones with futuristic lighting, interactive projections, and soundscapes.',
+  },
+  '/faq': {
+    title: 'Dubai Desert Safari FAQs & Guide | What to Wear, Timings, Rates & Safety',
+    description:
+      'Complete guide and answers to frequently asked questions about Dubai desert safaris, pickup timings, payment options (100% pay on arrival), child safety, and food menus.',
+  },
+};
+
+function renderHtmlWithDynamicCanonical(html: string, req: express.Request): string {
+  try {
+    const CANONICAL_SITE_URL = 'https://desertsafaridxbpro.com';
+    const rawUrl = req.originalUrl || req.url || req.path || '/';
+    const rawPath = rawUrl.split('?')[0].split('#')[0] || '/';
+    const cleanPath = rawPath === '/' ? '/' : rawPath.replace(/\/+$/, '').toLowerCase();
+
+    const canonicalUrl = `${CANONICAL_SITE_URL}${cleanPath === '/' ? '/' : cleanPath}`;
+
+    let transformed = html;
+
+    // 1. Dynamic canonical link replacement
+    if (transformed.includes('<link rel="canonical"')) {
+      transformed = transformed.replace(
+        /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i,
+        `<link rel="canonical" href="${canonicalUrl}" />`
+      );
+    } else {
+      transformed = transformed.replace(
+        '</head>',
+        `  <link rel="canonical" href="${canonicalUrl}" />\n</head>`
+      );
+    }
+
+    // 2. Dynamic og:url replacement
+    if (transformed.includes('property="og:url"')) {
+      transformed = transformed.replace(
+        /<meta\s+property="og:url"\s+content="[^"]*"\s*\/?>/i,
+        `<meta property="og:url" content="${canonicalUrl}" />`
+      );
+    }
+
+    // 3. Dynamic Title & Description if matching specific page
+    const meta = SERVER_ROUTE_SEO_MAP[cleanPath];
+    if (meta) {
+      if (meta.title) {
+        transformed = transformed.replace(/<title>[^<]*<\/title>/i, `<title>${meta.title}</title>`);
+        transformed = transformed.replace(
+          /<meta\s+property="og:title"\s+content="[^"]*"\s*\/?>/i,
+          `<meta property="og:title" content="${meta.title}" />`
+        );
+        transformed = transformed.replace(
+          /<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/?>/i,
+          `<meta name="twitter:title" content="${meta.title}" />`
+        );
+      }
+      if (meta.description) {
+        transformed = transformed.replace(
+          /<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i,
+          `<meta name="description" content="${meta.description}" />`
+        );
+        transformed = transformed.replace(
+          /<meta\s+property="og:description"\s+content="[^"]*"\s*\/?>/i,
+          `<meta property="og:description" content="${meta.description}" />`
+        );
+        transformed = transformed.replace(
+          /<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/i,
+          `<meta name="twitter:description" content="${meta.description}" />`
+        );
+      }
+    }
+
+    return transformed;
+  } catch (err: any) {
+    console.warn('[SEO] Dynamic canonical injection notice:', err.message);
+    return html;
+  }
+}
+
 // Vite Integration & Static Assets
 async function startServer() {
   if (!isProduction) {
-    // Development mode: Mount Vite middleware
+    // Development mode: Mount Vite middleware with custom HTML rendering
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: 'spa',
+      appType: 'custom',
     });
     app.use(vite.middlewares);
+
+    // Dynamic HTML serving in development with canonical injection
+    app.use('*', async (req, res, next) => {
+      const url = req.originalUrl;
+      try {
+        let template = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf-8');
+        template = await vite.transformIndexHtml(url, template);
+        const html = renderHtmlWithDynamicCanonical(template, req);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
+      } catch (e: any) {
+        vite.ssrFixStacktrace(e);
+        next(e);
+      }
+    });
   } else {
     // Production mode: Serve dist files
     const distPath = path.resolve(__dirname, 'dist');
@@ -1623,6 +1790,7 @@ async function startServer() {
         express.static(distPath, {
           maxAge: '1y',
           immutable: true,
+          index: false,
           setHeaders: (res, filePath) => {
             if (filePath.endsWith('.html')) {
               res.setHeader('Cache-Control', 'no-cache');
@@ -1631,7 +1799,15 @@ async function startServer() {
         })
       );
       app.get('*', (req, res) => {
-        res.sendFile(path.join(distPath, 'index.html'));
+        try {
+          const rawHtml = fs.readFileSync(path.join(distPath, 'index.html'), 'utf-8');
+          const finalHtml = renderHtmlWithDynamicCanonical(rawHtml, req);
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          res.setHeader('Cache-Control', 'no-cache');
+          res.send(finalHtml);
+        } catch (e) {
+          res.sendFile(path.join(distPath, 'index.html'));
+        }
       });
     } else {
       app.get('*', (req, res) => {
