@@ -949,6 +949,7 @@ app.post(['/api/agent/chat', '/api/chat'], async (req, res) => {
   try {
     const { message = '', history = [] } = req.body;
     const msgLower = (message || '').toLowerCase();
+    const kbJson = getToursKnowledgeBase();
 
     // Check deterministic mathematical calculation first
     const deterministicQuote = calculateTourQuote(msgLower);
@@ -959,48 +960,56 @@ app.post(['/api/agent/chat', '/api/chat'], async (req, res) => {
     if (process.env.GEMINI_API_KEY && Date.now() > geminiQuotaCooldownUntil) {
       try {
         const ai = new GoogleGenAI();
-        const kbJson = getToursKnowledgeBase();
-        const kbContext = kbJson
-          ? JSON.stringify(kbJson, null, 2)
-          : KNOWLEDGE_BASE_FACTS.map(k => `[${k.title}]\n${k.facts.join('\n')}`).join('\n\n');
+        const customRules = kbJson?.ai_settings?.custom_sales_rules || [
+          "Always emphasize 100% Pay on Arrival (Cash or Card on pickup) with zero deposit needed for all safaris, buggies, quads, and city tours.",
+          "Attraction tickets (Burj Khalifa, SkyDive) require advance payment for official barcode issuance.",
+          "Complimentary doorstep 4x4 pickup & drop-off across Dubai and Sharjah.",
+          "Suggest Private VIP Safari (AED 850 flat rate) for groups of 4+ guests."
+        ];
+
+        const customFaqs = kbJson?.ai_settings?.custom_faqs || [];
+        const customFaqText = customFaqs.map((f: any) => `Q: ${f.question}\nA: ${f.answer}`).join('\n\n');
 
         const systemInstruction = `You are a warm, courteous, and highly experienced VIP Concierge from The Phoenix Desert Safari Dubai (DTCM License #102357, Business Bay, Dubai).
 Phone & 24/7 WhatsApp Hotline: +971 56 150 5270.
 
-STRICT CONVERSATIONAL & PRICING ARITHMETIC RULES:
-1. Write like a warm, genuine human luxury concierge chatting with a valued guest on WhatsApp.
-2. NEVER use markdown headers (NO "###", NO "####", NO "---") and never write empty placeholders (never write "total of aed" without numbers).
-3. Always calculate and state the EXACT total price in AED:
-   - Premium Private VIP Desert Safari (Land Cruiser 300 Series): AED 850 flat rate per vehicle for up to 6 guests (e.g., 6 pax = AED 850 total).
-   - Standard Evening Desert Safari: AED 120 per adult (e.g., 6 pax = 6 x 120 = AED 720 total).
-   - Morning Desert Safari: AED 450 per private vehicle (seats up to 6 guests).
-   - Burj Khalifa At The Top (Levels 124 & 125): AED 175 per person (e.g., 6 pax = AED 1,050 total).
-   - Can-Am Maverick X3 2-Seater Buggy (1000cc Turbo): AED 1,000 for 30 minutes / AED 1,500 for 1 hour.
-4. Payment Policy:
-   - Excursion & Attraction Tickets (Burj Khalifa, SkyDive Dubai, Miracle Garden): Advance Payment ONLY (required for digital barcode issuance).
-   - Desert Safaris, City Tours, Dhow Cruises, Quad Bikes & Dune Buggies: 100% Pay on Arrival (Cash AED/USD/EUR/GBP or Card on pickup). ZERO advance deposit needed. Free cancellation up to 12 hours before pickup.
-5. Keep replies natural, polished, and complete (2 to 3 short paragraphs). Never cut off mid-sentence.
+TRAINED CONCIERGE PERSONA & SALES DIRECTIVES (CONFIGURED IN ADMIN DASHBOARD):
+1. Tone: ${kbJson?.ai_settings?.tone || 'Warm, prestigious, highly courteous, hospitable, direct and helpful'}.
+2. Never use markdown headers (NO "###", NO "####", NO "---") and never write empty placeholders (never write "total of aed" without numbers).
+3. Always calculate and state the EXACT total price in AED based on the live inventory.
+4. Business & Sales Directives:
+${customRules.map((r: string) => `   - ${r}`).join('\n')}
 
-KNOWLEDGE BASE:
-${kbContext}`;
+CUSTOM TRAINED Q&A KNOWLEDGE BASE:
+${customFaqText}
+
+LIVE TOURS, INVENTORY & PRICING DATABASE:
+${JSON.stringify(kbJson, null, 2)}`;
 
         const prompt = `${history.map((h: any) => `${h.role === 'user' ? 'Guest' : 'Concierge'}: ${h.text}`).join('\n')}\nGuest: ${message}\nConcierge:`;
 
-        // Multi-model failover: primary is gemini-3.1-flash-lite, fallback to other active models
+        // Multi-model failover with 4s fast response timeout
         const CANDIDATE_MODELS = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
         let response: any = null;
 
         for (const candidateModel of CANDIDATE_MODELS) {
           try {
-            response = await ai.models.generateContent({
+            const generatePromise = ai.models.generateContent({
               model: candidateModel,
               contents: prompt,
               config: {
                 systemInstruction,
                 temperature: 0.65,
                 maxOutputTokens: 600,
-              }
+              },
             });
+
+            // 4-second timeout per candidate model
+            const timeoutPromise = new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('AI response timeout')), 4000)
+            );
+
+            response = await Promise.race([generatePromise, timeoutPromise]);
             if (response && response.text) {
               break;
             }
@@ -1008,7 +1017,8 @@ ${kbContext}`;
             const isQuotaError =
               modelErr?.status === 'RESOURCE_EXHAUSTED' ||
               modelErr?.message?.includes('429') ||
-              modelErr?.message?.includes('quota');
+              modelErr?.message?.includes('quota') ||
+              modelErr?.message?.includes('timeout');
 
             if (isQuotaError) {
               continue; // Try next candidate model smoothly
@@ -1041,6 +1051,16 @@ ${kbContext}`;
     // Local smart fallback with deterministic calculation if API key not present
     if (deterministicQuote) {
       return res.json({ ok: true, reply: deterministicQuote.reply, actionCard: deterministicQuote.actionCard });
+    }
+
+    // Check custom trained FAQs from knowledge base
+    const customFaqsList = kbJson?.ai_settings?.custom_faqs || [];
+    for (const faq of customFaqsList) {
+      const qWords = faq.question.toLowerCase().split(/\s+/).filter((w: string) => w.length > 3);
+      const matchCount = qWords.filter((w: string) => msgLower.includes(w)).length;
+      if ((qWords.length > 0 && matchCount >= Math.min(2, qWords.length)) || msgLower.includes(faq.question.toLowerCase())) {
+        return res.json({ ok: true, reply: faq.answer, actionCard });
+      }
     }
 
     let reply = `Marhaban! How can I assist you today? You can ask about our Desert Safaris, City Tours, Dhow Cruises, and Quad/Buggy rentals (all 100% Pay on Arrival!), or book attraction tickets like Burj Khalifa (Advance Payment required for official barcodes).`;
@@ -1083,6 +1103,61 @@ app.post(['/api/admin/knowledge_base', '/api/admin/knowledge-base'], (req, res) 
     const kbPath = path.resolve(process.cwd(), 'tours_knowledge_base.json');
     fs.writeFileSync(kbPath, JSON.stringify(data, null, 2), 'utf-8');
     return res.json({ ok: true, message: 'Knowledge base updated successfully!' });
+  } catch (err: any) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Auto-Sync & Train AI from Live Admin Tour Catalog
+app.post(['/api/admin/ai/sync-catalog', '/api/admin/ai/train-from-catalog'], (req, res) => {
+  try {
+    const { experiences = [], offRoadPricing = null, cmsConfig = null, aiSettings = null } = req.body;
+    const currentKb = getToursKnowledgeBase() || {};
+
+    if (Array.isArray(experiences) && experiences.length > 0) {
+      currentKb.tours = experiences.map((exp: any) => ({
+        id: exp.id,
+        title: exp.title,
+        category: exp.category,
+        rate_adult_aed: exp.priceAED || 120,
+        rate_description: `AED ${exp.priceAED || 120} (${exp.priceUnit || 'per person'})`,
+        duration: exp.duration,
+        pickup_window: exp.departureTime || '02:30 PM - 03:30 PM',
+        dropoff_window: exp.returnTime || '09:30 PM',
+        inclusions: exp.highlights || exp.inclusions || [],
+        payment_policy:
+          exp.category === 'city-tours' && exp.title?.toLowerCase().includes('burj')
+            ? 'Advance Payment Only (Official Barcode Admission)'
+            : '100% Pay on Arrival (Cash or Card upon pickup)',
+      }));
+    }
+
+    if (cmsConfig) {
+      currentKb.company = {
+        name: 'The Phoenix Desert Safari Dubai',
+        license: 'DTCM License #102357',
+        address: cmsConfig.headquarters || 'DAMAC XL Tower, Business Bay, Dubai, UAE',
+        hotline: cmsConfig.directPhone || '+971 56 150 5270',
+        whatsapp: cmsConfig.directPhone || '+971 56 150 5270',
+      };
+    }
+
+    if (aiSettings) {
+      currentKb.ai_settings = {
+        ...currentKb.ai_settings,
+        ...aiSettings,
+      };
+    }
+
+    currentKb.lastTrainedAt = new Date().toISOString();
+    const kbPath = path.resolve(process.cwd(), 'tours_knowledge_base.json');
+    fs.writeFileSync(kbPath, JSON.stringify(currentKb, null, 2), 'utf-8');
+
+    return res.json({
+      ok: true,
+      message: `AI Concierge successfully retrained with ${currentKb.tours?.length || experiences.length} live tours!`,
+      data: currentKb,
+    });
   } catch (err: any) {
     return res.status(500).json({ ok: false, error: err.message });
   }

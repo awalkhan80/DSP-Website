@@ -6,6 +6,22 @@
     "hotline": "+971 56 150 5270",
     "whatsapp": "+971 56 150 5270"
   },
+  "ai_settings": {
+    "persona": "luxury_vip_concierge",
+    "tone": "Warm, prestigious, highly courteous, hospitable, direct and helpful",
+    "system_instructions_custom": "You are a warm, courteous, and highly experienced VIP Concierge from The Phoenix Desert Safari Dubai (DTCM License #102357, Business Bay, Dubai).\nPhone & 24/7 WhatsApp Hotline: +971 56 150 5270.\nAlways calculate exact total prices in AED and explain our 100% Pay on Arrival guarantee.",
+    "custom_sales_rules": [
+      "Always emphasize 100% Pay on Arrival (Cash or Card on pickup) with zero advance deposit required.",
+      "Offer Private VIP Land Cruiser Safari (AED 850 flat rate) for parties of 4 or more."
+    ],
+    "custom_faqs": [
+      {
+        "id": "faq-1",
+        "question": "Can we pay in Euros upon arrival?",
+        "answer": "Yes! We gladly accept Euros, USD, GBP, and AED in cash or via Visa/Mastercard on arrival."
+      }
+    ]
+  },
   "payment_rules": {
     "pay_on_arrival_experiences": [
       "evening-desert-safari",
@@ -31,202 +47,28 @@
   "tours": [
     {
       "id": "evening-desert-safari",
-      "title": "Evening Desert Safari (Red Lahbab Dunes)",
+      "title": "Evening Desert Safari",
       "category": "safari",
       "rate_adult_aed": 120,
-      "rate_child_aed": 85,
-      "infants_under_3": "Free",
-      "private_vehicle_rate_aed": 750,
-      "vehicle_capacity": 6,
+      "rate_description": "AED 120 (per person)",
+      "duration": "7 Hours",
       "pickup_window": "02:30 PM - 03:30 PM",
-      "dropoff_window": "09:30 PM - 10:00 PM",
-      "payment_policy": "100% Pay on Arrival",
-      "inclusions": [
-        "Complimentary 4x4 doorstep pickup and drop-off across Dubai & Sharjah",
-        "45 minutes of extreme red dune bashing in Lahbab Desert",
-        "Sandboarding on 300-foot high red dunes",
-        "Sunset photography stop on high dunes",
-        "Camel riding experience",
-        "Traditional Bedouin camp access",
-        "Arabic coffee (Gahwa), tea, and dates welcome",
-        "Henna tattoo painting for ladies & kids",
-        "Live entertainment: Tanoura dance, Fire show, and Belly dance",
-        "5-star International BBQ Buffet Dinner with live grilling (Veg, Non-Veg, Jain)",
-        "Unlimited chilled soft drinks, mineral water, and coffee"
-      ]
-    },
-    {
-      "id": "private-vip-safari",
-      "title": "Premium Private VIP Desert Safari (Land Cruiser 300 Series)",
-      "aliases": ["premium desert safari", "vip safari", "luxury safari", "private safari"],
-      "category": "safari",
-      "flat_rate_aed": 850,
-      "vehicle_capacity": 6,
-      "rate_description": "AED 850 flat rate per private luxury 4x4 vehicle (up to 6 guests total)",
-      "pickup_window": "02:30 PM - 03:30 PM",
-      "payment_policy": "100% Pay on Arrival",
-      "inclusions": [
-        "Private VIP luxury 4x4 (Toyota Land Cruiser 300 Series / Nissan Patrol)",
-        "Exclusive private dune bashing customized to your preference (mild or extreme)",
-        "VIP Majlis reserved seating area with waiter table service at the camp",
-        "Priority 5-star live BBQ buffet served directly to your table with fruit platters",
-        "All standard activities: camel rides, sandboarding, sunset photos, live cultural shows"
-      ]
-    },
-    {
-      "id": "morning-desert-safari",
-      "title": "Morning Desert Safari & Sunrise Dune Bashing",
-      "category": "safari",
-      "flat_rate_aed": 450,
-      "vehicle_capacity": 6,
-      "rate_description": "AED 450 total per private Land Cruiser (up to 6 guests)",
-      "pickup_window": "05:00 AM - 05:30 AM (Sunrise) or 07:30 AM - 08:00 AM (Morning)",
-      "payment_policy": "100% Pay on Arrival",
-      "inclusions": [
-        "Private 4x4 Land Cruiser pickup & drop-off",
-        "45 minutes dune bashing on untouched morning sands",
-        "Sandboarding and camel ride photo stop",
-        "Complimentary chilled mineral water and soft drinks"
-      ]
-    },
-    {
-      "id": "overnight-desert-safari",
-      "title": "Overnight Desert Safari & Bedouin Camp Stay",
-      "category": "safari",
-      "rate_adult_aed": 350,
-      "rate_child_aed": 250,
-      "pickup_window": "02:30 PM - 03:30 PM",
-      "dropoff_window": "08:30 AM next morning",
-      "payment_policy": "100% Pay on Arrival",
-      "inclusions": [
-        "Full Evening Desert Safari with dune bashing and BBQ dinner",
-        "Overnight stay in traditional desert tents with sleeping bags, blankets, and pillows",
-        "Stargazing campfire experience with tea and shisha",
-        "Morning desert sunrise view and fresh Arabic breakfast with coffee"
-      ]
+      "dropoff_window": "09:30 PM",
+      "inclusions": [],
+      "payment_policy": "100% Pay on Arrival (Cash or Card upon pickup)"
     },
     {
       "id": "can-am-buggy-safari",
-      "title": "Can-Am Maverick X3 1000cc Turbo Dune Buggy",
+      "title": "Can-Am Maverick X3 Buggy",
       "category": "buggy",
-      "models": [
-        {
-          "name": "Can-Am Maverick X3 2-Seater (1000cc Turbo)",
-          "rate_30m_aed": 1000,
-          "rate_1hr_aed": 1500,
-          "capacity": 2
-        },
-        {
-          "name": "Can-Am Maverick X3 Max 4-Seater (1000cc Turbo)",
-          "rate_30m_aed": 1350,
-          "rate_1hr_aed": 1900,
-          "capacity": 4
-        },
-        {
-          "name": "Polaris RZR 1-Seater",
-          "rate_30m_aed": 600,
-          "rate_1hr_aed": 900,
-          "capacity": 1
-        }
-      ],
-      "driver_license_required": false,
-      "minimum_driver_age": 16,
-      "passengers": "All ages allowed with adult",
-      "payment_policy": "100% Pay on Arrival",
-      "inclusions": [
-        "Full FIA roll cage and 4-point race safety harness",
-        "Fitted helmet and dust-proof goggles",
-        "15-minute marshal safety briefing",
-        "Lead escort convoy car throughout open desert dunes",
-        "Unlimited cold drinking water"
-      ]
-    },
-    {
-      "id": "quad-bike-atv-rental",
-      "title": "Yamaha & ATV Quad Bike Rentals",
-      "category": "quad",
-      "models": [
-        {
-          "name": "250 CC Single Quad Bike",
-          "rate_30m_track_aed": 150,
-          "rate_1hr_open_dunes_aed": 250
-        },
-        {
-          "name": "350 CC Yamaha Raptor Quad Bike",
-          "rate_30m_open_dunes_aed": 250,
-          "rate_1hr_open_dunes_aed": 380
-        },
-        {
-          "name": "Double / Tandem Quad Bike (2 Riders)",
-          "rate_30m_aed": 280,
-          "rate_1hr_aed": 450
-        }
-      ],
-      "driver_license_required": false,
-      "minimum_driver_age": 16,
-      "payment_policy": "100% Pay on Arrival"
-    },
-    {
-      "id": "burj-khalifa-124-125",
-      "title": "Burj Khalifa At The Top (124th & 125th Floor)",
-      "category": "excursion_ticket",
-      "rate_per_person_aed": 175,
-      "slots": "Daily every 30 minutes from 08:30 AM to 11:00 PM (Prime Sunset 04:30 PM, Evening 08:00 PM, 08:30 PM)",
-      "payment_policy": "Advance Payment Only",
-      "entry_point": "Dubai Mall Lower Ground Level (LG Floor)",
-      "inclusions": [
-        "Official entry barcode ticket to Levels 124 & 125",
-        "Fastest 10m/s double-deck elevators",
-        "360-degree glass views and open-air outdoor terrace",
-        "High-powered telescopes"
-      ]
-    },
-    {
-      "id": "burj-khalifa-fountain-lake-ride",
-      "title": "Burj Khalifa Fountain Lake Ride (Abra Boat)",
-      "category": "excursion_ticket",
-      "rate_per_person_aed": 100,
-      "slots": "Daily every 30 minutes from 05:45 PM to 11:15 PM",
-      "payment_policy": "Advance Payment Only",
-      "inclusions": [
-        "30-minute cruise on traditional wooden motorized Abra boat",
-        "Front-row aquatic seats to Dubai Dancing Fountain show"
-      ]
-    },
-    {
-      "id": "dubai-half-day-city-tour",
-      "title": "Dubai Half Day Guided City Tour",
-      "category": "city_tour",
-      "rate_per_person_aed": 120,
-      "payment_policy": "100% Pay on Arrival",
-      "inclusions": [
-        "Dubai Creek, Gold & Spice Souks (Abra boat included)",
-        "Jumeirah Mosque & Burj Al Arab photo stop",
-        "Atlantis The Palm drive-through",
-        "AC vehicle with English speaking licensed guide"
-      ]
-    },
-    {
-      "id": "abu-dhabi-ferrari-tour",
-      "title": "Abu Dhabi City Tour with Ferrari World",
-      "category": "city_tour",
-      "rate_adult_aed": 350,
-      "rate_child_aed": 280,
-      "payment_policy": "100% Pay on Arrival",
-      "inclusions": [
-        "Sheikh Zayed Grand Mosque visit",
-        "Abu Dhabi Corniche & Emirates Palace photo stop",
-        "Ferrari World theme park admission ticket",
-        "Round-trip AC transport from Dubai"
-      ]
+      "rate_adult_aed": 1000,
+      "rate_description": "AED 1000 (per person)",
+      "duration": "30 Mins",
+      "pickup_window": "02:30 PM - 03:30 PM",
+      "dropoff_window": "09:30 PM",
+      "inclusions": [],
+      "payment_policy": "100% Pay on Arrival (Cash or Card upon pickup)"
     }
   ],
-  "faq_guidelines": {
-    "pregnant_and_infants": "Dune bashing is not recommended for pregnant women or infants under 3 years old due to steep dune angles and sudden crest drops. However, we provide a smooth, gentle direct transfer along flat desert roads straight to our Bedouin camp so they can relax in the VIP Majlis, watch the golden sunset, take gentle camel rides, and enjoy the 5-star BBQ dinner buffet and cultural shows in complete comfort.",
-    "pricing_calculations": {
-      "six_pax_premium_safari": "AED 850 total for private luxury Land Cruiser (seats up to 6 guests) with VIP table service, or AED 720 total (6 x AED 120) for standard shared evening safari.",
-      "six_pax_standard_safari": "6 adults x AED 120 = AED 720 total (or private car AED 750).",
-      "six_pax_burj_khalifa": "6 tickets x AED 175 = AED 1,050 total (Advance payment required)."
-    }
-  }
+  "lastTrainedAt": "2026-10-07T09:24:57.914Z"
 }
