@@ -1,0 +1,40 @@
+{
+  "currency": "AED",
+  "note": "Fill every null price and empty list before launch. The bot will NOT guess missing data.",
+  "tours": [
+    { "id": "desert-safari", "name": "Desert Safari",
+      "options": [
+        { "name": "Standard - Sharing", "price_aed": null },
+        { "name": "Standard - Private", "price_aed": null },
+        { "name": "Premium - Sharing", "price_aed": null },
+        { "name": "Premium - Private", "price_aed": null }
+      ],
+      "duration": null, "includes": [], "excludes": [], "pickup": null, "restrictions": null },
+    { "id": "quad-bike", "name": "Quad Bike",
+      "options": [
+        { "name": "Single, inside desert, 30 min", "price_aed": null },
+        { "name": "Single, inside desert, 1 hr", "price_aed": null },
+        { "name": "Double, inside desert, 30 min", "price_aed": null },
+        { "name": "Double, inside desert, 1 hr", "price_aed": null },
+        { "name": "Single, outside desert, 30 min", "price_aed": null },
+        { "name": "Double, outside desert, 1 hr", "price_aed": null }
+      ],
+      "duration": null, "includes": [], "excludes": [], "pickup": null, "restrictions": null },
+    { "id": "polaris", "name": "Polaris 1000cc Buggy",
+      "options": [ { "name": "2 seater", "price_aed": null }, { "name": "4 seater", "price_aed": null } ],
+      "duration": null, "includes": [], "excludes": [], "pickup": null, "restrictions": null },
+    { "id": "can-am", "name": "Can-Am Buggy",
+      "options": [ { "name": "Standard", "price_aed": null } ],
+      "duration": null, "includes": [], "excludes": [], "pickup": null, "restrictions": null },
+    { "id": "dubai-city", "name": "Dubai City Tour",
+      "options": [ { "name": "Standard", "price_aed": null } ],
+      "duration": null, "includes": [], "excludes": [], "pickup": null, "restrictions": null },
+    { "id": "abu-dhabi-city", "name": "Abu Dhabi City Tour",
+      "options": [ { "name": "Standard", "price_aed": null } ],
+      "duration": null, "includes": [], "excludes": [], "pickup": null, "restrictions": null },
+    { "id": "skydive", "name": "Tandem Skydive Palm Jumeirah",
+      "options": [ { "name": "Tandem", "price_aed": null } ],
+      "duration": null, "includes": [], "excludes": [], "pickup": null, "restrictions": null }
+  ],
+  "policies": { "cancellation": null, "children": null, "payment": null }
+}
