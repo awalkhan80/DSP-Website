@@ -32,7 +32,7 @@ export const AiBookingAgentWidget: React.FC<AiBookingAgentWidgetProps> = ({
     {
       id: 'welcome',
       sender: 'agent',
-      text: "Marhaban! 🐪 I am your **Phoenix AI Desert Concierge**.\n\nI can calculate live dynamic prices, check real-time availability, answer questions about our Red Dunes camp & Can-Am buggies, or issue an **instant Pay-on-Arrival booking voucher** with zero deposit required.",
+      text: "Marhaban! 🐪 I am your **Phoenix AI Desert Concierge**.\n\nI can help with tour information and prices. Use Book Now to request a booking, or contact our team to confirm availability and pickup details.",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -75,9 +75,12 @@ export const AiBookingAgentWidget: React.FC<AiBookingAgentWidgetProps> = ({
     setInputText('');
     setIsLoading(true);
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
     try {
       const response = await fetch('/api/agent/chat', {
         method: 'POST',
+        signal: controller.signal,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: query,
@@ -88,7 +91,11 @@ export const AiBookingAgentWidget: React.FC<AiBookingAgentWidgetProps> = ({
         }),
       });
 
+      if (!response.ok) throw new Error(`Chat request failed: ${response.status}`);
       const data = await response.json();
+      if (data.ok !== true || typeof data.reply !== 'string' || !data.reply.trim()) {
+        throw new Error('Invalid chat response');
+      }
 
       let replyText = data.reply || "I'm here to assist you! You can ask about our safaris, Can-Am buggies, quad biking, or book directly with 100% pay on arrival.";
       let actionCard = data.actionCard;
@@ -106,17 +113,7 @@ export const AiBookingAgentWidget: React.FC<AiBookingAgentWidgetProps> = ({
         setHasUnread(true);
       }
     } catch (err) {
-      // Smart contextual client-side fallback if network is temporarily reconnecting
-      const qLower = query.toLowerCase();
-      let fallbackText = `Our Evening Desert Safari is AED 120 per adult and AED 85 per child, with 45-minute red dune bashing, 5-star BBQ dinner, and live shows. Free hotel pickup and 100% Pay on Arrival!`;
-
-      if (qLower.includes('burj') || qLower.includes('khalifa') || qLower.includes('at the top')) {
-        fallbackText = `Yes! We have availability for Burj Khalifa 'At The Top' (124th & 125th Floor) today for the 08:00 PM slot.\n\nOfficial tickets are AED 175 per person with direct entry from Dubai Mall (Ground Level) and 360-degree glass views of Dubai's illuminated skyline and dancing fountains.\n\nWould you like me to book your tickets for tonight at 8:00 PM, or would you like to add the Fountain Lake Abra boat ride (AED 100)? You can also reach our 24/7 WhatsApp concierge at +971 56 150 5270.`;
-      } else if (qLower.includes('can-am') || qLower.includes('buggy')) {
-        fallbackText = `Our Can-Am Maverick X3 1000cc Turbo (2-Seater) is AED 1,000 for 30 minutes, or AED 1,500 for a full 1-hour session. Includes safety helmets, goggles, and convoy guide car with 100% Pay on Arrival!`;
-      } else if (qLower.includes('quad') || qLower.includes('atv')) {
-        fallbackText = `Our 250cc Quad Bike is AED 150 (30m track) or AED 250 (1hr open dunes), and our 350cc Yamaha Raptor is AED 250 (30m). No driving license required!`;
-      }
+      const fallbackText = "I couldn't reach our chat service just now. Please try again, or tap WhatsApp to contact our team at +971 56 150 5270 for current prices and confirmed availability.";
 
       const agentMsg: ChatMessage = {
         id: 'agent-' + Date.now(),
@@ -126,6 +123,7 @@ export const AiBookingAgentWidget: React.FC<AiBookingAgentWidgetProps> = ({
       };
       setMessages((prev) => [...prev, agentMsg]);
     } finally {
+      clearTimeout(timeout);
       setIsLoading(false);
     }
   };
@@ -362,3 +360,4 @@ export const AiBookingAgentWidget: React.FC<AiBookingAgentWidgetProps> = ({
     </div>
   );
 };
+

@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
-  ADMIN_CREDENTIALS,
   validateAdminCredentials,
   getLockoutRemainingSeconds,
-  forceResetLockout,
-  createAdminSession,
   AdminSession,
 } from '../../utils/adminAuth';
 
@@ -15,8 +12,8 @@ interface AdminLoginModalProps {
 }
 
 export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClose, onSuccess }) => {
-  const [username, setUsername] = useState(ADMIN_CREDENTIALS.email);
-  const [password, setPassword] = useState(ADMIN_CREDENTIALS.password);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -30,7 +27,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
       const remaining = getLockoutRemainingSeconds();
       setLockoutSeconds(remaining);
       if (remaining > 0) {
-        setErrorMessage(`Security lockout active. Please wait ${remaining}s or click "Reset Lockout".`);
+        setErrorMessage(`Security lockout active. Please wait ${remaining}s.`);
       }
     };
 
@@ -49,27 +46,12 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
     }
   };
 
-  const handleResetLockout = () => {
-    forceResetLockout();
-    setLockoutSeconds(0);
-    setErrorMessage(null);
-  };
-
-  const handleInstantLogin = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      const session = createAdminSession(rememberMe);
-      setIsLoading(false);
-      onSuccess(session);
-    }, 200);
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
     if (lockoutSeconds > 0) {
-      setErrorMessage(`Portal locked. Please wait ${lockoutSeconds} seconds or click "Reset Lockout".`);
+      setErrorMessage(`Portal locked. Please wait ${lockoutSeconds} seconds.`);
       return;
     }
 
@@ -94,15 +76,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
         }
       }
     }, 250);
-  };
-
-  const handleQuickFill = () => {
-    setUsername(ADMIN_CREDENTIALS.email);
-    setPassword(ADMIN_CREDENTIALS.password);
-    setErrorMessage(null);
-    if (lockoutSeconds > 0) {
-      handleResetLockout();
-    }
   };
 
   return (
@@ -155,13 +128,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
                     <span className="font-mono text-amber-300 font-bold text-[11px]">
                       Lockout remaining: {lockoutSeconds}s
                     </span>
-                    <button
-                      type="button"
-                      onClick={handleResetLockout}
-                      className="px-2 py-0.5 bg-amber-500 hover:bg-amber-400 text-stone-950 rounded text-[10px] font-bold cursor-pointer transition-colors"
-                    >
-                      Reset Lockout
-                    </button>
+
                   </div>
                 )}
               </div>
@@ -246,14 +213,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
                 <span>Remember session</span>
               </label>
 
-              <button
-                type="button"
-                onClick={handleQuickFill}
-                title="Fill credentials for quick testing"
-                className="text-[11px] text-amber-400 hover:text-amber-300 font-medium hover:underline cursor-pointer"
-              >
-                Auto-fill
-              </button>
+
             </div>
 
             {/* Primary Sign In Button */}
@@ -275,37 +235,8 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
               )}
             </button>
 
-            {/* 1-Click Instant Access Button */}
-            <button
-              type="button"
-              onClick={handleInstantLogin}
-              disabled={isLoading}
-              className="w-full py-2.5 px-4 rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-300 font-semibold text-xs border border-amber-500/30 transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
-            >
-              <span className="material-symbols-outlined text-[16px] text-amber-400">bolt</span>
-              <span>1-Click Instant Operator Sign In</span>
-            </button>
-          </form>
 
-          {/* Quick Helper Credentials Note */}
-          <div className="mt-5 p-3 rounded-xl bg-stone-900/60 border border-stone-800 text-[11px] text-stone-400 flex flex-col gap-1">
-            <div className="flex items-center justify-between text-stone-300 font-medium">
-              <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px] text-amber-400">key</span>
-                Authorized Operator Credentials:
-              </span>
-              <button
-                onClick={handleQuickFill}
-                className="text-amber-400 hover:text-amber-300 underline font-semibold cursor-pointer"
-              >
-                Insert
-              </button>
-            </div>
-            <div className="font-mono text-stone-300 text-[10px] mt-0.5 space-y-0.5 bg-stone-950/60 p-2 rounded">
-              <div>Username: <span className="text-amber-300 font-semibold">{ADMIN_CREDENTIALS.email}</span> (or <span className="text-amber-300">admin</span>)</div>
-              <div>Password: <span className="text-amber-300 font-semibold">{ADMIN_CREDENTIALS.password}</span></div>
-            </div>
-          </div>
+          </form>
 
           {/* Return to Storefront */}
           <div className="mt-4 text-center">
@@ -332,3 +263,4 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
     </div>
   );
 };
+

@@ -912,7 +912,7 @@ function calculateTourQuote(msgLower: string) {
           payment_policy: 'advance_only',
         },
       },
-      reply: `Yes! We have availability for Burj Khalifa 'At The Top' (124th & 125th Floor) today for the 08:00 PM slot. For ${pax} guest${pax > 1 ? 's' : ''}, tickets are AED 175 per person, coming to a total of AED ${totalAed}.\n\nOfficial tickets include high-speed elevator access from Dubai Mall (Ground Level) and 360-degree glass views. Please note that excursion tickets require advance payment to release your official electronic barcode entry passes. Would you like me to book your tickets for tonight?`,
+      reply: `For Burj Khalifa 'At The Top' (124th & 125th Floor), availability and current ticket rates require team confirmation. For ${pax} guest${pax > 1 ? 's' : ''}, tickets are AED 175 per person, coming to a total of AED ${totalAed}.\n\nOfficial tickets include high-speed elevator access from Dubai Mall (Ground Level) and 360-degree glass views. Please note that excursion tickets require advance payment to release your official electronic barcode entry passes. Please contact our team to confirm your date and ticket option.`,
     };
   }
 
@@ -947,19 +947,30 @@ let geminiQuotaCooldownUntil = 0;
 // 11.0 Agent Conversational Chat Endpoint (Gemini 3.1 Flash Lite + Multi-Model Failover + KB Grounding)
 app.post(['/api/agent/chat', '/api/chat'], async (req, res) => {
   try {
-    const { message = '', history = [] } = req.body;
+    const { message, history = [] } = req.body || {};
+    if (typeof message !== 'string' || !message.trim() || message.length > 4000 ||
+        !Array.isArray(history) || history.length > 20 ||
+        history.some((h: any) => !h || !['user', 'model'].includes(h.role) ||
+          typeof h.text !== 'string' || h.text.length > 4000)) {
+      return res.status(400).json({ ok: false, error: 'Provide a message and valid conversation history.' });
+    }
     const msgLower = (message || '').toLowerCase();
     const kbJson = getToursKnowledgeBase();
 
     // Check deterministic mathematical calculation first
-    const deterministicQuote = calculateTourQuote(msgLower);
+    // Availability is not verified by this conversational endpoint.
+    if (/\b(availability|available|today|tomorrow|slots?)\b/i.test(message)) {
+      return res.json({ ok: true, reply: 'Please share your tour, date, guest count and pickup area. Our team must confirm availability before a booking is confirmed. Contact us on WhatsApp at +971 56 150 5270.', actionCard: null });
+    }
+    const wantsPrice = /\b(price|cost|quote|calculate|how much|rate|rates)\b/i.test(message);
+    const deterministicQuote = wantsPrice ? calculateTourQuote(msgLower) : null;
 
     let actionCard: any = deterministicQuote ? deterministicQuote.actionCard : null;
 
     // Try Gemini generateContent if GEMINI_API_KEY is present and not currently in quota cooldown
     if (process.env.GEMINI_API_KEY && Date.now() > geminiQuotaCooldownUntil) {
       try {
-        const ai = new GoogleGenAI();
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
         const customRules = kbJson?.ai_settings?.custom_sales_rules || [
           "Always emphasize 100% Pay on Arrival (Cash or Card on pickup) with zero deposit needed for all safaris, buggies, quads, and city tours.",
           "Attraction tickets (Burj Khalifa, SkyDive) require advance payment for official barcode issuance.",
@@ -976,7 +987,7 @@ Phone & 24/7 WhatsApp Hotline: +971 56 150 5270.
 TRAINED CONCIERGE PERSONA & SALES DIRECTIVES (CONFIGURED IN ADMIN DASHBOARD):
 1. Tone: ${kbJson?.ai_settings?.tone || 'Warm, prestigious, highly courteous, hospitable, direct and helpful'}.
 2. Never use markdown headers (NO "###", NO "####", NO "---") and never write empty placeholders (never write "total of aed" without numbers).
-3. Always calculate and state the EXACT total price in AED based on the live inventory.
+3. Only quote prices supported by the supplied catalogue. If guest ages, options or rates are unclear, ask for clarification. This endpoint has no booking or live availability tools: never claim to have checked availability, created a booking, or issued a voucher.
 4. Business & Sales Directives:
 ${customRules.map((r: string) => `   - ${r}`).join('\n')}
 
@@ -1076,7 +1087,7 @@ ${JSON.stringify(kbJson, null, 2)}`;
     } else if (msgLower.includes('pickup') || msgLower.includes('timing') || msgLower.includes('hotel')) {
       reply = `We provide complimentary door-to-door 4x4 pickup and drop-off directly from your hotel, apartment, or villa across Dubai and Sharjah. For the Evening Desert Safari, our chauffeur will collect you between 02:30 PM and 03:30 PM, returning you comfortably around 09:30 PM.`;
     } else if (msgLower.includes('availability') || msgLower.includes('available') || msgLower.includes('today') || msgLower.includes('tomorrow')) {
-      reply = `Yes, we have open availability for both today and tomorrow across our fleet! For Evening Desert Safari, pickup is between 02:30 PM and 03:30 PM. For off-road Can-Am buggies and quad bikes, slots run from 08:00 AM to 05:30 PM sunset slots. Which experience and timing would you prefer?`;
+      reply = `Our team must confirm availability for your selected date. For Evening Desert Safari, pickup is between 02:30 PM and 03:30 PM. For off-road Can-Am buggies and quad bikes, slots run from 08:00 AM to 05:30 PM sunset slots. Which experience and timing would you prefer?`;
     }
 
     return res.json({ ok: true, reply, actionCard });
@@ -1898,3 +1909,4 @@ async function startServer() {
 }
 
 startServer();
+

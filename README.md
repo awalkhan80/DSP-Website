@@ -50,3 +50,17 @@ This package contains the fully upgraded SEO, AEO (Answer Engine Optimization), 
 - **Google Search Console**: Submit `https://desertsafaridxbpro.com/sitemap.xml` under Sitemaps and request indexing for the homepage.
 - **Rich Results Test**: Test `https://desertsafaridxbpro.com/` on Google's Rich Results Test to verify FAQPage, Product, and LocalBusiness eligibility.
 - **Semrush Position Tracking**: Track target keyword ranking shifts over the next 7–14 days.
+
+
+## Chatbot server
+
+Use `npm install`, `npm run build`, then `npm start` on Node hosting. The
+`server.js` entry point starts `server.ts`, which serves both the built website
+and `/api/agent/chat`. Deploying only `dist` to static hosting cannot serve the
+chat API. Restart the Node application after deploying changes.
+
+For local development, `npm run dev` starts the API with Vite middleware on the
+same port. Set `GEMINI_API_KEY` in the server environment for generated replies;
+without a key, the server uses its local responses. Never put the key in browser
+code. Availability requires team confirmation; chat alone does not issue a
+booking or voucher. Run `npm run test:chat` for production-entry-point API tests.
