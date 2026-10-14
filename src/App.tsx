@@ -9,7 +9,6 @@ import { DEFAULT_OFF_ROAD_PRICING, EXPERIENCES, REVIEWS } from './data/safaris';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { SignatureExpeditions } from './components/SignatureExpeditions';
-import { PriceMatchComparisonSection } from './components/PriceMatchComparisonSection';
 import { AdrenalineBuggySection } from './components/AdrenalineBuggySection';
 import { CityToursSection } from './components/CityToursSection';
 import { TravelGuidesSection } from './components/TravelGuidesSection';
@@ -22,12 +21,10 @@ import { BookingModal } from './components/BookingModal';
 import { ItineraryModal } from './components/ItineraryModal';
 import { ReviewModal } from './components/ReviewModal';
 import { WhatsAppDrawer } from './components/WhatsAppDrawer';
-import { AiBookingAgentWidget } from './components/AiBookingAgentWidget';
 import { InfoModal } from './components/InfoModal';
 import { AdminDashboard, CMSConfig } from './components/admin/AdminDashboard';
 import { AdminLoginModal } from './components/admin/AdminLoginModal';
 import { getStoredAdminSession, clearAdminSession, AdminSession } from './utils/adminAuth';
-import { useCanonicalSeo } from './utils/useCanonicalSeo';
 
 export default function App() {
   // Navigation View State: 'storefront' or 'admin'
@@ -110,53 +107,6 @@ export default function App() {
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [whatsAppOpen, setWhatsAppOpen] = useState(false);
   const [infoModalTopic, setInfoModalTopic] = useState<'privacy' | 'terms' | 'safety' | null>(null);
-
-  // Active modal tour ID for deep canonical linking
-  const activeModalTourId = itineraryModalOpen
-    ? itineraryExperienceId
-    : bookingModalOpen
-    ? bookingModalParams.experienceId
-    : undefined;
-
-  // Dynamic Canonical SEO, Title & OpenGraph synchronization based on active section & tour modal
-  useCanonicalSeo(activeSection, activeModalTourId);
-
-  // Dynamic Scroll Observer to update activeSection & rel="canonical" dynamically
-  React.useEffect(() => {
-    if (currentView !== 'storefront') return;
-
-    const sectionIds = [
-      'desert-safaris',
-      'quad-and-buggy-rentals',
-      'city-tours',
-      'travel-guides',
-      'faqs',
-      'reviews',
-      'direct-operator',
-    ];
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting && entry.intersectionRatio >= 0.25) {
-            setActiveSection(entry.target.id);
-            break;
-          }
-        }
-      },
-      {
-        rootMargin: '-10% 0px -40% 0px',
-        threshold: [0.25, 0.5, 0.75],
-      }
-    );
-
-    sectionIds.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, [currentView]);
 
   // Toast Notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -296,61 +246,9 @@ export default function App() {
   };
 
   // Admin Authentication Actions
-  // Listen to URL hash/path/search for admin entry & keyboard shortcuts
-  React.useEffect(() => {
-    const handleUrlRoute = () => {
-      const hash = (window.location.hash || '').toLowerCase();
-      const path = (window.location.pathname || '').toLowerCase();
-      const search = (window.location.search || '').toLowerCase();
-
-      const wantsAdmin =
-        hash.includes('admin') ||
-        hash.includes('login') ||
-        path.includes('/admin') ||
-        path.includes('/login') ||
-        path.includes('/dashboard') ||
-        path.includes('/cms') ||
-        search.includes('admin') ||
-        search.includes('login') ||
-        search.includes('view=admin');
-
-      if (wantsAdmin) {
-        if (adminSession) {
-          setCurrentView('admin');
-        } else {
-          setAdminLoginModalOpen(true);
-        }
-      }
-    };
-
-    handleUrlRoute();
-    window.addEventListener('hashchange', handleUrlRoute);
-    window.addEventListener('popstate', handleUrlRoute);
-
-    const handleKey = (e: KeyboardEvent) => {
-      // Shortcut: Alt + A or Ctrl + Shift + A
-      if ((e.altKey && (e.key === 'a' || e.key === 'A')) || (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a'))) {
-        e.preventDefault();
-        handleOpenAdmin();
-      }
-    };
-    window.addEventListener('keydown', handleKey);
-
-    return () => {
-      window.removeEventListener('hashchange', handleUrlRoute);
-      window.removeEventListener('popstate', handleUrlRoute);
-      window.removeEventListener('keydown', handleKey);
-    };
-  }, [adminSession]);
-
   const handleOpenAdmin = () => {
     if (adminSession) {
       setCurrentView('admin');
-      try {
-        window.history.pushState(null, '', '#admin');
-      } catch (e) {
-        // Ignore
-      }
     } else {
       setAdminLoginModalOpen(true);
     }
@@ -360,11 +258,6 @@ export default function App() {
     setAdminSession(session);
     setAdminLoginModalOpen(false);
     setCurrentView('admin');
-    try {
-      window.history.pushState(null, '', '#admin');
-    } catch (e) {
-      // Ignore
-    }
     showToast(`Access Granted. Welcome, ${session.name} (${session.email})`);
   };
 
@@ -372,13 +265,6 @@ export default function App() {
     clearAdminSession();
     setAdminSession(null);
     setCurrentView('storefront');
-    try {
-      if (window.location.hash.includes('admin')) {
-        window.history.pushState(null, '', window.location.pathname);
-      }
-    } catch (e) {
-      // Ignore
-    }
     showToast('Signed out of Operator Admin. Portal locked.');
   };
 
@@ -431,6 +317,22 @@ export default function App() {
         </div>
       )}
 
+      {/* Floating Operator Portal Quick-Access Switcher */}
+      <div className="fixed bottom-6 left-6 z-40">
+        <button
+          type="button"
+          onClick={handleOpenAdmin}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-stone-900/90 hover:bg-stone-900 text-amber-300 hover:text-white text-xs font-bold shadow-2xl border border-amber-500/40 backdrop-blur-md transition-all cursor-pointer hover:scale-105 active:scale-95 group"
+          title={adminSession ? "Operator Admin Dashboard (Authenticated)" : "Secure Operator Admin Login"}
+        >
+          <span className="material-symbols-outlined text-[18px] text-amber-400 group-hover:rotate-12 transition-transform">
+            {adminSession ? 'admin_panel_settings' : 'lock'}
+          </span>
+          <span>{adminSession ? 'Admin Portal' : 'Admin Login'}</span>
+          <span className={`w-2 h-2 rounded-full ${adminSession ? 'bg-emerald-400' : 'bg-amber-400'} animate-pulse ml-0.5`}></span>
+        </button>
+      </div>
+
       {/* Sticky Header with Announcement Bar & Navigation */}
       <Header
         currency={currency}
@@ -464,12 +366,6 @@ export default function App() {
           onBookExperience={(id) => handleOpenBooking(id)}
           onViewItinerary={handleViewItinerary}
           experiences={experiences}
-        />
-
-        <PriceMatchComparisonSection
-          currency={currency}
-          onBookExperience={(id) => handleOpenBooking(id)}
-          onOpenWhatsApp={() => setWhatsAppOpen(true)}
         />
 
         <AdrenalineBuggySection
@@ -564,14 +460,6 @@ export default function App() {
         onOpen={() => setWhatsAppOpen(true)}
       />
 
-      {/* Phoenix AI Desert Safari Agent Widget */}
-      <AiBookingAgentWidget
-        currency={currency}
-        onOpenBooking={(id) => handleOpenBooking(id)}
-        onOpenWhatsApp={() => setWhatsAppOpen(true)}
-        experiences={experiences}
-      />
-
       {/* Privacy, Terms, and Safety Modal */}
       {infoModalTopic && (
         <InfoModal
@@ -579,13 +467,6 @@ export default function App() {
           onClose={() => setInfoModalTopic(null)}
         />
       )}
-
-      {/* Operator Admin Login Modal */}
-      <AdminLoginModal
-        isOpen={adminLoginModalOpen}
-        onClose={() => setAdminLoginModalOpen(false)}
-        onSuccess={handleAdminLoginSuccess}
-      />
     </div>
   );
 }
