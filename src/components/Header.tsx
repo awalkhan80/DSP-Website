@@ -72,21 +72,7 @@ export const Header: React.FC<HeaderProps> = ({
                 24/7 Concierge
               </span>
 
-              {/* Admin Portal Quick Toggle Button */}
-              {onOpenAdmin && (
-                <button
-                  type="button"
-                  onClick={onOpenAdmin}
-                  className="flex items-center gap-1.5 bg-black/25 hover:bg-black/40 px-2.5 py-0.5 rounded text-[11px] font-bold text-amber-200 hover:text-white transition-colors cursor-pointer border border-amber-300/30 shadow-xs"
-                  title={isAdminLoggedIn ? "Operator Admin Dashboard (Logged In)" : "Secure Operator Admin Login"}
-                >
-                  <span className="material-symbols-outlined text-[14px]">
-                    {isAdminLoggedIn ? 'admin_panel_settings' : 'lock'}
-                  </span>
-                  <span>{isAdminLoggedIn ? 'Admin Portal' : 'Admin Login'}</span>
-                  <span className={`w-1.5 h-1.5 rounded-full ${isAdminLoggedIn ? 'bg-emerald-400' : 'bg-amber-400'} animate-pulse`}></span>
-                </button>
-              )}
+
 
               {/* Currency Switcher */}
               <div className="relative">
@@ -161,21 +147,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right Action Cluster */}
         <div className="flex items-center gap-3 sm:gap-4">
-          {/* Admin Portal Quick Button (Desktop / Tablet) */}
-          {onOpenAdmin && (
-            <button
-              type="button"
-              onClick={onOpenAdmin}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-stone-900 hover:bg-stone-800 text-amber-300 hover:text-amber-200 text-xs font-semibold border border-amber-500/30 transition-all cursor-pointer shadow-xs"
-              title={isAdminLoggedIn ? 'Operator Dashboard (Logged In)' : 'Secure Operator Admin Login'}
-            >
-              <span className="material-symbols-outlined text-[16px] text-amber-400">
-                {isAdminLoggedIn ? 'admin_panel_settings' : 'lock'}
-              </span>
-              <span>{isAdminLoggedIn ? 'Dashboard' : 'Admin'}</span>
-              <span className={`w-1.5 h-1.5 rounded-full ${isAdminLoggedIn ? 'bg-emerald-400' : 'bg-amber-400'} animate-pulse`}></span>
-            </button>
-          )}
+
 
           {/* Book Adventure CTA */}
           <button
@@ -253,20 +225,7 @@ export const Header: React.FC<HeaderProps> = ({
               <WhatsAppLogo className="w-5 h-5" />
               <span>WhatsApp VIP Concierge</span>
             </button>
-            {onOpenAdmin && (
-              <button
-                onClick={() => {
-                  onOpenAdmin();
-                  setMobileMenuOpen(false);
-                }}
-                className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-[#8D4B00] hover:bg-[#B15F00] text-white font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-[18px]">
-                  {isAdminLoggedIn ? 'admin_panel_settings' : 'lock'}
-                </span>
-                <span>{isAdminLoggedIn ? 'Operator Admin Portal' : 'Secure Admin Login'}</span>
-              </button>
-            )}
+
           </div>
         </div>
       )}

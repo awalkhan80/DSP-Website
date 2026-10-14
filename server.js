@@ -21,7 +21,11 @@ try {
         if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
           val = val.slice(1, -1);
         }
-        if (process.env[key] === undefined) process.env[key] = val;
+        if (key === 'PORT' && process.env.PORT) {
+          // Keep runtime assigned port
+        } else {
+          process.env[key] = val;
+        }
       }
     }
   }
@@ -936,6 +940,45 @@ app.get('/api/b2b/bookings', (req, res) => {
 const agentLeads = [];
 const agentEscalations = [];
 
+// In-memory & Persistent Chatbot Interaction Store for Admin Visibility
+const chatActivityLogs = [];
+const CHAT_LOGS_FILE = path.resolve(process.cwd(), 'data', 'chat_logs.json');
+
+function loadChatLogs() {
+  try {
+    if (fs.existsSync(CHAT_LOGS_FILE)) {
+      const parsed = JSON.parse(fs.readFileSync(CHAT_LOGS_FILE, 'utf-8'));
+      if (Array.isArray(parsed)) {
+        chatActivityLogs.push(...parsed.slice(0, 200));
+      }
+    }
+  } catch (err) {
+    console.warn('Could not read chat_logs.json:', err.message);
+  }
+}
+loadChatLogs();
+
+function recordChatLog(entry) {
+  const log = {
+    id: 'chat_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+    timestamp: new Date().toISOString(),
+    timeFormatted: new Date().toLocaleTimeString('en-AE', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+    ...entry,
+  };
+  chatActivityLogs.unshift(log);
+  if (chatActivityLogs.length > 200) {
+    chatActivityLogs.length = 200;
+  }
+  try {
+    const dataDir = path.resolve(process.cwd(), 'data');
+    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+    fs.writeFileSync(CHAT_LOGS_FILE, JSON.stringify(chatActivityLogs.slice(0, 100), null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('Could not persist chat log:', err.message);
+  }
+  return log;
+}
+
 // Helper: Knowledge Base Facts
 const KNOWLEDGE_BASE_FACTS = [{
   topic: 'evening_desert_safari',
@@ -1307,6 +1350,36 @@ app.get('/api/health', (req, res) => {
     }
   });
 });
+
+// Admin Authentication Endpoint
+app.post('/api/admin/login', (req, res) => {
+  const { username, password } = req.body || {};
+  const cleanUser = (username || '').trim().toLowerCase();
+  const cleanPass = (password || '').trim();
+  const adminEmail = (process.env.ADMIN_EMAIL || 'awalgsm@gmail.com').trim().toLowerCase();
+  const adminPass = (process.env.ADMIN_PASSWORD || 'Sunball##12').trim();
+
+  const isUserValid =
+    cleanUser === adminEmail ||
+    cleanUser === 'awalgsm@gmail.com' ||
+    cleanUser === 'admin' ||
+    cleanUser === 'info@desertsafaridxbpro.com';
+  const isPassValid = cleanPass === adminPass;
+
+  if (isUserValid && isPassValid) {
+    return res.json({
+      ok: true,
+      token: process.env.ADMIN_API_TOKEN || 'phx_token_admin_awalgsm',
+      user: {
+        email: 'awalgsm@gmail.com',
+        name: 'Awal Khan',
+        role: 'Super Administrator • DTCM Direct Operator',
+      },
+    });
+  }
+  return res.status(401).json({ ok: false, error: 'Invalid admin credentials' });
+});
+
 app.post(['/api/agent/chat', '/api/chat'], chatRateLimiter, async (req, res) => {
   try {
     const {

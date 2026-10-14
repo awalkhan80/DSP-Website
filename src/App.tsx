@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Currency, Experience, OffRoadPricingConfig, Review } from './types';
 import { DEFAULT_OFF_ROAD_PRICING, EXPERIENCES, REVIEWS } from './data/safaris';
 import { Header } from './components/Header';
@@ -264,6 +264,17 @@ export default function App() {
       setAdminLoginModalOpen(true);
     }
   };
+
+  useEffect(() => {
+    const handleUrlTrigger = () => {
+      if (window.location.hash === '#admin' || window.location.search.includes('admin=true')) {
+        handleOpenAdmin();
+      }
+    };
+    handleUrlTrigger();
+    window.addEventListener('hashchange', handleUrlTrigger);
+    return () => window.removeEventListener('hashchange', handleUrlTrigger);
+  }, [adminSession]);
 
   const handleAdminLoginSuccess = (session: AdminSession) => {
     setAdminSession(session);

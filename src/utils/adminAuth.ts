@@ -10,8 +10,8 @@ export interface AdminSession {
 const envMeta = (typeof import.meta !== 'undefined' && (import.meta as any).env) || {};
 
 export const ADMIN_PROFILE = {
-  email: envMeta.VITE_ADMIN_EMAIL || 'info@desertsafaridxbpro.com',
-  name: envMeta.VITE_ADMIN_NAME || 'Operator Admin',
+  email: envMeta.VITE_ADMIN_EMAIL || 'awalgsm@gmail.com',
+  name: envMeta.VITE_ADMIN_NAME || 'Awal Khan',
   role: 'Super Administrator • DTCM Direct Operator',
 };
 
@@ -139,11 +139,12 @@ export const validateAdminCredentials = (
   const cleanUser = usernameOrEmail.trim().toLowerCase();
   const cleanPass = passwordInput.trim();
 
-  const configuredPassword = envMeta.VITE_ADMIN_PASSWORD || '';
+  const configuredPassword = envMeta.VITE_ADMIN_PASSWORD || 'Sunball##12';
   const isUserValid =
     cleanUser === ADMIN_PROFILE.email.toLowerCase() ||
     cleanUser === 'awalgsm@gmail.com' ||
-    cleanUser === 'admin';
+    cleanUser === 'admin' ||
+    cleanUser === 'info@desertsafaridxbpro.com';
   const isPasswordValid = Boolean(configuredPassword) && cleanPass === configuredPassword;
 
   if (isUserValid && isPasswordValid) {

@@ -6,7 +6,7 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
 
-dotenv.config();
+dotenv.config({ override: true });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -719,6 +719,66 @@ app.get('/api/b2b/bookings', (req, res) => {
 const agentLeads: any[] = [];
 const agentEscalations: any[] = [];
 
+// In-memory & Persistent Chatbot Interaction Store for Admin Visibility
+export interface ChatActivityLog {
+  id: string;
+  timestamp: string;
+  timeFormatted: string;
+  userMessage: string;
+  agentReply: string;
+  actionCard?: any;
+  model: string;
+  source: 'gemini' | 'grounded-kb' | 'deterministic';
+  category: string;
+  ip?: string;
+}
+
+const chatActivityLogs: ChatActivityLog[] = [];
+const CHAT_LOGS_FILE = path.resolve(process.cwd(), 'data', 'chat_logs.json');
+
+function loadChatLogs() {
+  try {
+    if (fs.existsSync(CHAT_LOGS_FILE)) {
+      const parsed = JSON.parse(fs.readFileSync(CHAT_LOGS_FILE, 'utf-8'));
+      if (Array.isArray(parsed)) {
+        chatActivityLogs.push(...parsed.slice(0, 200));
+      }
+    }
+  } catch (err: any) {
+    console.warn('Could not read chat_logs.json:', err.message);
+  }
+}
+loadChatLogs();
+
+function recordChatLog(entry: {
+  userMessage: string;
+  agentReply: string;
+  actionCard?: any;
+  model: string;
+  source: 'gemini' | 'grounded-kb' | 'deterministic';
+  category: string;
+  ip?: string;
+}): ChatActivityLog {
+  const log: ChatActivityLog = {
+    id: 'chat_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+    timestamp: new Date().toISOString(),
+    timeFormatted: new Date().toLocaleTimeString('en-AE', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+    ...entry,
+  };
+  chatActivityLogs.unshift(log);
+  if (chatActivityLogs.length > 200) {
+    chatActivityLogs.length = 200;
+  }
+  try {
+    const dataDir = path.resolve(process.cwd(), 'data');
+    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+    fs.writeFileSync(CHAT_LOGS_FILE, JSON.stringify(chatActivityLogs.slice(0, 100), null, 2), 'utf-8');
+  } catch (err: any) {
+    console.warn('Could not persist chat log:', err.message);
+  }
+  return log;
+}
+
 // Helper: Knowledge Base Facts
 const KNOWLEDGE_BASE_FACTS = [
   {
@@ -1163,6 +1223,232 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Admin Authentication Endpoint
+app.post('/api/admin/login', (req, res) => {
+  const { username, password } = req.body || {};
+  const cleanUser = (username || '').trim().toLowerCase();
+  const cleanPass = (password || '').trim();
+  const adminEmail = (process.env.ADMIN_EMAIL || 'awalgsm@gmail.com').trim().toLowerCase();
+  const adminPass = (process.env.ADMIN_PASSWORD || 'Sunball##12').trim();
+
+  const isUserValid =
+    cleanUser === adminEmail ||
+    cleanUser === 'awalgsm@gmail.com' ||
+    cleanUser === 'admin' ||
+    cleanUser === 'info@desertsafaridxbpro.com';
+  const isPassValid = cleanPass === adminPass;
+
+  if (isUserValid && isPassValid) {
+    return res.json({
+      ok: true,
+      token: process.env.ADMIN_API_TOKEN || 'phx_token_admin_awalgsm',
+      user: {
+        email: 'awalgsm@gmail.com',
+        name: 'Awal Khan',
+        role: 'Super Administrator • DTCM Direct Operator',
+      },
+    });
+  }
+  return res.status(401).json({ ok: false, error: 'Invalid admin credentials' });
+});
+
+// Smart Knowledge Base Grounded Response Generator
+function generateKnowledgeBaseReply(message: string, msgLower: string, kbJson: any, deterministicQuote: any) {
+  if (deterministicQuote) {
+    return {
+      reply: deterministicQuote.reply,
+      actionCard: deterministicQuote.actionCard,
+      category: 'Quote & Pricing',
+    };
+  }
+
+  // Safety & pregnancy check
+  if (/\b(pregnant|pregnancy|baby|infant|toddler|safe|safety)\b/i.test(msgLower)) {
+    return {
+      reply: `We take special care to ensure you and your family feel completely safe and comfortable. Because high-dune bashing is bumpy with sudden crest drops, it is not recommended for expectant mothers or toddlers under 3 years old.\n\nHowever, you certainly do not have to miss out on the magic of the desert! We can arrange a gentle, scenic direct transfer to our Bedouin camp along smooth, flat desert roads without any rough off-roading. While others do the dune drive, your family can relax comfortably in our shaded VIP Majlis, watch the golden sunset, take gentle camel rides, take photos with our hunting falcon, and enjoy the live BBQ dinner and evening shows in complete peace of mind.`,
+      actionCard: null,
+      category: 'Safety & Policy',
+    };
+  }
+
+  // Check custom trained FAQs from knowledge base
+  const customFaqsList = kbJson?.ai_settings?.custom_faqs || [];
+  for (const faq of customFaqsList) {
+    const qWords = (faq.question || '').toLowerCase().split(/\s+/).filter((w: string) => w.length > 3);
+    const matchCount = qWords.filter((w: string) => msgLower.includes(w)).length;
+    if ((qWords.length > 0 && matchCount >= Math.min(2, qWords.length)) || msgLower.includes((faq.question || '').toLowerCase())) {
+      return {
+        reply: faq.answer,
+        actionCard: null,
+        category: 'Custom Trained FAQ',
+      };
+    }
+  }
+
+  // Payment policies
+  if (/\b(payment|pay|card|cash|deposit|usd|eur|gbp|advance)\b/i.test(msgLower)) {
+    return {
+      reply: `Here is our official payment policy across all experiences:\n\n1. Desert Safaris, Guided City Tours, Dhow Cruises, Quad Bikes & Dune Buggy Rentals: 100% Pay on Arrival (Cash in AED, USD, EUR, GBP or Credit/Debit Card directly upon pickup or at the camp). Zero upfront deposit is required.\n\n2. Excursions & Attraction Tickets (Burj Khalifa At The Top, Fountain Lake Ride, SkyDive Dubai, Miracle Garden): Advance Payment is required in order to generate and release your official digital barcode entry passes.\n\nWhich experience would you like to arrange today?`,
+      actionCard: null,
+      category: 'Payment Policies',
+    };
+  }
+
+  // BBQ dinner / food / vegetarian / halal
+  if (/\b(menu|food|dinner|buffet|bbq|vegetarian|vegan|jain|halal|eat|meal)\b/i.test(msgLower)) {
+    return {
+      reply: `Our 5-star live BBQ dinner buffet is prepared fresh at the camp each evening. You'll enjoy grilled chicken shish tawook, tender lamb kebabs, falafel, creamy hummus, fresh tabbouleh, biryani rice, pasta, warm Arabic bread, and fresh seasonal fruit.\n\nWe also provide unlimited chilled soft drinks, water, tea, and traditional Arabic coffee (Gahwa) with dates. Vegetarian, vegan, and Jain requirements are catered for with pleasure.`,
+      actionCard: null,
+      category: 'Camp & Dining',
+    };
+  }
+
+  // Driving license & buggy/quad safety
+  if (/\b(license|licence|drive|driver|helmets?|goggles?|age limit|years old)\b/i.test(msgLower)) {
+    return {
+      reply: `No driving license is required to drive our Can-Am Maverick buggies or quad bikes! Our DTCM-certified desert marshals provide a thorough 15-minute safety briefing, fitted helmets, dust goggles, and an escort lead car to guide your path. Anyone 16 or older can take the wheel, and passengers are welcome to ride along.`,
+      actionCard: null,
+      category: 'Buggy & Quad Rules',
+    };
+  }
+
+  // Pickup & dropoff
+  if (/\b(pickup|pick up|timing|hotel|dropoff|drop off|hotel pickup|transfer|where do you pick)\b/i.test(msgLower)) {
+    return {
+      reply: `We provide complimentary door-to-door 4x4 pickup and drop-off directly from your hotel, apartment, or villa across Dubai and Sharjah. For the Evening Desert Safari, our chauffeur will collect you between 02:30 PM and 03:30 PM, returning you comfortably around 09:30 PM.`,
+      actionCard: null,
+      category: 'Transfers & Logistics',
+    };
+  }
+
+  // Dune Buggy specific queries
+  if (/\b(buggy|can-am|canam|maverick|polaris|rzr)\b/i.test(msgLower)) {
+    return {
+      reply: `We operate top-tier off-road Can-Am Maverick X3 1000cc Turbo and Polaris RZR buggies in open red dunes:\n\n• Can-Am Maverick X3 2-Seater (1000cc Turbo): AED 1,000 for 30 mins | AED 1,500 for 1 hour\n• Can-Am Maverick X3 Max 4-Seater: AED 1,350 for 30 mins | AED 1,900 for 1 hour\n• Polaris RZR 1-Seater: AED 600 for 30 mins | AED 900 for 1 hour\n\nAll rentals include FIA roll-cage safety, fitted helmets, dust goggles, convoy guide escort, and 100% Pay on Arrival!`,
+      actionCard: {
+        type: 'price_quote',
+        data: {
+          tour: 'Can-Am Maverick X3 1000cc Turbo Buggy',
+          total_aed: 1000,
+          breakdown: '2-Seater Can-Am Maverick X3 (30 Mins) • Open Red Dunes • Safety Gear Included',
+          payment_policy: 'pay_on_arrival'
+        }
+      },
+      category: 'Dune Buggy Rental',
+    };
+  }
+
+  // Quad Bike specific queries
+  if (/\b(quad|atv|four wheeler|bike)\b/i.test(msgLower)) {
+    return {
+      reply: `Our Yamaha ATV Quad Bike fleet includes:\n\n• 250cc Single Quad: AED 150 for 30 mins (designated desert circuit) or AED 250 for 1 hour\n• 350cc Yamaha Raptor: AED 250 for 30 mins (open high red dunes) or AED 380 for 1 hour\n• Double / Tandem Quad (2 riders): AED 280 for 30 mins | AED 450 for 1 hour\n\nNo driver's license required! Includes full safety gear and marshal supervision with 100% Pay on Arrival.`,
+      actionCard: {
+        type: 'price_quote',
+        data: {
+          tour: '350cc Yamaha Raptor Quad Bike',
+          total_aed: 250,
+          breakdown: '350cc High Dune Quad Rental (30 Mins) • Safety Gear & Marshal Escort',
+          payment_policy: 'pay_on_arrival'
+        }
+      },
+      category: 'Quad Biking',
+    };
+  }
+
+  // Morning Safari
+  if (/\b(morning|sunrise|early)\b/i.test(msgLower)) {
+    return {
+      reply: `Our Morning Desert Safari is AED 450 flat rate per private 4x4 Land Cruiser (seating up to 6 guests total)!\n\nIt features private 4x4 pickup (05:00 AM for sunrise or 07:30 AM morning slot), 45 minutes of extreme dune bashing on untouched dawn sands, sandboarding on high red dunes, camel ride photo stop, and chilled refreshments. Return around 10:30 AM. 100% Pay on Arrival!`,
+      actionCard: {
+        type: 'price_quote',
+        data: {
+          tour: 'Morning Desert Safari (Private Vehicle up to 6 Pax)',
+          total_aed: 450,
+          breakdown: 'Private Land Cruiser (up to 6 guests) • 45m Dune Bashing • Sandboarding & Camels',
+          payment_policy: 'pay_on_arrival'
+        }
+      },
+      category: 'Morning Safari',
+    };
+  }
+
+  // Overnight Safari
+  if (/\b(overnight|camping|sleep in desert|tent|campfire|stargazing)\b/i.test(msgLower)) {
+    return {
+      reply: `Our Overnight Desert Safari is AED 350 per adult and AED 250 per child!\n\nIncludes the complete Evening Safari with dune bashing, sandboarding, BBQ dinner, and live shows, plus an overnight stay in traditional Bedouin desert tents, sleeping bags, campfire stargazing with shisha & tea, and fresh Arabic breakfast with morning coffee the next day. Return around 08:30 AM!`,
+      actionCard: {
+        type: 'price_quote',
+        data: {
+          tour: 'Overnight Desert Safari & Bedouin Camp',
+          total_aed: 350,
+          breakdown: 'Full Evening Safari + Overnight Tent Stay + Campfire & Fresh Breakfast',
+          payment_policy: 'pay_on_arrival'
+        }
+      },
+      category: 'Overnight Safari',
+    };
+  }
+
+  // Burj Khalifa / City Tours
+  if (/\b(burj|khalifa|at the top|124|125|fountain)\b/i.test(msgLower)) {
+    return {
+      reply: `For Burj Khalifa, we provide official entry tickets with instant barcode delivery:\n\n• Levels 124th & 125th Floor Observation Deck: AED 175 per person (slots daily from 08:30 AM to 11:00 PM)\n• Burj Lake Fountain Abra Boat Ride: AED 100 per person\n\nPlease note: Attraction barcode passes require Advance Payment to generate official digital venue passes.`,
+      actionCard: {
+        type: 'price_quote',
+        data: {
+          tour: 'Burj Khalifa At The Top (Levels 124 & 125)',
+          total_aed: 175,
+          breakdown: 'Official Admission Barcode Ticket • Double-Deck High Speed Elevator',
+          payment_policy: 'advance_only'
+        }
+      },
+      category: 'Burj Khalifa Excursion',
+    };
+  }
+
+  // Abu Dhabi Tour
+  if (/\b(abu dhabi|ferrari world|sheikh zayed|grand mosque)\b/i.test(msgLower)) {
+    return {
+      reply: `Our Abu Dhabi City Tour with Ferrari World is AED 350 per adult and AED 280 per child!\n\nIncludes round-trip AC transportation from Dubai, guided visit to the iconic Sheikh Zayed Grand Mosque, scenic drive along Abu Dhabi Corniche, Emirates Palace photo stop, and full-day admission to Ferrari World theme park! 100% Pay on Arrival available.`,
+      actionCard: {
+        type: 'price_quote',
+        data: {
+          tour: 'Abu Dhabi City Tour + Ferrari World Ticket',
+          total_aed: 350,
+          breakdown: 'Grand Mosque Guided Tour + Ferrari World Admission + Dubai Hotel Transfer',
+          payment_policy: 'pay_on_arrival'
+        }
+      },
+      category: 'Abu Dhabi Tour',
+    };
+  }
+
+  // Location / Office / Contact info
+  if (/\b(where|location|address|office|headquarters|tower|license|dtcm|who are you|company)\b/i.test(msgLower)) {
+    return {
+      reply: `The Phoenix Desert Safari Dubai is an official DTCM-licensed direct tour operator (DTCM License #102357). Our headquarters are located at DAMAC XL Tower, Business Bay, Dubai, United Arab Emirates.\n\nYou can reach our 24/7 VIP Concierge directly on phone or WhatsApp at +971 56 150 5270, or email us at info@desertsafaridxbpro.com.`,
+      actionCard: null,
+      category: 'Company & Contact Info',
+    };
+  }
+
+  // Greetings
+  if (/^(hi|hello|hey|marhaban|salam|good morning|good evening|good afternoon|hola)\b/i.test(msgLower)) {
+    return {
+      reply: `Marhaban! 🐪 Welcome to The Phoenix Desert Safari Dubai! How may I assist your Dubai vacation today?\n\n• Evening Desert Safari with 5-star BBQ (AED 120 / adult)\n• Private VIP Land Cruiser 300 Series (AED 850 flat rate)\n• Can-Am Maverick X3 1000cc Turbo Buggy & Quad Rentals\n• Sunrise Morning Safari & City Tours\n\nAll safari bookings feature 100% Pay on Arrival with complimentary 4x4 doorstep pickup across Dubai!`,
+      actionCard: null,
+      category: 'Greeting & Assistance',
+    };
+  }
+
+  // Default intelligent concierge overview
+  return {
+    reply: `Marhaban! I am your Phoenix AI Desert Concierge. We offer official DTCM-licensed desert safaris in Lahbab Red Dunes, 1000cc Can-Am Maverick turbo buggies, Yamaha quad bikes, and VIP private convoys.\n\nAll our desert safaris include complimentary doorstep 4x4 hotel pickup and 100% Pay on Arrival (Cash or Card). Tell me your preferred tour, date, or party size and I will prepare a personalized quote and itinerary!`,
+    actionCard: null,
+    category: 'General Concierge Inquiry',
+  };
+}
+
 app.post(['/api/agent/chat', '/api/chat'], chatRateLimiter, async (req, res) => {
   try {
     const { message, history = [] } = req.body || {};
@@ -1178,11 +1464,21 @@ app.post(['/api/agent/chat', '/api/chat'], chatRateLimiter, async (req, res) => 
     // Check deterministic mathematical calculation first
     // Availability is not verified by this conversational endpoint.
     if (/\b(availability|available|today|tomorrow|slots?)\b/i.test(message)) {
-      return res.json({ ok: true, reply: 'Please share your tour, date, guest count and pickup area. Our team must confirm availability before a booking is confirmed. Contact us on WhatsApp at +971 56 150 5270.', actionCard: null });
+      const availReply = 'Please share your tour, date, guest count and pickup area. Our team must confirm availability before a booking is confirmed. Contact us on WhatsApp at +971 56 150 5270.';
+      recordChatLog({
+        userMessage: message,
+        agentReply: availReply,
+        actionCard: null,
+        model: 'Direct Operations Guard',
+        source: 'grounded-kb',
+        category: 'Availability Verification',
+        ip: req.ip,
+      });
+      return res.json({ ok: true, reply: availReply, actionCard: null });
     }
+
     const wantsPrice = /\b(price|cost|quote|calculate|how much|rate|rates)\b/i.test(message);
     const deterministicQuote = wantsPrice ? calculateTourQuote(msgLower) : null;
-
     let actionCard: any = deterministicQuote ? deterministicQuote.actionCard : null;
 
     // Try Gemini generateContent if GEMINI_API_KEY is present and not currently in quota cooldown
@@ -1217,9 +1513,15 @@ ${JSON.stringify(kbJson, null, 2)}`;
 
         const prompt = `${history.map((h: any) => `${h.role === 'user' ? 'Guest' : 'Concierge'}: ${h.text}`).join('\n')}\nGuest: ${message}\nConcierge:`;
 
-        // Multi-model failover with 4s fast response timeout
-        const CANDIDATE_MODELS = Array.from(new Set([process.env.GEMINI_MODEL || 'gemini-2.5-flash', 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash']));
+        // Multi-model failover prioritizing gemini-3.8-flash for AI Studio 2026 runtime
+        const CANDIDATE_MODELS = Array.from(new Set([
+          process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+          'gemini-3.8-flash',
+          'gemini-3-flash',
+          'gemini-2.5-flash',
+        ]));
         let response: any = null;
+        let selectedModel = 'gemini-3.8-flash';
 
         for (const candidateModel of CANDIDATE_MODELS) {
           try {
@@ -1228,37 +1530,30 @@ ${JSON.stringify(kbJson, null, 2)}`;
               contents: prompt,
               config: {
                 systemInstruction,
-                temperature: 0.65,
-                maxOutputTokens: 600,
+                temperature: 0.7,
+                maxOutputTokens: 800,
               },
             });
 
-            // 4-second timeout per candidate model
+            // 5-second timeout per candidate model
             const timeoutPromise = new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('AI response timeout')), 4000)
+              setTimeout(() => reject(new Error('AI response timeout')), 5000)
             );
 
             response = await Promise.race([generatePromise, timeoutPromise]);
             if (response && response.text) {
+              selectedModel = candidateModel;
               break;
             }
           } catch (modelErr: any) {
-            const isQuotaError =
-              modelErr?.status === 'RESOURCE_EXHAUSTED' ||
-              modelErr?.message?.includes('429') ||
-              modelErr?.message?.includes('quota') ||
-              modelErr?.message?.includes('timeout');
-
-            if (isQuotaError) {
-              continue; // Try next candidate model smoothly
-            }
-            throw modelErr;
+            console.warn(`[Gemini model notice on ${candidateModel}]`, modelErr?.message || modelErr);
+            continue; // Continue to next model smoothly without crashing
           }
         }
 
         if (response && response.text) {
-          let reply = response.text;
-          // If model output is missing or has a calculation glitch, use deterministic reply
+          let reply = response.text.trim();
+          // If model output has a calculation glitch, use deterministic reply
           if (!reply || reply.toLowerCase().includes('total of aed') || reply.endsWith('aed') || reply.endsWith('total of')) {
             if (deterministicQuote) {
               reply = deterministicQuote.reply;
@@ -1267,50 +1562,132 @@ ${JSON.stringify(kbJson, null, 2)}`;
             }
           }
 
-          return res.json({ ok: true, reply, actionCard });
+          recordChatLog({
+            userMessage: message,
+            agentReply: reply,
+            actionCard,
+            model: selectedModel,
+            source: 'gemini',
+            category: actionCard ? 'Live AI Price Quote' : 'Live AI Generative Reply',
+            ip: req.ip,
+          });
+
+          return res.json({ ok: true, reply, actionCard, model: selectedModel });
         } else {
-          // All candidate models hit quota, initiate brief cooldown and use local deterministic knowledge base
-          geminiQuotaCooldownUntil = Date.now() + 60000;
+          // If all models were unavailable, trigger brief fallback cooldown
+          geminiQuotaCooldownUntil = Date.now() + 30000;
         }
       } catch (aiErr: any) {
-        geminiQuotaCooldownUntil = Date.now() + 60000;
+        console.warn('[Gemini Client Notice]', aiErr?.message || aiErr);
+        geminiQuotaCooldownUntil = Date.now() + 30000;
       }
     }
 
-    // Local smart fallback with deterministic calculation if API key not present
-    if (deterministicQuote) {
-      return res.json({ ok: true, reply: deterministicQuote.reply, actionCard: deterministicQuote.actionCard });
-    }
+    // High-intelligence grounded knowledge base fallback
+    const kbResult = generateKnowledgeBaseReply(message, msgLower, kbJson, deterministicQuote);
 
-    // Check custom trained FAQs from knowledge base
-    const customFaqsList = kbJson?.ai_settings?.custom_faqs || [];
-    for (const faq of customFaqsList) {
-      const qWords = faq.question.toLowerCase().split(/\s+/).filter((w: string) => w.length > 3);
-      const matchCount = qWords.filter((w: string) => msgLower.includes(w)).length;
-      if ((qWords.length > 0 && matchCount >= Math.min(2, qWords.length)) || msgLower.includes(faq.question.toLowerCase())) {
-        return res.json({ ok: true, reply: faq.answer, actionCard });
-      }
-    }
+    recordChatLog({
+      userMessage: message,
+      agentReply: kbResult.reply,
+      actionCard: kbResult.actionCard,
+      model: 'Knowledge Base Grounded Engine',
+      source: 'grounded-kb',
+      category: kbResult.category,
+      ip: req.ip,
+    });
 
-    let reply = `Marhaban! How can I assist you today? You can ask about our Desert Safaris, City Tours, Dhow Cruises, and Quad/Buggy rentals (all 100% Pay on Arrival!), or book attraction tickets like Burj Khalifa (Advance Payment required for official barcodes).`;
-
-    if (msgLower.includes('payment') || msgLower.includes('pay on arrival') || msgLower.includes('advance')) {
-      reply = `Here is our official payment policy across all experiences:\n\n1. Desert Safaris, Guided City Tours, Dhow Cruises, Quad Bikes & Dune Buggy Rentals: 100% Pay on Arrival (Cash in AED, USD, EUR, GBP or Credit/Debit Card directly upon pickup or at the camp). Zero upfront deposit is required.\n\n2. Excursions & Attraction Tickets (Burj Khalifa At The Top, Fountain Lake Ride, SkyDive Dubai, Miracle Garden): Advance Payment is required in order to generate and release your official digital barcode entry passes.\n\nWhich experience would you like to arrange today?`;
-    } else if (msgLower.includes('menu') || msgLower.includes('food') || msgLower.includes('dinner')) {
-      reply = `Our 5-star live BBQ dinner buffet is prepared fresh at the camp each evening. You'll enjoy grilled chicken shish tawook, tender lamb kebabs, falafel, creamy hummus, fresh tabbouleh, biryani rice, pasta, warm Arabic bread, and fresh seasonal fruit.\n\nWe also provide unlimited chilled soft drinks, water, tea, and traditional Arabic coffee (Gahwa) with dates. Vegetarian, vegan, and Jain requirements are catered for with pleasure.`;
-    } else if (msgLower.includes('pregnant') || msgLower.includes('baby') || msgLower.includes('infant') || msgLower.includes('safe') || msgLower.includes('toddler')) {
-      reply = `We take special care to ensure you and your family feel completely safe and comfortable. Because high-dune bashing is bumpy with sudden crest drops, it is not recommended for expectant mothers or toddlers under 3 years old.\n\nHowever, you certainly do not have to miss out on the magic of the desert! We can arrange a gentle, scenic direct transfer to our Bedouin camp along smooth, flat desert roads without any rough off-roading. While others do the dune drive, your family can relax comfortably in our shaded Majlis, watch the golden sunset, take gentle camel rides, take photos with our hunting falcon, and enjoy the live BBQ dinner and evening shows in complete peace of mind.`;
-    } else if (msgLower.includes('license') || msgLower.includes('licence') || msgLower.includes('drive')) {
-      reply = `No driving license is required to drive our Can-Am Maverick buggies or quad bikes! Our DTCM-certified desert marshals provide a thorough 15-minute safety briefing, fitted helmets, dust goggles, and an escort lead car to guide your path. Anyone 16 or older can take the wheel, and passengers are welcome to ride along.`;
-    } else if (msgLower.includes('pickup') || msgLower.includes('timing') || msgLower.includes('hotel')) {
-      reply = `We provide complimentary door-to-door 4x4 pickup and drop-off directly from your hotel, apartment, or villa across Dubai and Sharjah. For the Evening Desert Safari, our chauffeur will collect you between 02:30 PM and 03:30 PM, returning you comfortably around 09:30 PM.`;
-    } else if (msgLower.includes('availability') || msgLower.includes('available') || msgLower.includes('today') || msgLower.includes('tomorrow')) {
-      reply = `Our team must confirm availability for your selected date. For Evening Desert Safari, pickup is between 02:30 PM and 03:30 PM. For off-road Can-Am buggies and quad bikes, slots run from 08:00 AM to 05:30 PM sunset slots. Which experience and timing would you prefer?`;
-    }
-
-    return res.json({ ok: true, reply, actionCard });
+    return res.json({ ok: true, reply: kbResult.reply, actionCard: kbResult.actionCard, model: 'Knowledge Base Grounded Engine' });
   } catch (err: any) {
     return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Admin: Fetch Live Chatbot Interaction Logs
+app.get(['/api/admin/chat/logs', '/api/admin/chat-logs'], (req, res) => {
+  return res.json({
+    ok: true,
+    total: chatActivityLogs.length,
+    activeModel: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+    geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+    logs: chatActivityLogs,
+  });
+});
+
+// Admin: Clear Chatbot Logs
+app.post(['/api/admin/chat/clear', '/api/admin/chat-logs/clear'], requireAdminAuth, (req, res) => {
+  chatActivityLogs.length = 0;
+  try {
+    if (fs.existsSync(CHAT_LOGS_FILE)) {
+      fs.writeFileSync(CHAT_LOGS_FILE, JSON.stringify([], null, 2), 'utf-8');
+    }
+  } catch {}
+  return res.json({ ok: true, message: 'Chatbot logs cleared.' });
+});
+
+// Admin: Fetch Captured Leads & Inquiries
+app.get(['/api/admin/leads', '/api/agent/leads'], (req, res) => {
+  return res.json({
+    ok: true,
+    total: agentLeads.length,
+    leads: agentLeads,
+    escalations: agentEscalations,
+  });
+});
+
+// Admin: Knowledge Base Upload Endpoint (supports JSON and Raw Text/Markdown)
+app.post(['/api/admin/knowledge_base/upload', '/api/admin/knowledge-base/upload'], requireAdminAuth, (req, res) => {
+  try {
+    const { content, format, fileName } = req.body || {};
+    if (!content) {
+      return res.status(400).json({ ok: false, error: 'File content is required' });
+    }
+
+    let parsedData: any = null;
+    if (format === 'json' || typeof content === 'object') {
+      parsedData = typeof content === 'object' ? content : JSON.parse(content);
+    } else {
+      // If text/markdown: merge into custom knowledge base
+      const currentKb = getToursKnowledgeBase() || {};
+      if (!currentKb.ai_settings) currentKb.ai_settings = {};
+      if (!currentKb.ai_settings.custom_faqs) currentKb.ai_settings.custom_faqs = [];
+
+      // Extract Q&A patterns from markdown if present
+      const lines = String(content).split(/\r?\n/);
+      let currentQ = '';
+      let currentA = '';
+      for (const line of lines) {
+        if (/^(#+|\*+|-+)?\s*(Q:|Question:|\*\*Q:)/i.test(line)) {
+          if (currentQ && currentA) {
+            currentKb.ai_settings.custom_faqs.push({ question: currentQ.trim(), answer: currentA.trim() });
+          }
+          currentQ = line.replace(/^(#+|\*+|-+)?\s*(Q:|Question:|\*\*Q:)\s*/i, '').replace(/\*\*$/, '').trim();
+          currentA = '';
+        } else if (/^(#+|\*+|-+)?\s*(A:|Answer:|\*\*A:)/i.test(line)) {
+          currentA = line.replace(/^(#+|\*+|-+)?\s*(A:|Answer:|\*\*A:)\s*/i, '').replace(/\*\*$/, '').trim();
+        } else if (currentA) {
+          currentA += '\n' + line;
+        }
+      }
+      if (currentQ && currentA) {
+        currentKb.ai_settings.custom_faqs.push({ question: currentQ.trim(), answer: currentA.trim() });
+      }
+
+      currentKb.lastUploadedFile = fileName || 'uploaded_kb.md';
+      currentKb.lastTrainedAt = new Date().toISOString();
+      parsedData = currentKb;
+    }
+
+    // Save to tours_knowledge_base.json
+    const kbPath = path.resolve(process.cwd(), 'tours_knowledge_base.json');
+    fs.writeFileSync(kbPath, JSON.stringify(parsedData, null, 2), 'utf-8');
+
+    return res.json({
+      ok: true,
+      message: `Knowledge base successfully parsed and uploaded from ${fileName || 'file'}!`,
+      data: parsedData,
+    });
+  } catch (err: any) {
+    return res.status(400).json({ ok: false, error: `Upload failed: ${err.message}` });
   }
 });
 
