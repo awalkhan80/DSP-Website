@@ -72,7 +72,17 @@ export const Header: React.FC<HeaderProps> = ({
                 24/7 Concierge
               </span>
 
-
+              {onOpenAdmin && (
+                <button
+                  type="button"
+                  onClick={onOpenAdmin}
+                  className="flex items-center gap-1 text-white/90 hover:text-white bg-black/15 hover:bg-black/25 px-2.5 py-0.5 rounded text-[11px] font-semibold transition-colors cursor-pointer"
+                  title="Direct Admin Login"
+                >
+                  <span className="material-symbols-outlined text-[13px] text-amber-200">lock</span>
+                  <span>{isAdminLoggedIn ? 'Dashboard' : 'Admin Login'}</span>
+                </button>
+              )}
 
               {/* Currency Switcher */}
               <div className="relative">
@@ -146,8 +156,18 @@ export const Header: React.FC<HeaderProps> = ({
         </nav>
 
         {/* Right Action Cluster */}
-        <div className="flex items-center gap-3 sm:gap-4">
-
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {onOpenAdmin && (
+            <button
+              type="button"
+              onClick={onOpenAdmin}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-stone-200 hover:border-amber-400 bg-stone-50 hover:bg-amber-50/60 text-stone-700 hover:text-[#EA580C] text-[12px] font-semibold transition-all cursor-pointer shadow-2xs"
+              title="Admin Portal Login"
+            >
+              <span className="material-symbols-outlined text-[16px] text-amber-600">lock</span>
+              <span>{isAdminLoggedIn ? 'Dashboard' : 'Admin Login'}</span>
+            </button>
+          )}
 
           {/* Book Adventure CTA */}
           <button
@@ -226,6 +246,19 @@ export const Header: React.FC<HeaderProps> = ({
               <span>WhatsApp VIP Concierge</span>
             </button>
 
+            {onOpenAdmin && (
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenAdmin();
+                  setMobileMenuOpen(false);
+                }}
+                className="flex items-center justify-center gap-2 py-2.5 rounded-lg border border-amber-300/80 bg-amber-50 hover:bg-amber-100 text-stone-800 font-semibold text-sm transition-colors cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px] text-amber-600">lock</span>
+                <span>{isAdminLoggedIn ? 'Open Admin Dashboard' : 'Admin Login'}</span>
+              </button>
+            )}
           </div>
         </div>
       )}
