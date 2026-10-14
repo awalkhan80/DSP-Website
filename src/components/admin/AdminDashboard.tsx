@@ -3042,15 +3042,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           )}
 
-          {/* VIEW TAB: AI CONCIERGE KNOWLEDGE BASE & TRAINING STUDIO */}
-          {activeNav === 'ai-knowledge-base' && (
-            <KnowledgeBaseTab
-              experiences={experiences}
-              offRoadPricing={localOffRoadPricing}
-              cmsConfig={cmsConfig}
-              showToast={showToast}
-            />
-          )}
+          {/* VIEW TAB: AI CONCIERGE KNOWLEDGE BASE */}
+          {activeNav === 'ai-knowledge-base' && <KnowledgeBaseTab />}
 
           {/* VIEW TAB 6: SETTINGS */}
           {activeNav === 'settings' && (
