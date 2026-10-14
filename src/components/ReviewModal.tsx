@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Review } from '../types';
 
 interface ReviewModalProps {
@@ -12,6 +12,14 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({ onClose, onSubmitRevie
   const [experienceType, setExperienceType] = useState('Evening Desert Safari');
   const [rating, setRating] = useState(5);
   const [content, setContent] = useState('');
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,12 +44,12 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({ onClose, onSubmitRevie
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
-      <div className="bg-[#FAF6F0] rounded-2xl sm:rounded-3xl border border-amber-200/80 shadow-2xl max-w-lg w-full overflow-hidden text-stone-900 relative">
+      <div role="dialog" aria-modal="true" aria-labelledby="review-modal-title" className="bg-[#FAF6F0] rounded-2xl sm:rounded-3xl border border-amber-200/80 shadow-2xl max-w-lg w-full overflow-hidden text-stone-900 relative">
         <div className="bg-gradient-to-r from-[#D97706] to-[#EA580C] text-white px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-[24px]">reviews</span>
             <div>
-              <h3 className="font-serif font-bold text-lg">Write a Google Review</h3>
+              <h3 id="review-modal-title" className="font-serif font-bold text-lg">Write a Google Review</h3>
               <span className="text-[11px] text-amber-200 uppercase tracking-widest font-semibold">
                 Desert Safari Dubai - The Phoenix
               </span>
@@ -49,6 +57,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({ onClose, onSubmitRevie
           </div>
           <button
             onClick={onClose}
+            aria-label="Close review modal"
             className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-colors cursor-pointer"
           >
             <span className="material-symbols-outlined text-[20px]">close</span>

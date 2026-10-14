@@ -76,7 +76,7 @@ export interface AdminDashboardProps {
   onSwitchToStorefront: () => void;
   adminSession?: AdminSession | null;
   onSignOut?: () => void;
-  onRestoreAll?: (newCmsConfig: CMSConfig, newExperiences: Experience[]) => void;
+  onRestoreAll?: (newCmsConfig: CMSConfig, newExperiences: Experience[], newOffRoadPricing?: OffRoadPricingConfig) => void;
   offRoadPricing?: OffRoadPricingConfig;
   onUpdateOffRoadPricing?: (updated: OffRoadPricingConfig) => void;
 }

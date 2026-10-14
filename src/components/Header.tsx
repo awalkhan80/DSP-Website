@@ -167,7 +167,7 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={onOpenAdmin}
               className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-stone-900 hover:bg-stone-800 text-amber-300 hover:text-amber-200 text-xs font-semibold border border-amber-500/30 transition-all cursor-pointer shadow-xs"
-              title={isAdminLoggedIn ? 'Operator Dashboard (Logged In)' : 'Admin Login (Password: Sunball##12)'}
+              title={isAdminLoggedIn ? 'Operator Dashboard (Logged In)' : 'Secure Operator Admin Login'}
             >
               <span className="material-symbols-outlined text-[16px] text-amber-400">
                 {isAdminLoggedIn ? 'admin_panel_settings' : 'lock'}

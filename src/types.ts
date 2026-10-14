@@ -18,11 +18,63 @@ export interface Experience {
   hotelPickup: boolean;
   featured?: boolean;
   vehicleType?: string;
+  inventorySource?: 'direct' | 'b2b_tickets';
+  b2bTourId?: number;
+  b2bOfferId?: number;
+  b2bSupplierPriceAED?: number;
+  b2bMarkupPercent?: number;
+  b2bStatus?: 'active' | 'inactive';
   itinerary?: {
     time: string;
     title: string;
     description: string;
   }[];
+}
+
+export interface B2BTourRaw {
+  id: number;
+  name: string;
+  categories?: { id?: number; name: string }[];
+  heroImage?: {
+    srcSet?: {
+      sizes?: { width: number; src: string }[];
+    }[];
+  };
+  photos?: {
+    srcSet?: {
+      sizes?: { width: number; src: string }[];
+    }[];
+  }[];
+}
+
+export interface B2BBookingRecord {
+  id: string;
+  phoenixRef: string;
+  b2bBookingId: string | number;
+  tourId: string | number;
+  tourName: string;
+  guestName: string;
+  guestEmail?: string;
+  guestPhone?: string;
+  tourDate: string;
+  pax: number;
+  totalAED: number;
+  supplierCostAED: number;
+  profitMarginAED: number;
+  status: string;
+  createdAt: string;
+}
+
+export type PricingMode = 'per_person' | 'per_vehicle' | 'per_unit' | 'compound';
+
+export interface CatalogPricingRule {
+  slug: string;
+  name: string;
+  pricingType: PricingMode;
+  price?: number;
+  maxPassengers?: number;
+  perPersonPrice?: number;
+  privateCarTransferFee?: number;
 }
 
 export interface Review {
@@ -71,7 +123,7 @@ export interface BookingState {
   adults: number;
   children: number;
   timeSlot: string;
-  transferType: 'shared' | 'private_4x4';
+  transferType: 'shared' | 'private_4x4' | 'meeting_point';
   hotelName: string;
   roomNumber: string;
   contactName: string;

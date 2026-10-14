@@ -7,10 +7,11 @@ export interface AdminSession {
   rememberMe: boolean;
 }
 
-export const ADMIN_CREDENTIALS = {
-  email: 'awalgsm@gmail.com',
-  password: 'Sunball##12',
-  name: 'Awal',
+const envMeta = (typeof import.meta !== 'undefined' && (import.meta as any).env) || {};
+
+export const ADMIN_PROFILE = {
+  email: envMeta.VITE_ADMIN_EMAIL || 'info@desertsafaridxbpro.com',
+  name: envMeta.VITE_ADMIN_NAME || 'Operator Admin',
   role: 'Super Administrator • DTCM Direct Operator',
 };
 
@@ -52,7 +53,7 @@ export const recordFailedAttempt = (): { locked: boolean; remainingSeconds: numb
   try {
     const current = getFailedAttemptsCount() + 1;
     localStorage.setItem(ATTEMPTS_KEY, current.toString());
-    
+
     if (current >= MAX_FAILED_ATTEMPTS) {
       const lockoutUntil = Date.now() + LOCKOUT_DURATION_MS;
       localStorage.setItem(LOCKOUT_KEY, lockoutUntil.toString());
@@ -75,16 +76,13 @@ export const resetFailedAttempts = (): void => {
 
 export const getStoredAdminSession = (): AdminSession | null => {
   try {
-    // Check sessionStorage first
     const sessionData = sessionStorage.getItem(SESSION_STORAGE_KEY);
     if (sessionData) {
       return JSON.parse(sessionData);
     }
-    // Check persistent localStorage
     const persistentData = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (persistentData) {
       const session: AdminSession = JSON.parse(persistentData);
-      // Ensure token is still valid (e.g., within 7 days)
       if (Date.now() - session.loginTime < 7 * 24 * 60 * 60 * 1000) {
         return session;
       }
@@ -141,16 +139,19 @@ export const validateAdminCredentials = (
   const cleanUser = usernameOrEmail.trim().toLowerCase();
   const cleanPass = passwordInput.trim();
 
-  // Validate exact user credentials
-  const isUserValid = cleanUser === ADMIN_CREDENTIALS.email.toLowerCase();
-  const isPasswordValid = cleanPass === ADMIN_CREDENTIALS.password;
+  const configuredPassword = envMeta.VITE_ADMIN_PASSWORD || '';
+  const isUserValid =
+    cleanUser === ADMIN_PROFILE.email.toLowerCase() ||
+    cleanUser === 'awalgsm@gmail.com' ||
+    cleanUser === 'admin';
+  const isPasswordValid = Boolean(configuredPassword) && cleanPass === configuredPassword;
 
   if (isUserValid && isPasswordValid) {
     resetFailedAttempts();
     const session: AdminSession = {
-      email: ADMIN_CREDENTIALS.email,
-      name: ADMIN_CREDENTIALS.name,
-      role: ADMIN_CREDENTIALS.role,
+      email: cleanUser.includes('@') ? cleanUser : ADMIN_PROFILE.email,
+      name: ADMIN_PROFILE.name,
+      role: ADMIN_PROFILE.role,
       token: 'phx_token_' + Math.random().toString(36).substring(2) + Date.now().toString(36),
       loginTime: Date.now(),
       rememberMe,
@@ -159,7 +160,6 @@ export const validateAdminCredentials = (
     return { success: true, session };
   }
 
-  // Failed login
   const { locked, remainingSeconds, attempts } = recordFailedAttempt();
   const attemptsLeft = Math.max(0, MAX_FAILED_ATTEMPTS - attempts);
 
@@ -174,7 +174,9 @@ export const validateAdminCredentials = (
 
   return {
     success: false,
-    error: `Invalid credentials. Please verify your admin username and password. (${attemptsLeft} attempt${attemptsLeft === 1 ? '' : 's'} remaining)`,
+    error: configuredPassword
+      ? `Invalid credentials. Please verify your admin username and password. (${attemptsLeft} attempt${attemptsLeft === 1 ? '' : 's'} remaining)`
+      : 'Admin password must be verified via server authentication (/api/admin/login) or configured in environment variables.',
     attemptsLeft,
   };
 };

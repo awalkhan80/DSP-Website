@@ -60,6 +60,15 @@ export const AiBookingAgentWidget: React.FC<AiBookingAgentWidgetProps> = ({
     }
   }, [messages, isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
   const handleSendMessage = async (textToSend?: string) => {
     const query = (textToSend || inputText).trim();
     if (!query || isLoading) return;
@@ -186,7 +195,7 @@ export const AiBookingAgentWidget: React.FC<AiBookingAgentWidgetProps> = ({
           {!isMinimized && (
             <>
               {/* Messages Scroll Area */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-[#12100F] text-xs scrollbar-thin scrollbar-thumb-stone-800">
+              <div aria-live="polite" className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-[#12100F] text-xs scrollbar-thin scrollbar-thumb-stone-800">
                 {messages.map((msg) => (
                   <div
                     key={msg.id}

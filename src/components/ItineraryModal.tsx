@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Currency, Experience } from '../types';
 import { CURRENCY_RATES, EXPERIENCES } from '../data/safaris';
 
@@ -21,12 +21,20 @@ export const ItineraryModal: React.FC<ItineraryModalProps> = ({
   const experience: Experience =
     allExperiences.find((e) => e.id === experienceId) || allExperiences[0] || EXPERIENCES[0];
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const rateInfo = CURRENCY_RATES[currency];
   const converted = Math.round(experience.priceAED * rateInfo.rate);
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
-      <div className="bg-[#FAF6F0] rounded-2xl sm:rounded-3xl border border-amber-200/80 shadow-2xl max-w-2xl w-full overflow-hidden text-stone-900 relative">
+      <div role="dialog" aria-modal="true" aria-labelledby="itinerary-modal-title" className="bg-[#FAF6F0] rounded-2xl sm:rounded-3xl border border-amber-200/80 shadow-2xl max-w-2xl w-full overflow-hidden text-stone-900 relative">
         {/* Banner with Image */}
         <div className="relative h-60 w-full overflow-hidden">
           <img
@@ -51,7 +59,7 @@ export const ItineraryModal: React.FC<ItineraryModalProps> = ({
               <span className="text-xs uppercase tracking-wider text-amber-300 font-bold drop-shadow">
                 {experience.subtitle}
               </span>
-              <h3 className="text-2xl sm:text-3xl font-serif font-bold text-white drop-shadow">
+              <h3 id="itinerary-modal-title" className="text-2xl sm:text-3xl font-serif font-bold text-white drop-shadow">
                 {experience.title}
               </h3>
             </div>

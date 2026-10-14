@@ -1,4 +1,4 @@
-import { Currency, Experience, OffRoadPricingConfig, Review } from '../types';
+import { CatalogPricingRule, Currency, Experience, OffRoadPricingConfig, Review } from '../types';
 
 export const DEFAULT_OFF_ROAD_PRICING: OffRoadPricingConfig = {
   quad220cc: {
@@ -81,6 +81,37 @@ export function calculatePrivateVehiclePrice(pax: number): number {
   const count = Math.max(1, pax);
   const extraPax = Math.max(0, count - 2);
   return 500 + extraPax * 50;
+}
+
+/**
+ * Deterministic multi-mode catalog pricing calculator supporting:
+ * - per_person: guests * price
+ * - per_vehicle: flat rate per vehicle up to maxPassengers capacity (never multiplies by guest count within capacity)
+ * - per_unit: quantity * price
+ * - compound: (guests * perPersonPrice) + privateCarTransferFee (e.g., Dhow Marina private transfer = guests * 120 + 350)
+ */
+export function calculateCatalogItemPrice(
+  rule: CatalogPricingRule,
+  options: { guests?: number; quantity?: number } = {}
+): number {
+  const guests = Math.max(1, Math.floor(options.guests ?? 1));
+  const quantity = Math.max(1, Math.floor(options.quantity ?? 1));
+
+  switch (rule.pricingType) {
+    case 'per_person':
+      return guests * (rule.price ?? 0);
+    case 'per_vehicle': {
+      const capacity = Math.max(1, rule.maxPassengers ?? 6);
+      const vehicles = Math.ceil(guests / capacity);
+      return vehicles * (rule.price ?? 0);
+    }
+    case 'per_unit':
+      return quantity * (rule.price ?? 0);
+    case 'compound':
+      return guests * (rule.perPersonPrice ?? 0) + (rule.privateCarTransferFee ?? 0);
+    default:
+      return 0;
+  }
 }
 
 export const EXPERIENCES: Experience[] = [

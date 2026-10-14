@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 interface InfoModalProps {
   topic: 'privacy' | 'terms' | 'safety';
@@ -6,6 +6,13 @@ interface InfoModalProps {
 }
 
 export const InfoModal: React.FC<InfoModalProps> = ({ topic, onClose }) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
   const content = {
     privacy: {
       title: 'Privacy Policy & Guest Data Protection',
@@ -97,16 +104,17 @@ export const InfoModal: React.FC<InfoModalProps> = ({ topic, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
-      <div className="bg-[#FAF6F0] rounded-2xl sm:rounded-3xl border border-amber-200/80 shadow-2xl max-w-lg w-full overflow-hidden text-stone-900 relative">
+      <div role="dialog" aria-modal="true" aria-labelledby="info-modal-title" className="bg-[#FAF6F0] rounded-2xl sm:rounded-3xl border border-amber-200/80 shadow-2xl max-w-lg w-full overflow-hidden text-stone-900 relative">
         <div className="bg-gradient-to-r from-stone-900 to-stone-800 text-white px-6 py-4 flex items-center justify-between">
           <div>
-            <h3 className="font-serif font-bold text-lg leading-tight">{content.title}</h3>
+            <h3 id="info-modal-title" className="font-serif font-bold text-lg leading-tight">{content.title}</h3>
             <span className="text-[11px] text-amber-200 uppercase tracking-widest font-semibold">
               {content.subtitle}
             </span>
           </div>
           <button
             onClick={onClose}
+            aria-label="Close information modal"
             className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-colors cursor-pointer"
           >
             <span className="material-symbols-outlined text-[20px]">close</span>

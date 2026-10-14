@@ -11,6 +11,7 @@ import { Hero } from './components/Hero';
 import { SignatureExpeditions } from './components/SignatureExpeditions';
 import { AdrenalineBuggySection } from './components/AdrenalineBuggySection';
 import { CityToursSection } from './components/CityToursSection';
+import { PriceMatchComparisonSection } from './components/PriceMatchComparisonSection';
 import { TravelGuidesSection } from './components/TravelGuidesSection';
 import { FAQSection } from './components/FAQSection';
 import { ReviewsSection } from './components/ReviewsSection';
@@ -21,10 +22,12 @@ import { BookingModal } from './components/BookingModal';
 import { ItineraryModal } from './components/ItineraryModal';
 import { ReviewModal } from './components/ReviewModal';
 import { WhatsAppDrawer } from './components/WhatsAppDrawer';
+import { AiBookingAgentWidget } from './components/AiBookingAgentWidget';
 import { InfoModal } from './components/InfoModal';
 import { AdminDashboard, CMSConfig } from './components/admin/AdminDashboard';
 import { AdminLoginModal } from './components/admin/AdminLoginModal';
 import { getStoredAdminSession, clearAdminSession, AdminSession } from './utils/adminAuth';
+import { useCanonicalSeo } from './utils/useCanonicalSeo';
 
 export default function App() {
   // Navigation View State: 'storefront' or 'admin'
@@ -107,6 +110,14 @@ export default function App() {
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [whatsAppOpen, setWhatsAppOpen] = useState(false);
   const [infoModalTopic, setInfoModalTopic] = useState<'privacy' | 'terms' | 'safety' | null>(null);
+
+  // Dynamic Canonical & OpenGraph SEO Sync
+  const activeModalTourId = itineraryModalOpen
+    ? itineraryExperienceId
+    : bookingModalOpen
+    ? bookingModalParams.experienceId
+    : undefined;
+  useCanonicalSeo(activeSection, activeModalTourId);
 
   // Toast Notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -305,33 +316,22 @@ export default function App() {
     <div className="bg-[#FAF6F0] text-[#1C1917] min-h-screen flex flex-col selection:bg-amber-100 selection:text-amber-900 font-sans relative">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-24 right-4 sm:right-8 z-50 bg-stone-900 text-white px-5 py-3 rounded-xl shadow-2xl border border-amber-500/40 flex items-center gap-3 animate-in fade-in slide-from-top-4 duration-300">
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed top-24 right-4 sm:right-8 z-50 bg-stone-900 text-white px-5 py-3 rounded-xl shadow-2xl border border-amber-500/40 flex items-center gap-3 animate-in fade-in slide-from-top-4 duration-300"
+        >
           <span className="material-symbols-outlined text-emerald-400 text-[22px]">verified</span>
           <span className="text-xs font-semibold">{toastMessage}</span>
           <button
             onClick={() => setToastMessage(null)}
+            aria-label="Dismiss notification"
             className="text-stone-400 hover:text-white ml-2 text-xs cursor-pointer"
           >
             ✕
           </button>
         </div>
       )}
-
-      {/* Floating Operator Portal Quick-Access Switcher */}
-      <div className="fixed bottom-6 left-6 z-40">
-        <button
-          type="button"
-          onClick={handleOpenAdmin}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-stone-900/90 hover:bg-stone-900 text-amber-300 hover:text-white text-xs font-bold shadow-2xl border border-amber-500/40 backdrop-blur-md transition-all cursor-pointer hover:scale-105 active:scale-95 group"
-          title={adminSession ? "Operator Admin Dashboard (Authenticated)" : "Secure Operator Admin Login"}
-        >
-          <span className="material-symbols-outlined text-[18px] text-amber-400 group-hover:rotate-12 transition-transform">
-            {adminSession ? 'admin_panel_settings' : 'lock'}
-          </span>
-          <span>{adminSession ? 'Admin Portal' : 'Admin Login'}</span>
-          <span className={`w-2 h-2 rounded-full ${adminSession ? 'bg-emerald-400' : 'bg-amber-400'} animate-pulse ml-0.5`}></span>
-        </button>
-      </div>
 
       {/* Sticky Header with Announcement Bar & Navigation */}
       <Header
@@ -381,6 +381,12 @@ export default function App() {
           onViewItinerary={handleViewItinerary}
           onBookExperience={(id) => handleOpenBooking(id)}
           experiences={experiences}
+        />
+
+        <PriceMatchComparisonSection
+          currency={currency}
+          onBookExperience={(id) => handleOpenBooking(id)}
+          onOpenWhatsApp={() => setWhatsAppOpen(true)}
         />
 
         <TravelGuidesSection />
@@ -452,6 +458,23 @@ export default function App() {
           onSubmitReview={handleAddReview}
         />
       )}
+
+      {/* Admin Login Modal */}
+      {adminLoginModalOpen && (
+        <AdminLoginModal
+          isOpen={adminLoginModalOpen}
+          onClose={() => setAdminLoginModalOpen(false)}
+          onSuccess={handleAdminLoginSuccess}
+        />
+      )}
+
+      {/* Phoenix AI Booking Concierge Widget */}
+      <AiBookingAgentWidget
+        currency={currency}
+        onOpenBooking={(id) => handleOpenBooking(id)}
+        onOpenWhatsApp={() => setWhatsAppOpen(true)}
+        experiences={experiences}
+      />
 
       {/* UltraMsg WhatsApp Direct Concierge Drawer */}
       <WhatsAppDrawer
