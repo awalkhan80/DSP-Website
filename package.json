@@ -1,39 +1,40 @@
 {
-  "name": "react-example",
+  "name": "phoenix-desert-safari-dubai",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "version": "1.0.0",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build",
+    "build": "node scripts/build.mjs",
     "start": "node server.js",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit",
-    "test:chat": "node --test tests/chat.test.mjs"
+    "lint": "node scripts/lint.mjs",
+    "typecheck": "node scripts/typecheck.mjs",
+    "test": "node --test tests/chat.test.mjs tests/booking.test.mjs tests/seo.test.mjs",
+    "test:chat": "node --test tests/chat.test.mjs",
+    "test:booking": "node --test tests/booking.test.mjs",
+    "test:seo": "node --test tests/seo.test.mjs",
+    "test:e2e": "python3 tests/e2e_browser_test.py"
   },
   "dependencies": {
-    "@google/genai": "^2.4.0",
-    "@tailwindcss/vite": "^4.3.3",
-    "@vitejs/plugin-react": "^6.1.1",
-    "lucide-react": "^0.546.0",
-    "react": "^19.0.1",
-    "react-dom": "^19.0.1",
-    "vite": "^8.3.0",
+    "@google/genai": "^1.4.0",
+    "@tailwindcss/vite": "^4.1.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "dotenv": "^17.2.3",
-    "motion": "^12.23.24",
-    "tsx": "^4.21.0",
-    "nodemailer": "^6.10.1"
+    "nodemailer": "^6.10.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tsx": "^4.19.3",
+    "vite": "^6.2.0"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "autoprefixer": "^10.4.21",
-    "tailwindcss": "^4.3.3",
-    "typescript": "^7.0.2",
     "@types/express": "^4.17.21",
-    "@types/nodemailer": "^6.4.17"
+    "@types/node": "^22.14.0",
+    "@types/nodemailer": "^6.4.17",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.10",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.8.2"
   }
 }

@@ -15,7 +15,52 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 const isProduction = process.env.NODE_ENV === 'production';
 
-app.use(express.json());
+app.use(express.json({ limit: '100kb' }));
+
+// Production Security Headers Middleware
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+  next();
+});
+
+// Lightweight In-Memory Per-IP Rate Limiter
+function createRateLimiter(windowMs: number, maxRequests: number) {
+  const hits = new Map<string, { count: number; resetAt: number }>();
+  return (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const ip = req.ip || req.socket?.remoteAddress || '127.0.0.1';
+    const now = Date.now();
+    const record = hits.get(ip);
+    if (!record || now > record.resetAt) {
+      hits.set(ip, { count: 1, resetAt: now + windowMs });
+      return next();
+    }
+    record.count += 1;
+    if (record.count > maxRequests) {
+      return res.status(429).json({ ok: false, error: 'Too many requests. Please try again shortly.' });
+    }
+    return next();
+  };
+}
+
+const chatRateLimiter = createRateLimiter(60_000, 60);
+const emailRateLimiter = createRateLimiter(60_000, 20);
+
+// Optional Server-Side Admin Token Guard for Mutating Admin Endpoints
+function requireAdminAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const requiredToken = (process.env.ADMIN_API_TOKEN || '').trim();
+  if (!requiredToken) {
+    return next();
+  }
+  const authHeader = req.get('authorization') || '';
+  const provided = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : (req.get('x-admin-token') || '').trim();
+  if (provided !== requiredToken) {
+    return res.status(401).json({ ok: false, error: 'Unauthorized: valid admin token required.' });
+  }
+  return next();
+}
 
 // 301 Canonical Normalization & Duplicate URL Prevention Middleware
 app.use((req, res, next) => {
@@ -280,7 +325,7 @@ function generateBookingVoucherHtml(data: {
 }
 
 // 1. API: Send Booking Confirmation Email
-app.post('/api/send-booking-email', async (req, res) => {
+app.post('/api/send-booking-email', emailRateLimiter, async (req, res) => {
   try {
     const data = req.body;
     const { guestEmail, guestName, bookingRef, experienceTitle, tourDate, totalAED } = data;
@@ -349,7 +394,7 @@ app.post('/api/send-booking-email', async (req, res) => {
 });
 
 // 2. API: Test Email Dispath (Admin Verification)
-app.post('/api/test-email', async (req, res) => {
+app.post('/api/test-email', emailRateLimiter, requireAdminAuth, async (req, res) => {
   try {
     const targetEmail = req.body?.email || GMAIL_USER;
     const testResult = await transporter.sendMail({
@@ -409,10 +454,7 @@ app.get('/api/email-status', async (req, res) => {
 // ==========================================
 // B2B.TICKETS (TRAVELDESK) API INTEGRATION
 // ==========================================
-const B2B_API_KEY = (
-  process.env.B2B_TICKETS_API_KEY ||
-  'eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJBZ2VuY3lJZCI6IjE2NTAiLCJJc0FwaUtleSI6InRydWUiLCJuYmYiOjE3OTA4ODQ0MTMsImV4cCI6MjA3NDk2NzYxMywiaXNzIjoidHJhdmVsZGVzay5tZSIsImF1ZCI6InRyYXZlbGRlc2subWUifQ.XmXqUcKHlJuOa1ezjJ7sRkQ-ih_tXzdQUYLgBFgKbis'
-).trim();
+const B2B_API_KEY = (process.env.B2B_TICKETS_API_KEY || '').trim();
 
 const B2B_BASE_URL = 'https://api.traveldesk.me/public/b2b/v1';
 
@@ -421,6 +463,12 @@ let b2bBookingRecords: any[] = [];
 
 // 4. API: B2B.Tickets Status & Balance
 app.get('/api/b2b/status', async (req, res) => {
+  if (!B2B_API_KEY) {
+    return res.status(503).json({
+      connected: false,
+      error: 'B2B_TICKETS_API_KEY is not configured in server environment.',
+    });
+  }
   try {
     const balRes = await fetch(`${B2B_BASE_URL}/balance`, {
       headers: {
@@ -662,14 +710,6 @@ app.get('/api/b2b/bookings', (req, res) => {
   });
 });
 
-// 10. API: List B2B Booking Records
-app.get('/api/b2b/bookings', (req, res) => {
-  return res.json({
-    total: b2bBookingRecords.length,
-    records: b2bBookingRecords,
-  });
-});
-
 // ==========================================
 // 11. AI BOOKING AGENT INTEGRATION ENDPOINTS
 // Compatible with /phoenix_agent (OpenAI Agents SDK)
@@ -790,33 +830,50 @@ function getToursKnowledgeBase() {
 
 // Deterministic Pax & Tour Price Calculator (Guarantees 100% accurate mathematical calculations)
 function calculateTourQuote(msgLower: string) {
-  // Extract number of guests
-  let pax = 1;
-  let paxExplicitlyMentioned = false;
-  const paxMatch =
-    msgLower.match(/(\d+)\s*(?:pax|people|persons?|guests?|adults?|members?)/i) ||
-    msgLower.match(/(?:we are|group of|party of|for|of)\s*(\d+)/i) ||
-    msgLower.match(/(\d+)\s*(?:of us)/i);
+  const words: Record<string, number> = {
+    one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+  };
 
-  if (paxMatch) {
-    const parsed = parseInt(paxMatch[1], 10);
-    if (!isNaN(parsed) && parsed > 0 && parsed <= 100) {
-      pax = parsed;
-      paxExplicitlyMentioned = true;
-    }
-  } else {
-    // English number words
-    const words: Record<string, number> = {
-      one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
-    };
-    for (const [w, n] of Object.entries(words)) {
-      if (new RegExp(`\\b${w}\\s*(?:pax|people|persons?|guests?|adults?)\\b`, 'i').test(msgLower)) {
-        pax = n;
+  let adults = 0;
+  let children = 0;
+  let paxExplicitlyMentioned = false;
+
+  const adultMatch = msgLower.match(/(\d+)\s*adults?/i);
+  const childMatch = msgLower.match(/(\d+)\s*(?:child(?:ren)?|kids?)/i);
+
+  if (adultMatch) {
+    adults = Math.min(100, Math.max(1, parseInt(adultMatch[1], 10)));
+    paxExplicitlyMentioned = true;
+  }
+  if (childMatch) {
+    children = Math.min(100, Math.max(0, parseInt(childMatch[1], 10)));
+    paxExplicitlyMentioned = true;
+  }
+
+  if (!paxExplicitlyMentioned) {
+    const paxMatch =
+      msgLower.match(/(\d+)\s*(?:pax|people|persons?|guests?|members?)/i) ||
+      msgLower.match(/(?:we are|group of|party of|for|of)\s*(\d+)/i) ||
+      msgLower.match(/(\d+)\s*(?:of us)/i);
+    if (paxMatch) {
+      const parsed = parseInt(paxMatch[1], 10);
+      if (!isNaN(parsed) && parsed > 0 && parsed <= 100) {
+        adults = parsed;
         paxExplicitlyMentioned = true;
-        break;
+      }
+    } else {
+      for (const [w, n] of Object.entries(words)) {
+        if (new RegExp(`\\b${w}\\s*(?:pax|people|persons?|guests?|adults?)\\b`, 'i').test(msgLower)) {
+          adults = n;
+          paxExplicitlyMentioned = true;
+          break;
+        }
       }
     }
   }
+
+  if (adults === 0) adults = 1;
+  const pax = adults + children;
 
   const isPremiumOrVip =
     msgLower.includes('premium') ||
@@ -826,15 +883,163 @@ function calculateTourQuote(msgLower: string) {
 
   const isMorning = msgLower.includes('morning') || msgLower.includes('sunrise');
   const isBurj = msgLower.includes('burj') || msgLower.includes('khalifa') || msgLower.includes('at the top');
-  const isBuggy = msgLower.includes('can-am') || msgLower.includes('buggy') || msgLower.includes('canam');
-  const isQuad = msgLower.includes('quad') || msgLower.includes('atv');
+  const isBuggy = msgLower.includes('can-am') || msgLower.includes('buggy') || msgLower.includes('canam') || msgLower.includes('polaris');
+  const isQuad = msgLower.includes('quad') || msgLower.includes('atv') || msgLower.includes('raptor');
+  const isDhow = msgLower.includes('dhow') || msgLower.includes('marina cruise') || msgLower.includes('dinner cruise');
+  const isAbuDhabi = msgLower.includes('abu dhabi') || msgLower.includes('ferrari') || msgLower.includes('grand mosque');
+  const isDubaiCity = msgLower.includes('dubai city') || msgLower.includes('half-day city') || msgLower.includes('city tour');
   const isSafari = msgLower.includes('safari') || msgLower.includes('desert') || msgLower.includes('evening');
 
-  // 1. Premium / Private VIP Safari
+  // 1. Can-Am / Polaris Dune Buggy
+  if (isBuggy) {
+    const isPolaris = msgLower.includes('polaris');
+    const isFourSeater = msgLower.includes('4-seater') || msgLower.includes('4 seater');
+    const isOneHour = msgLower.includes('1 hour') || msgLower.includes('60 min') || msgLower.includes('one hour');
+    const capacity = isFourSeater ? 4 : 2;
+    const buggiesNeeded = Math.max(1, Math.ceil(pax / capacity));
+    const unitRate = isPolaris
+      ? isFourSeater ? (isOneHour ? 1200 : 800) : (isOneHour ? 900 : 600)
+      : isFourSeater ? (isOneHour ? 1900 : 1350) : (isOneHour ? 1500 : 1000);
+    const totalAed = buggiesNeeded * unitRate;
+    const label = isPolaris ? 'Polaris RZR' : 'Can-Am Maverick X3';
+    return {
+      type: 'buggy',
+      pax,
+      buggiesNeeded,
+      totalAed,
+      actionCard: {
+        type: 'price_quote',
+        data: {
+          tour: `${label} Buggy (${buggiesNeeded}x ${capacity}-Seater for ${pax} Guest${pax > 1 ? 's' : ''})`,
+          total_aed: totalAed,
+          breakdown: `${buggiesNeeded}x ${capacity}-Seater ${label} (${isOneHour ? '1 Hour' : '30 Mins'}): AED ${totalAed} total (100% Pay on Arrival)`,
+          payment_policy: 'pay_on_arrival',
+        },
+      },
+      reply: `Our ${label} (${capacity}-Seater) is AED ${unitRate} for ${isOneHour ? '1 hour' : '30 minutes'}. For ${pax} guest${pax > 1 ? 's' : ''}, you will need ${buggiesNeeded} buggy unit${buggiesNeeded > 1 ? 's' : ''}, coming to AED ${totalAed} total.
+
+All safety gear, helmets, goggles, and an escort lead marshal are included with 100% Pay on Arrival!`,
+    };
+  }
+
+  // 2. Quad Bike ATV
+  if (isQuad) {
+    const is350 = msgLower.includes('350') || msgLower.includes('raptor');
+    const isInsideCircle = msgLower.includes('circle') || msgLower.includes('inside');
+    const isDouble = msgLower.includes('double') || msgLower.includes('two rider') || msgLower.includes('2 rider');
+    const unitRate = is350 ? 250 : isDouble ? (isInsideCircle ? 250 : 300) : (isInsideCircle ? 150 : 250);
+    const bikesNeeded = isDouble ? Math.max(1, Math.ceil(pax / 2)) : pax;
+    const totalAed = bikesNeeded * unitRate;
+    return {
+      type: 'quad_bike',
+      pax,
+      bikesNeeded,
+      totalAed,
+      actionCard: {
+        type: 'price_quote',
+        data: {
+          tour: `Quad Bike ATV (${bikesNeeded}x ${is350 ? '350cc Raptor' : '250cc'} for ${pax} Guest${pax > 1 ? 's' : ''})`,
+          total_aed: totalAed,
+          breakdown: `${bikesNeeded}x Quad Bike @ AED ${unitRate} = AED ${totalAed} total • 100% Pay on Arrival`,
+          payment_policy: 'pay_on_arrival',
+        },
+      },
+      reply: `For ${pax} guest${pax > 1 ? 's' : ''}, ${bikesNeeded}x ${is350 ? '350cc Yamaha Raptor' : '250cc'} Quad Bike (${isDouble ? 'Double' : 'Single'}, ${isInsideCircle ? 'Inside Circle' : 'Open Desert'}) is AED ${totalAed} total (AED ${unitRate} per bike).
+
+Helmets, goggles, safety briefing, and desert marshal escort are included with 100% Pay on Arrival!`,
+    };
+  }
+
+  // 3. Dhow Cruise Dinner Marina (Supports compound private transfer formula: guests * 120 + 350)
+  if (isDhow) {
+    if (isPremiumOrVip || msgLower.includes('transfer') || msgLower.includes('pickup')) {
+      const totalAed = pax * 120 + 350;
+      return {
+        type: 'dhow_cruise_private',
+        pax,
+        totalAed,
+        actionCard: {
+          type: 'price_quote',
+          data: {
+            tour: `Dhow Cruise Dinner Marina — Private Pickup & Drop (${pax} Guest${pax > 1 ? 's' : ''})`,
+            total_aed: totalAed,
+            breakdown: `${pax} Guest(s) @ AED 120 + AED 350 Private Car Transfer = AED ${totalAed} total • 100% Pay on Arrival`,
+            payment_policy: 'pay_on_arrival',
+          },
+        },
+        reply: `For ${pax} guest${pax > 1 ? 's' : ''} on our Dhow Cruise Dinner Marina with Private Pickup & Drop, the total is AED ${totalAed} (AED 120 per guest + AED 350 once per private car transfer). All bookings feature 100% Pay on Arrival!`,
+      };
+    }
+    const totalAed = pax * 130;
+    return {
+      type: 'dhow_cruise_direct',
+      pax,
+      totalAed,
+      actionCard: {
+        type: 'price_quote',
+        data: {
+          tour: `Dhow Cruise Dinner Marina — Direct to Boat (${pax} Guest${pax > 1 ? 's' : ''})`,
+          total_aed: totalAed,
+          breakdown: `${pax} Guest(s) @ AED 130 = AED ${totalAed} total • 100% Pay on Arrival`,
+          payment_policy: 'pay_on_arrival',
+        },
+      },
+      reply: `For ${pax} guest${pax > 1 ? 's' : ''} on our Dhow Cruise Dinner Marina (Direct to Boat), the total is AED ${totalAed} (AED 130 per person). If you would like Private Car Pickup & Drop, the formula is AED 120 per guest + AED 350 per private car (AED ${pax * 120 + 350} total).`,
+    };
+  }
+
+  // 4. Abu Dhabi City Tour
+  if (isAbuDhabi) {
+    const withFerrari = msgLower.includes('ferrari');
+    const adultRate = withFerrari ? 350 : 150;
+    const childRate = withFerrari ? 280 : 105;
+    const totalAed = isPremiumOrVip && !withFerrari ? Math.ceil(pax / 6) * 950 : adults * adultRate + children * childRate;
+    return {
+      type: 'abu_dhabi_tour',
+      pax,
+      totalAed,
+      actionCard: {
+        type: 'price_quote',
+        data: {
+          tour: `${withFerrari ? 'Abu Dhabi City Tour + Ferrari World' : 'Abu Dhabi City Tour'} (${pax} Guest${pax > 1 ? 's' : ''})`,
+          total_aed: totalAed,
+          breakdown: isPremiumOrVip && !withFerrari
+            ? `${Math.ceil(pax / 6)}x Private Vehicle (up to 6 pax): AED ${totalAed}`
+            : `${adults} Adult(s) @ AED ${adultRate}${children > 0 ? ` + ${children} Child(ren) @ AED ${childRate}` : ''} = AED ${totalAed}`,
+          payment_policy: 'pay_on_arrival',
+        },
+      },
+      reply: `For ${pax} guest${pax > 1 ? 's' : ''}, our ${withFerrari ? 'Abu Dhabi City Tour with Ferrari World Tickets' : 'Full-Day Abu Dhabi City Tour'} is AED ${totalAed} total. Includes round-trip transfer from Dubai, Sheikh Zayed Grand Mosque entry, and Corniche sightseeing.`,
+    };
+  }
+
+  // 5. Dubai City Tour
+  if (isDubaiCity) {
+    const totalAed = isPremiumOrVip ? Math.ceil(pax / 6) * 650 : pax * 85;
+    return {
+      type: 'dubai_city_tour',
+      pax,
+      totalAed,
+      actionCard: {
+        type: 'price_quote',
+        data: {
+          tour: `Dubai City Tour (${pax} Guest${pax > 1 ? 's' : ''})`,
+          total_aed: totalAed,
+          breakdown: isPremiumOrVip
+            ? `${Math.ceil(pax / 6)}x Private Car (up to 6 pax) @ AED 650 = AED ${totalAed}`
+            : `${pax} Guest(s) @ AED 85 = AED ${totalAed} • 100% Pay on Arrival`,
+          payment_policy: 'pay_on_arrival',
+        },
+      },
+      reply: `For ${pax} guest${pax > 1 ? 's' : ''}, our Dubai City Tour is AED ${totalAed} total (${isPremiumOrVip ? 'AED 650 per private car up to 6 guests' : 'AED 85 per person sharing'}) with 100% Pay on Arrival.`,
+    };
+  }
+
+  // 6. Premium / Private VIP Safari
   if (isPremiumOrVip && (isSafari || paxExplicitlyMentioned)) {
     const vehiclesNeeded = Math.ceil(pax / 6);
     const totalAed = vehiclesNeeded * 850;
-    const standardEveningTotal = pax * 120;
+    const standardEveningTotal = adults * 120 + children * 85;
     return {
       type: 'premium_safari',
       pax,
@@ -850,31 +1055,45 @@ function calculateTourQuote(msgLower: string) {
           payment_policy: 'pay_on_arrival',
         },
       },
-      reply: `Marhaban! For your group of ${pax} guest${pax > 1 ? 's' : ''} on our Premium Private VIP Desert Safari, the total is AED ${totalAed} for ${vehiclesNeeded === 1 ? 'your private luxury Land Cruiser 300 Series' : `${vehiclesNeeded} private luxury Land Cruisers`} (seats up to 6 guests per vehicle).\n\nThis includes VIP doorstep 4x4 pickup, private dune bashing customized to your preferred thrill level, reserved VIP Majlis table seating inside the camp, dedicated waiter table service, 5-star live BBQ dinner, and live cultural shows.\n\n(Alternatively, if you prefer our Standard Evening Safari with shared 4x4, it is AED 120 per person, coming to AED ${standardEveningTotal} total for ${pax} guests). All our desert safaris are 100% Pay on Arrival (Cash or Card on pickup) with zero advance deposit required!`,
+      reply: `Marhaban! For your group of ${pax} guest${pax > 1 ? 's' : ''} on our Premium Private VIP Desert Safari, the total is AED ${totalAed} for ${vehiclesNeeded === 1 ? 'your private luxury Land Cruiser 300 Series' : `${vehiclesNeeded} private luxury Land Cruisers`} (seats up to 6 guests per vehicle).
+
+This includes VIP doorstep 4x4 pickup, private dune bashing customized to your preferred thrill level, reserved VIP Majlis table seating inside the camp, dedicated waiter table service, 5-star live BBQ dinner, and live cultural shows.
+
+(Alternatively, if you prefer our Standard Evening Safari with shared 4x4, it comes to AED ${standardEveningTotal} total). All our desert safaris are 100% Pay on Arrival (Cash or Card on pickup) with zero advance deposit required!`,
     };
   }
 
-  // 2. Standard Evening Desert Safari
+  // 7. Standard Evening Desert Safari (Supports Adult + Child Breakdown)
   if (isSafari && !isMorning) {
-    const totalAed = pax * 120;
+    const totalAed = adults * 120 + children * 85;
+    const breakdownText =
+      children > 0
+        ? `${adults} Adult(s) @ AED 120 + ${children} Child(ren) @ AED 85 = AED ${totalAed} total • Free Doorstep 4x4 Pickup • 100% Pay on Arrival`
+        : `${adults} Adult(s) @ AED 120 per person = AED ${totalAed} total • Free Doorstep 4x4 Pickup • 100% Pay on Arrival`;
     return {
       type: 'evening_safari',
       pax,
+      adults,
+      children,
       totalAed,
       actionCard: {
         type: 'price_quote',
         data: {
           tour: `Evening Desert Safari (${pax} Guest${pax > 1 ? 's' : ''})`,
           total_aed: totalAed,
-          breakdown: `${pax} Adult(s) @ AED 120 per person = AED ${totalAed} total • Free Doorstep 4x4 Pickup • 100% Pay on Arrival`,
+          breakdown: breakdownText,
           payment_policy: 'pay_on_arrival',
         },
       },
-      reply: `Marhaban! For ${pax} guest${pax > 1 ? 's' : ''}, our Evening Desert Safari comes to a total of AED ${totalAed} (AED 120 per adult).\n\nThis includes complimentary 4x4 doorstep pickup and drop-off across Dubai and Sharjah, 45-minute red dune bashing in Lahbab, sandboarding, camel rides, a 5-star live BBQ dinner buffet (with vegetarian and vegan options), and live cultural shows (Tanoura dance, Fire show, and Belly dance).\n\nIf you prefer your own exclusive vehicle, our Private Land Cruiser is AED 750 total (or AED 850 for our Premium VIP 300 Series with table service). All safari bookings feature 100% Pay on Arrival!`,
+      reply: `Marhaban! For ${adults} adult${adults > 1 ? 's' : ''}${children > 0 ? ` and ${children} child${children > 1 ? 'ren' : ''}` : ''}, our Evening Desert Safari comes to a total of AED ${totalAed} (AED 120 per adult${children > 0 ? ', AED 85 per child' : ''}).
+
+This includes complimentary 4x4 doorstep pickup and drop-off across Dubai and Sharjah, 45-minute red dune bashing in Lahbab, sandboarding, camel rides, a 5-star live BBQ dinner buffet (with vegetarian and vegan options), and live cultural shows (Tanoura dance, Fire show, and Belly dance).
+
+If you prefer your own exclusive vehicle, our Private VIP Land Cruiser 300 Series is AED 850 flat rate (up to 6 guests). All safari bookings feature 100% Pay on Arrival!`,
     };
   }
 
-  // 3. Morning Safari
+  // 8. Morning Safari
   if (isMorning) {
     const vehiclesNeeded = Math.ceil(pax / 6);
     const totalAed = vehiclesNeeded * 450;
@@ -892,11 +1111,13 @@ function calculateTourQuote(msgLower: string) {
           payment_policy: 'pay_on_arrival',
         },
       },
-      reply: `Marhaban! For ${pax} guest${pax > 1 ? 's' : ''}, our Morning Sunrise Desert Safari is AED ${totalAed} total for ${vehiclesNeeded === 1 ? 'a private 4x4 Land Cruiser' : `${vehiclesNeeded} private 4x4 Land Cruisers`} (each vehicle accommodates up to 6 guests).\n\nThis includes 45 minutes of dune bashing on untouched morning sands, sandboarding, camel rides, and cold refreshments with 100% Pay on Arrival!`,
+      reply: `Marhaban! For ${pax} guest${pax > 1 ? 's' : ''}, our Morning Sunrise Desert Safari is AED ${totalAed} total for ${vehiclesNeeded === 1 ? 'a private 4x4 Land Cruiser' : `${vehiclesNeeded} private 4x4 Land Cruisers`} (each vehicle accommodates up to 6 guests).
+
+This includes 45 minutes of dune bashing on untouched morning sands, sandboarding, camel rides, and cold refreshments with 100% Pay on Arrival!`,
     };
   }
 
-  // 4. Burj Khalifa
+  // 9. Burj Khalifa
   if (isBurj) {
     const totalAed = pax * 175;
     return {
@@ -912,29 +1133,9 @@ function calculateTourQuote(msgLower: string) {
           payment_policy: 'advance_only',
         },
       },
-      reply: `For Burj Khalifa 'At The Top' (124th & 125th Floor), availability and current ticket rates require team confirmation. For ${pax} guest${pax > 1 ? 's' : ''}, tickets are AED 175 per person, coming to a total of AED ${totalAed}.\n\nOfficial tickets include high-speed elevator access from Dubai Mall (Ground Level) and 360-degree glass views. Please note that excursion tickets require advance payment to release your official electronic barcode entry passes. Please contact our team to confirm your date and ticket option.`,
-    };
-  }
+      reply: `For Burj Khalifa 'At The Top' (124th & 125th Floor), availability and current ticket rates require team confirmation. For ${pax} guest${pax > 1 ? 's' : ''}, tickets are AED 175 per person, coming to a total of AED ${totalAed}.
 
-  // 5. Can-Am Buggy
-  if (isBuggy) {
-    const buggiesNeeded = Math.max(1, Math.ceil(pax / 2));
-    const total30m = buggiesNeeded * 1000;
-    return {
-      type: 'buggy',
-      pax,
-      buggiesNeeded,
-      totalAed: total30m,
-      actionCard: {
-        type: 'price_quote',
-        data: {
-          tour: `Can-Am Maverick X3 Buggy (${buggiesNeeded}x 2-Seater for ${pax} Guests)`,
-          total_aed: total30m,
-          breakdown: `${buggiesNeeded}x 2-Seater Can-Am Maverick X3 (30 Mins): AED ${total30m} total (100% Pay on Arrival)`,
-          payment_policy: 'pay_on_arrival',
-        },
-      },
-      reply: `Our Can-Am Maverick X3 1000cc Turbo (2-Seater) is AED 1,000 for 30 minutes (or AED 1,500 for 1 hour). For a group of ${pax} guests, you will need ${buggiesNeeded} two-seater buggy${buggiesNeeded > 1 ? 's' : ''}, coming to AED ${total30m} for 30 minutes.\n\nAll safety gear, helmets, goggles, and an escort lead car are included with 100% Pay on Arrival!`,
+Official tickets include high-speed elevator access from Dubai Mall (Ground Level) and 360-degree glass views. Please note that excursion tickets require advance payment to release your official electronic barcode entry passes. Please contact our team to confirm your date and ticket option.`,
     };
   }
 
@@ -945,7 +1146,24 @@ function calculateTourQuote(msgLower: string) {
 let geminiQuotaCooldownUntil = 0;
 
 // 11.0 Agent Conversational Chat Endpoint (Gemini 3.1 Flash Lite + Multi-Model Failover + KB Grounding)
-app.post(['/api/agent/chat', '/api/chat'], async (req, res) => {
+// Health Check Endpoint for Production Monitoring
+app.get('/api/health', (req, res) => {
+  return res.json({
+    ok: true,
+    status: 'healthy',
+    uptime: Math.round(process.uptime()),
+    timestamp: new Date().toISOString(),
+    services: {
+      geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+      geminiModel: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+      smtpConfigured: Boolean(GMAIL_PASS),
+      b2bConfigured: Boolean(B2B_API_KEY),
+      knowledgeBaseLoaded: Boolean(getToursKnowledgeBase()),
+    },
+  });
+});
+
+app.post(['/api/agent/chat', '/api/chat'], chatRateLimiter, async (req, res) => {
   try {
     const { message, history = [] } = req.body || {};
     if (typeof message !== 'string' || !message.trim() || message.length > 4000 ||
@@ -1000,7 +1218,7 @@ ${JSON.stringify(kbJson, null, 2)}`;
         const prompt = `${history.map((h: any) => `${h.role === 'user' ? 'Guest' : 'Concierge'}: ${h.text}`).join('\n')}\nGuest: ${message}\nConcierge:`;
 
         // Multi-model failover with 4s fast response timeout
-        const CANDIDATE_MODELS = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
+        const CANDIDATE_MODELS = Array.from(new Set([process.env.GEMINI_MODEL || 'gemini-2.5-flash', 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash']));
         let response: any = null;
 
         for (const candidateModel of CANDIDATE_MODELS) {
@@ -1105,7 +1323,7 @@ app.get(['/api/knowledge_base', '/api/knowledge-base'], (req, res) => {
   return res.json({ ok: true, data: KNOWLEDGE_BASE_FACTS });
 });
 
-app.post(['/api/admin/knowledge_base', '/api/admin/knowledge-base'], (req, res) => {
+app.post(['/api/admin/knowledge_base', '/api/admin/knowledge-base'], requireAdminAuth, (req, res) => {
   try {
     const { data } = req.body;
     if (!data) {
@@ -1120,7 +1338,7 @@ app.post(['/api/admin/knowledge_base', '/api/admin/knowledge-base'], (req, res) 
 });
 
 // Auto-Sync & Train AI from Live Admin Tour Catalog
-app.post(['/api/admin/ai/sync-catalog', '/api/admin/ai/train-from-catalog'], (req, res) => {
+app.post(['/api/admin/ai/sync-catalog', '/api/admin/ai/train-from-catalog'], requireAdminAuth, (req, res) => {
   try {
     const { experiences = [], offRoadPricing = null, cmsConfig = null, aiSettings = null } = req.body;
     const currentKb = getToursKnowledgeBase() || {};
@@ -1206,7 +1424,7 @@ app.get(['/api/availability', '/api/admin/availability'], (req, res) => {
 });
 
 // Bulk Availability Manager: Make available in bulk for Date From / Date To and Time Slots
-app.post(['/api/availability/bulk', '/api/admin/availability/bulk'], (req, res) => {
+app.post(['/api/availability/bulk', '/api/admin/availability/bulk'], requireAdminAuth, (req, res) => {
   try {
     const {
       tours = ['all'],
@@ -1252,7 +1470,7 @@ app.post(['/api/availability/bulk', '/api/admin/availability/bulk'], (req, res) 
 });
 
 // Toggle or override a specific single slot or date
-app.post(['/api/availability/toggle', '/api/admin/availability/toggle'], (req, res) => {
+app.post(['/api/availability/toggle', '/api/admin/availability/toggle'], requireAdminAuth, (req, res) => {
   try {
     const { tourId = 'all', date, timeSlot = 'all', status = 'available', capacity = 60 } = req.body;
     if (!date) {
@@ -1286,7 +1504,7 @@ app.post(['/api/availability/toggle', '/api/admin/availability/toggle'], (req, r
 });
 
 // Reset availability to standard open season
-app.post(['/api/availability/reset', '/api/admin/availability/reset'], (req, res) => {
+app.post(['/api/availability/reset', '/api/admin/availability/reset'], requireAdminAuth, (req, res) => {
   try {
     const today = new Date().toISOString().split('T')[0];
     const sixMonthsLater = new Date(Date.now() + 180 * 86400000).toISOString().split('T')[0];
@@ -1724,54 +1942,54 @@ app.get('/robots.txt', (req, res) => {
 // SEO Route mapping for Server-Side Canonical & Metadata Injection
 const SERVER_ROUTE_SEO_MAP: Record<string, { title: string; description: string }> = {
   '/': {
-    title: 'Dubai Desert Safari, Dune Buggy & Quad Biking | Rates & Online Booking',
+    title: 'Dubai Desert Safari, Buggy & Quad Tours | The Phoenix',
     description:
-      'Direct tour operator in Dubai offering evening desert safaris, 4x4 dune bashing, VIP desert camps, dune buggy rentals & quad biking. Best price guarantee from AED 75. Hotel pickup included. Book directly via WhatsApp at +971 56 150 5270.',
+      'Book DTCM-licensed Dubai desert safaris from AED 120. Lahbab red dune bashing, Can-Am buggies, quad biking, 5-star BBQ camp & free hotel pickup.',
   },
   '/evening-desert-safari': {
-    title: 'Evening Desert Safari Dubai with Red Dune Bashing & 5-Star BBQ Dinner',
+    title: 'Evening Desert Safari Dubai | Red Dunes & BBQ Dinner',
     description:
-      'Book official DTCM-licensed Dubai evening desert safari from AED 120. Includes 45-min Lahbab red dune bashing, camel rides, sandboarding, falcon photography, Tanoura show & live BBQ buffet.',
+      'Book official DTCM Dubai evening desert safari from AED 120. Includes 45-min Lahbab red dune bashing, camel rides, sandboarding & live BBQ buffet.',
   },
   '/dune-buggy-dubai': {
-    title: 'Can-Am Maverick & Polaris Dune Buggy Rental Dubai | Self Drive 1000cc',
+    title: 'Can-Am & Polaris Dune Buggy Rental Dubai | 1000cc Turbo',
     description:
-      'Self-drive 1000cc turbo Can-Am Maverick X3 & Polaris RZR buggies in Dubai Red Dunes. No license required. Professional marshals, safety gear & hotel transfer included.',
+      'Self-drive 1000cc turbo Can-Am Maverick X3 & Polaris RZR buggies in Dubai Red Dunes. No license needed. Safety gear & desert marshal escort included.',
   },
   '/quad-biking-dubai': {
-    title: 'Quad Biking Dubai (250cc & 350cc Raptor) | Desert Safari with ATV Quad',
+    title: 'Quad Biking Dubai (250cc & 350cc) | Desert ATV Rental',
     description:
-      'Ride Yamaha 250cc & 350cc Raptor quad bikes in high red dunes. Open desert tracks, instructor guides, safety gear and doorstep hotel pickup.',
+      'Ride 250cc & 350cc Raptor quad bikes in Dubai Lahbab red dunes. Open desert tracks, safety gear, marshal escort & optional private 4x4 transfer.',
   },
   '/private-vip-safari': {
-    title: 'Private VIP Desert Safari Dubai in Luxury Land Cruiser 300 Series',
+    title: 'Private VIP Desert Safari Dubai | Land Cruiser 300',
     description:
-      'Exclusive private VIP desert safari for up to 6 guests at AED 850 flat rate. Dedicated private 4x4 vehicle, VIP table service, premium live BBQ buffet & shows.',
+      'Exclusive private VIP desert safari for up to 6 guests at AED 850 flat rate. Dedicated 4x4 vehicle, VIP majlis table service & live BBQ buffet.',
   },
   '/abu-dhabi-city-tour-ferrari-world': {
-    title: 'Abu Dhabi City Tour with Sheikh Zayed Grand Mosque & Ferrari World',
+    title: 'Abu Dhabi City Tour & Sheikh Zayed Grand Mosque | Dubai',
     description:
-      'Full-day Abu Dhabi sightseeing tour from Dubai with Sheikh Zayed Grand Mosque, Emirates Palace photo stop, Corniche, and Ferrari World admission tickets.',
+      'Full-day Abu Dhabi sightseeing tour from Dubai with Sheikh Zayed Grand Mosque, Emirates Palace stop, Corniche & optional Ferrari World tickets.',
   },
   '/miracle-garden-global-village-combo': {
-    title: 'Dubai Miracle Garden & Global Village Combo Tour with Private Transfers',
+    title: 'Dubai Miracle Garden & Global Village Combo Tour',
     description:
-      'Explore Dubai Miracle Garden flower displays and Global Village international pavilions in one evening. Includes private car transfer and official entry tickets.',
+      'Explore Dubai Miracle Garden and Global Village in one evening. Includes private car transfer (AED 500) and official combo tickets (AED 130/pp).',
   },
   '/alexandra-dhow-cruise-dubai-marina': {
-    title: 'Alexandra Luxury Dhow Cruise Dubai Marina | 5-Star Dinner Cruise & Live Tanoura',
+    title: 'Alexandra Dhow Cruise Dubai Marina | 5-Star Dinner',
     description:
-      '2-hour luxury wooden dhow cruise in Dubai Marina, JBR skyline & Ain Dubai with 5-star international buffet, live Tanoura dance, and open-air upper deck.',
+      '2-hour luxury wooden dhow dinner cruise in Dubai Marina & Ain Dubai with 5-star international buffet, live entertainment, and upper deck views.',
   },
   '/aya-universe-dubai-experience': {
-    title: 'AYA Universe Dubai Tickets | Immersive Light & Sensory Cosmos Experience',
+    title: 'AYA Universe Dubai Tickets | Immersive Light Park',
     description:
-      'Official tickets to AYA Universe at WAFI City Mall Dubai. 12 immersive cosmic zones with futuristic lighting, interactive projections, and soundscapes.',
+      'Official tickets to AYA Universe at WAFI City Mall Dubai (AED 135). 12 immersive cosmic zones with interactive lighting and soundscapes.',
   },
   '/faq': {
-    title: 'Dubai Desert Safari FAQs & Guide | What to Wear, Timings, Rates & Safety',
+    title: 'Dubai Desert Safari FAQs | Timings, Rates & Safety',
     description:
-      'Complete guide and answers to frequently asked questions about Dubai desert safaris, pickup timings, payment options (100% pay on arrival), child safety, and food menus.',
+      'Answers to frequently asked questions about Dubai desert safaris, pickup timings, 100% pay on arrival, child safety, and 5-star BBQ camp menus.',
   },
 };
 
@@ -1897,12 +2115,20 @@ async function startServer() {
       });
     } else {
       app.get('*', (req, res) => {
+        const rootIndex = path.resolve(__dirname, 'index.html');
+        if (fs.existsSync(rootIndex)) {
+          const rawHtml = fs.readFileSync(rootIndex, 'utf-8');
+          const finalHtml = renderHtmlWithDynamicCanonical(rawHtml, req);
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          res.setHeader('Cache-Control', 'no-cache');
+          return res.send(finalHtml);
+        }
         res.status(503).send('Application is building or dist folder not found. Please run "npm run build".');
       });
     }
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  app.listen(PORT, () => {
     console.log(`[Phoenix Safari Server] Running on http://localhost:${PORT} in ${isProduction ? 'production' : 'development'} mode`);
     console.log(`[Phoenix Safari Server] Email gateway active for ${GMAIL_USER}`);
   });
