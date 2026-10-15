@@ -37,8 +37,18 @@ interface ChatbotSettings {
   updatedAt: string;
 }
 
-export const ChatbotManagerTab: React.FC = () => {
-  const [activeSubTab, setActiveSubTab] = useState<'conversations' | 'settings'>('conversations');
+interface ChatbotManagerTabProps {
+  defaultSubTab?: 'settings' | 'conversations';
+}
+
+export const ChatbotManagerTab: React.FC<ChatbotManagerTabProps> = ({ defaultSubTab = 'settings' }) => {
+  const [activeSubTab, setActiveSubTab] = useState<'conversations' | 'settings'>(defaultSubTab);
+
+  useEffect(() => {
+    if (defaultSubTab) {
+      setActiveSubTab(defaultSubTab);
+    }
+  }, [defaultSubTab]);
 
   // Conversations state
   const [conversations, setConversations] = useState<Conversation[]>([]);

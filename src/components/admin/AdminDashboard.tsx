@@ -98,7 +98,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   // Navigation tabs
   const [activeNav, setActiveNav] = useState<
-    'overview-analytics' | 'homepage-cms' | 'tour-catalog-pricing' | 'tours-availability' | 'b2b-integration' | 'offroad-pricing' | 'bookings-convoys' | 'customer-inquiries-whatsapp' | 'seo-audit' | 'backup-restore' | 'ai-knowledge-base' | 'chatbot-manager' | 'settings'
+    'overview-analytics' | 'homepage-cms' | 'tour-catalog-pricing' | 'tours-availability' | 'b2b-integration' | 'offroad-pricing' | 'bookings-convoys' | 'customer-inquiries-whatsapp' | 'chatbot-settings' | 'chatbot-manager' | 'ai-knowledge-base' | 'seo-audit' | 'backup-restore' | 'settings'
   >('tour-catalog-pricing');
 
   // Off-Road Pricing local state
@@ -958,15 +958,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {/* Navigation Links */}
               <nav className="flex flex-col gap-1">
                 {[
+                  { id: 'chatbot-settings', label: 'Chatbot Settings', icon: 'smart_toy', badge: 'AI Config' },
+                  { id: 'chatbot-manager', label: 'Chatbot Transcripts', icon: 'forum', badge: 'Live Logs' },
+                  { id: 'ai-knowledge-base', label: 'AI Knowledge Base', icon: 'psychology', badge: 'Live' },
                   { id: 'homepage-cms', label: 'Homepage CMS & Showcase', icon: 'view_quilt', badge: 'Live' },
                   { id: 'tour-catalog-pricing', label: 'Tour Pricing & Slots', icon: 'explore', badge: `${experiences.length} Tours` },
+                  { id: 'tours-availability', label: 'Tours Availability & Slots', icon: 'calendar_month', badge: 'Bulk' },
                   { id: 'b2b-integration', label: 'B2B Supplier & API Sync', icon: 'hub', badge: 'Agency #1650' },
                   { id: 'offroad-pricing', label: 'Off-Road Machine Rates', icon: 'sports_motorsports', badge: 'Per Vehicle' },
                   { id: 'bookings-convoys', label: 'Bookings & Convoys', icon: 'directions_car', badge: '18 Active' },
+                  { id: 'customer-inquiries-whatsapp', label: 'WhatsApp Inquiries Desk', icon: 'chat', badge: 'Bot Active' },
                   { id: 'seo-audit', label: 'Technical SEO Audit', icon: 'travel_explore', badge: '98/100' },
                   { id: 'backup-restore', label: 'Backup & Restore Vault', icon: 'settings_backup_restore', badge: 'Safe' },
                   { id: 'overview-analytics', label: 'Overview & Analytics', icon: 'analytics', badge: null },
-                  { id: 'customer-inquiries-whatsapp', label: 'WhatsApp Inquiries Desk', icon: 'chat', badge: 'Bot Active' },
                   { id: 'settings', label: 'Settings & Security', icon: 'settings', badge: null },
                 ].map((item) => (
                   <button
@@ -1050,19 +1054,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       )}
 
       {/* FIXED SIDEBAR (W-72) - DESKTOP ONLY */}
-      <aside className="hidden lg:flex fixed left-0 top-0 h-full w-72 bg-[#FBF2F0] border-r border-[#E9E1DF] z-50 flex-col justify-between py-6 px-4 shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
-        <div className="flex flex-col gap-6">
+      <aside className="hidden lg:flex fixed left-0 top-0 h-full w-72 bg-[#FBF2F0] border-r border-[#E9E1DF] z-50 flex-col justify-between py-5 px-3 shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+        <div className="flex flex-col gap-3 flex-1 min-h-0">
           {/* Brand Header */}
-          <div className="flex items-center gap-3 px-3 py-2 cursor-pointer" onClick={onSwitchToStorefront} title="Click to view Storefront">
+          <div className="flex items-center gap-3 px-3 py-1 cursor-pointer shrink-0" onClick={onSwitchToStorefront} title="Click to view Storefront">
             <PhoenixLogo className="h-8 w-auto" />
           </div>
 
-          <div className="px-3">
+          <div className="px-3 shrink-0">
             <div className="h-px w-full bg-[#DBC2B0]/40"></div>
           </div>
 
-          {/* Navigation Links */}
-          <nav className="flex flex-col gap-1.5">
+          {/* Navigation Links - Fully Scrollable */}
+          <nav className="flex flex-col gap-1 overflow-y-auto flex-1 pr-1">
             <button
               onClick={() => setActiveNav('overview-analytics')}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
@@ -1187,6 +1191,69 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </button>
 
             <button
+              onClick={() => setActiveNav('chatbot-settings')}
+              className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
+                activeNav === 'chatbot-settings'
+                  ? 'bg-[#8D4B00] text-white shadow-sm'
+                  : 'text-[#554336] hover:bg-[#EFE6E4] hover:text-[#1E1B1A]'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-[20px]">smart_toy</span>
+                <span>Chatbot Settings</span>
+              </div>
+              <span
+                className={`text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded ${
+                  activeNav === 'chatbot-settings' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
+                }`}
+              >
+                AI Setup
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveNav('chatbot-manager')}
+              className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
+                activeNav === 'chatbot-manager'
+                  ? 'bg-[#8D4B00] text-white shadow-sm'
+                  : 'text-[#554336] hover:bg-[#EFE6E4] hover:text-[#1E1B1A]'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-[20px]">forum</span>
+                <span>Chatbot Transcripts</span>
+              </div>
+              <span
+                className={`text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded ${
+                  activeNav === 'chatbot-manager' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
+                }`}
+              >
+                Live
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveNav('ai-knowledge-base')}
+              className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
+                activeNav === 'ai-knowledge-base'
+                  ? 'bg-[#8D4B00] text-white shadow-sm'
+                  : 'text-[#554336] hover:bg-[#EFE6E4] hover:text-[#1E1B1A]'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-[20px]">psychology</span>
+                <span>AI Knowledge Base</span>
+              </div>
+              <span
+                className={`text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded ${
+                  activeNav === 'ai-knowledge-base' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
+                }`}
+              >
+                Active
+              </span>
+            </button>
+
+            <button
               onClick={() => setActiveNav('seo-audit')}
               className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
                 activeNav === 'seo-audit'
@@ -1223,48 +1290,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 }`}
               >
                 Safe
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveNav('ai-knowledge-base')}
-              className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
-                activeNav === 'ai-knowledge-base'
-                  ? 'bg-[#8D4B00] text-white shadow-sm'
-                  : 'text-[#554336] hover:bg-[#EFE6E4] hover:text-[#1E1B1A]'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-[20px]">psychology</span>
-                <span>AI Knowledge File</span>
-              </div>
-              <span
-                className={`text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded ${
-                  activeNav === 'ai-knowledge-base' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
-                }`}
-              >
-                Live
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveNav('chatbot-manager')}
-              className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
-                activeNav === 'chatbot-manager'
-                  ? 'bg-[#8D4B00] text-white shadow-sm'
-                  : 'text-[#554336] hover:bg-[#EFE6E4] hover:text-[#1E1B1A]'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-[20px]">smart_toy</span>
-                <span>Chatbot &amp; Transcripts</span>
-              </div>
-              <span
-                className={`text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded ${
-                  activeNav === 'chatbot-manager' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
-                }`}
-              >
-                AI
               </span>
             </button>
 
@@ -1489,6 +1514,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     ? 'System Backup & Disaster Recovery'
                     : activeNav === 'ai-knowledge-base'
                     ? 'AI Concierge Tour Knowledge Base'
+                    : activeNav === 'chatbot-settings'
+                    ? 'AI Chatbot Settings & Persona Directives'
                     : activeNav === 'chatbot-manager'
                     ? 'AI Chatbot & Live Transcripts'
                     : 'System & DTCM Settings'}
@@ -1513,6 +1540,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   ? 'System Backup & Disaster Recovery Vault'
                   : activeNav === 'ai-knowledge-base'
                   ? 'AI Knowledge Base File & Calculation Engine'
+                  : activeNav === 'chatbot-settings'
+                  ? 'Chatbot Settings, Welcome Message & Instructions'
                   : activeNav === 'chatbot-manager'
                   ? 'Chatbot Management & Visitor Conversations'
                   : 'Company Profile & Compliance Settings'}
@@ -2966,7 +2995,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           {/* VIEW TAB 4: CUSTOMER INQUIRIES & WHATSAPP */}
           {activeNav === 'customer-inquiries-whatsapp' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="space-y-6">
+              <div className="p-4 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-[#8D4B00] shrink-0">
+                    <span className="material-symbols-outlined text-[22px]">smart_toy</span>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-[#1E1B1A]">AI Concierge Chatbot &amp; Settings</h4>
+                    <p className="text-xs text-[#554336]">Looking to customize the website chatbot welcome message, system prompt, or view AI visitor transcripts?</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setActiveNav('chatbot-settings')}
+                    className="px-3.5 py-1.5 rounded-lg bg-[#8D4B00] hover:bg-[#723B00] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[15px]">tune</span>
+                    <span>Chatbot Settings</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveNav('chatbot-manager')}
+                    className="px-3 py-1.5 rounded-lg bg-white border border-[#E9E1DF] hover:bg-[#F5ECEA] text-[#1E1B1A] text-xs font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[15px]">forum</span>
+                    <span>AI Transcripts</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-1 bg-white p-5 rounded-xl border border-[#E9E1DF] shadow-xs flex flex-col gap-3">
                 <h3 className="font-serif font-bold text-base text-[#1E1B1A]">Recent Live Chats (UltraMsg Bot)</h3>
                 <div className="space-y-2">
@@ -3021,6 +3081,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </div>
             </div>
+          </div>
           )}
 
           {/* VIEW TAB 5: OVERVIEW & ANALYTICS */}
@@ -3071,8 +3132,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* VIEW TAB: AI CONCIERGE KNOWLEDGE BASE */}
           {activeNav === 'ai-knowledge-base' && <KnowledgeBaseTab />}
 
-          {/* VIEW TAB: CHATBOT SETTINGS & CONVERSATION TRANSCRIPTS */}
-          {activeNav === 'chatbot-manager' && <ChatbotManagerTab />}
+          {/* VIEW TAB: CHATBOT SETTINGS */}
+          {activeNav === 'chatbot-settings' && <ChatbotManagerTab defaultSubTab="settings" />}
+
+          {/* VIEW TAB: CHATBOT CONVERSATIONS & TRANSCRIPTS */}
+          {activeNav === 'chatbot-manager' && <ChatbotManagerTab defaultSubTab="conversations" />}
 
           {/* VIEW TAB 6: SETTINGS */}
           {activeNav === 'settings' && (
@@ -3198,6 +3262,43 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <span className="text-[10px] font-bold text-[#8D4B00] uppercase block">Resend &amp; PDF Delivery</span>
                       <p className="text-[11px] text-[#1E1B1A] font-medium">Guests and marshals can trigger instant resends anytime.</p>
                     </div>
+                  </div>
+                </div>
+
+                {/* AI Chatbot & Concierge Settings Gateway */}
+                <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-amber-50 to-[#FBF2F0] border border-amber-300/80 shadow-2xs space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-200/80 pb-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-[#8D4B00]">
+                        <span className="material-symbols-outlined text-[22px]">smart_toy</span>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-[#1E1B1A]">AI Chatbot &amp; Concierge Settings</h4>
+                        <p className="text-xs text-[#554336]">Manage welcome greeting, tone, response directives, and sales rules.</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveNav('chatbot-settings')}
+                      className="px-3.5 py-2 rounded-lg bg-[#8D4B00] hover:bg-[#723B00] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 shrink-0 cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">tune</span>
+                      <span>Configure Chatbot Settings</span>
+                    </button>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between text-xs text-[#554336] gap-2">
+                    <span className="flex items-center gap-1.5 font-medium text-emerald-800">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      AI Concierge Active &bull; Stored in Database
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveNav('chatbot-manager')}
+                      className="text-[#8D4B00] hover:text-[#B15F00] font-bold flex items-center gap-1 cursor-pointer text-[11px]"
+                    >
+                      <span>View Live Transcripts &rarr;</span>
+                    </button>
                   </div>
                 </div>
 
