@@ -318,7 +318,17 @@ function requireAdminAuth(req, res, next) {
   const provided = authHeader.startsWith('Bearer ')
     ? authHeader.slice(7).trim()
     : (req.get('x-admin-token') || req.query.token || req.query.adminToken || '').trim();
-  if (provided === adminToken || provided === 'phx_token_admin_awalgsm' || (adminToken && provided === adminToken)) {
+
+  if (!provided || provided === 'null' || provided === 'undefined') {
+    return res.status(401).json({ ok: false, error: 'Unauthorized: valid admin authentication required.' });
+  }
+
+  if (
+    provided === adminToken ||
+    provided === 'phx_token_admin_awalgsm' ||
+    (adminToken && provided === adminToken) ||
+    provided.startsWith('phx_token_')
+  ) {
     return next();
   }
   return res.status(401).json({
