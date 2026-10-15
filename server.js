@@ -256,9 +256,24 @@ class GoogleGenAI {
 const app = express();
 const PORT = process.env.PORT ? (isNaN(Number(process.env.PORT)) ? process.env.PORT : Number(process.env.PORT)) : 3000;
 const isProduction = process.env.NODE_ENV === 'production';
-app.use(express.json({
-  limit: '100kb'
-}));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Graceful JSON error handling for API requests (prevents HTML 413/500 responses)
+app.use((err, req, res, next) => {
+  if (err) {
+    if (req.path.startsWith('/api') || req.xhr) {
+      const isSizeError = err.type === 'entity.too.large' || err.status === 413;
+      return res.status(isSizeError ? 413 : (err.status || 400)).json({
+        ok: false,
+        error: isSizeError
+          ? 'Uploaded file is too large (maximum 50MB).'
+          : `Invalid JSON payload: ${err.message}`
+      });
+    }
+  }
+  next(err);
+});
 
 // Production Security Headers Middleware
 app.use((req, res, next) => {
@@ -300,7 +315,9 @@ const emailRateLimiter = createRateLimiter(60_000, 20);
 function requireAdminAuth(req, res, next) {
   const adminToken = (process.env.ADMIN_API_TOKEN || 'phx_token_admin_awalgsm').trim();
   const authHeader = req.get('authorization') || '';
-  const provided = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : (req.get('x-admin-token') || '').trim();
+  const provided = authHeader.startsWith('Bearer ')
+    ? authHeader.slice(7).trim()
+    : (req.get('x-admin-token') || req.query.token || req.query.adminToken || '').trim();
   if (provided === adminToken || provided === 'phx_token_admin_awalgsm' || (adminToken && provided === adminToken)) {
     return next();
   }

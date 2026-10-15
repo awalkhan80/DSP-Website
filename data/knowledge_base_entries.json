@@ -1,5 +1,26 @@
 [
   {
+    "id": "kb_1792039719778_xk74",
+    "title": "Test JSON Entry",
+    "category": "faq",
+    "content": "This is a test knowledge base entry uploaded via JSON format.",
+    "tags": [
+      "test",
+      "upload"
+    ],
+    "isActive": true,
+    "updatedAt": "2026-10-15T04:48:39.778Z"
+  },
+  {
+    "id": "kb_1792039342937_8w7w",
+    "title": "Test",
+    "category": "tour",
+    "content": "Test content",
+    "tags": [],
+    "isActive": true,
+    "updatedAt": "2026-10-15T04:42:22.938Z"
+  },
+  {
     "id": "kb_1792018824264_i87g",
     "title": "Secret Moonlight Bedouin Oasis Experience",
     "category": "tour",

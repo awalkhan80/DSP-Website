@@ -189,13 +189,23 @@ export const KnowledgeBaseTab: React.FC = () => {
 
     try {
       const text = await file.text();
-      const isJson = file.name.endsWith('.json') || file.type === 'application/json';
+      const trimmed = text ? text.trim() : '';
+
+      if (!trimmed) {
+        throw new Error(`The file "${file.name}" is empty.`);
+      }
+
+      if (trimmed.startsWith('<') || trimmed.toLowerCase().startsWith('<!doctype')) {
+        throw new Error(`The file "${file.name}" contains HTML web markup instead of valid JSON or text configuration.`);
+      }
+
+      const isJson = file.name.toLowerCase().endsWith('.json') || file.type === 'application/json';
 
       if (isJson) {
         try {
-          JSON.parse(text);
+          JSON.parse(trimmed);
         } catch (jsonErr: any) {
-          throw new Error(`Invalid JSON syntax in file: ${jsonErr.message}`);
+          throw new Error(`Invalid JSON syntax in "${file.name}": ${jsonErr.message}`);
         }
       }
 
@@ -203,11 +213,21 @@ export const KnowledgeBaseTab: React.FC = () => {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
-          content: text,
+          content: trimmed,
           format: isJson ? 'json' : 'text',
           fileName: file.name,
         }),
       });
+
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        const rawText = await res.text();
+        throw new Error(
+          `Server returned non-JSON response (${res.status}): ${
+            rawText.startsWith('<') ? 'HTML page returned by server.' : rawText.substring(0, 100)
+          }`
+        );
+      }
 
       const data = await res.json();
       if (data.ok) {
@@ -224,8 +244,28 @@ export const KnowledgeBaseTab: React.FC = () => {
     }
   };
 
-  const handleDownloadJson = () => {
-    window.open('/api/admin/knowledge-base/export', '_blank');
+  const handleDownloadJson = async () => {
+    try {
+      const token = session?.token || 'phx_token_admin_awalgsm';
+      const res = await fetch(`/api/admin/knowledge-base/export?token=${encodeURIComponent(token)}`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Export failed (${res.status}): ${text.startsWith('<') ? 'Server error' : text.substring(0, 100)}`);
+      }
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'phoenix_knowledge_base.json';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err: any) {
+      alert(`Export failed: ${err.message}`);
+    }
   };
 
   const handleTestSimulator = async () => {

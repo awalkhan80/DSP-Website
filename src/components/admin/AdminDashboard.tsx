@@ -504,8 +504,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Parse and validate uploaded backup JSON file
   const processBackupFile = (file: File) => {
-    if (!file.name.endsWith('.json') && file.type !== 'application/json') {
-      showToast('Please upload a valid JSON backup file.');
+    if (!file.name.toLowerCase().endsWith('.json') && file.type !== 'application/json') {
+      showToast('Please upload a valid JSON backup file (.json).');
       return;
     }
 
@@ -513,10 +513,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     reader.onload = (event) => {
       try {
         const text = event.target?.result as string;
-        const parsed = JSON.parse(text);
+        const trimmed = text ? text.trim() : '';
+
+        if (!trimmed) {
+          throw new Error('The selected backup file is empty.');
+        }
+
+        if (trimmed.startsWith('<') || trimmed.toLowerCase().startsWith('<!doctype')) {
+          throw new Error('The file contains HTML web markup instead of valid JSON backup data.');
+        }
+
+        let parsed: any;
+        try {
+          parsed = JSON.parse(trimmed);
+        } catch (jsonErr: any) {
+          throw new Error(`Syntax error in JSON format: ${jsonErr.message}`);
+        }
 
         if (!parsed || typeof parsed !== 'object') {
-          throw new Error('Root must be an object');
+          throw new Error('Root JSON structure must be an object.');
         }
 
         if (!parsed.cmsConfig && !parsed.experiences) {
