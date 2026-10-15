@@ -94,6 +94,8 @@ export const getStoredAdminSession = (): AdminSession | null => {
   return null;
 };
 
+export const getStoredSession = getStoredAdminSession;
+
 export const saveAdminSession = (session: AdminSession): void => {
   try {
     sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));

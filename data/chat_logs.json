@@ -1,0 +1,398 @@
+[
+  {
+    "id": "chat_1792018886137_ra5fu",
+    "timestamp": "2026-10-14T23:01:26.137Z",
+    "timeFormatted": "11:01:26 PM",
+    "userMessage": "What is the price for evening desert safari?",
+    "agentReply": "Marhaban! For 1 adult, our Evening Desert Safari comes to a total of AED 120 (AED 120 per adult).\n\nThis includes complimentary 4x4 doorstep pickup and drop-off across Dubai and Sharjah, 45-minute red dune bashing in Lahbab, sandboarding, camel rides, a 5-star live BBQ dinner buffet (with vegetarian and vegan options), and live cultural shows (Tanoura dance, Fire show, and Belly dance).\n\nIf you prefer your own exclusive vehicle, our Private VIP Land Cruiser 300 Series is AED 850 flat rate (up to 6 guests). All safari bookings feature 100% Pay on Arrival!",
+    "actionCard": {
+      "type": "price_quote",
+      "data": {
+        "tour": "Evening Desert Safari (1 Guest)",
+        "total_aed": 120,
+        "breakdown": "1 Adult(s) @ AED 120 per person = AED 120 total • Free Doorstep 4x4 Pickup • 100% Pay on Arrival",
+        "payment_policy": "pay_on_arrival"
+      }
+    },
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "Quote & Pricing",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018880613_nxdua",
+    "timestamp": "2026-10-14T23:01:20.613Z",
+    "timeFormatted": "11:01:20 PM",
+    "userMessage": "Price for 2 adults evening safari",
+    "agentReply": "Marhaban! For 2 adults, our Evening Desert Safari comes to a total of AED 240 (AED 120 per adult).\n\nThis includes complimentary 4x4 doorstep pickup and drop-off across Dubai and Sharjah, 45-minute red dune bashing in Lahbab, sandboarding, camel rides, a 5-star live BBQ dinner buffet (with vegetarian and vegan options), and live cultural shows (Tanoura dance, Fire show, and Belly dance).\n\nIf you prefer your own exclusive vehicle, our Private VIP Land Cruiser 300 Series is AED 850 flat rate (up to 6 guests). All safari bookings feature 100% Pay on Arrival!",
+    "actionCard": {
+      "type": "price_quote",
+      "data": {
+        "tour": "Evening Desert Safari (2 Guests)",
+        "total_aed": 240,
+        "breakdown": "2 Adult(s) @ AED 120 per person = AED 240 total • Free Doorstep 4x4 Pickup • 100% Pay on Arrival",
+        "payment_policy": "pay_on_arrival"
+      }
+    },
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "Quote & Pricing",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018880601_rygi3",
+    "timestamp": "2026-10-14T23:01:20.601Z",
+    "timeFormatted": "11:01:20 PM",
+    "userMessage": "Is desert safari safe for pregnant women?",
+    "agentReply": "We take special care to ensure you and your family feel completely safe and comfortable. Because high-dune bashing is bumpy with sudden crest drops, it is not recommended for expectant mothers or toddlers under 3 years old.\n\nHowever, you certainly do not have to miss out on the magic of the desert! We can arrange a gentle, scenic direct transfer to our Bedouin camp along smooth, flat desert roads without any rough off-roading. While others do the dune drive, your family can relax comfortably in our shaded Majlis, watch the golden sunset, take gentle camel rides, take photos with our hunting falcon, and enjoy the live BBQ dinner and evening shows in complete peace of mind.",
+    "actionCard": null,
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "Safety & Policy",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018880584_5egp1",
+    "timestamp": "2026-10-14T23:01:20.584Z",
+    "timeFormatted": "11:01:20 PM",
+    "userMessage": "Is Burj Khalifa available today?",
+    "agentReply": "Please share your tour, date, guest count and pickup area. Our team must confirm availability before a booking is confirmed. Contact us on WhatsApp at +971 56 150 5270.",
+    "actionCard": null,
+    "model": "Direct Operations Guard",
+    "source": "grounded-kb",
+    "category": "Availability Verification",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018880574_vxmv4",
+    "timestamp": "2026-10-14T23:01:20.574Z",
+    "timeFormatted": "11:01:20 PM",
+    "userMessage": "Check availability for Evening Desert Safari for tomorrow",
+    "agentReply": "Please share your tour, date, guest count and pickup area. Our team must confirm availability before a booking is confirmed. Contact us on WhatsApp at +971 56 150 5270.",
+    "actionCard": null,
+    "model": "Direct Operations Guard",
+    "source": "grounded-kb",
+    "category": "Availability Verification",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018880522_hrk0b",
+    "timestamp": "2026-10-14T23:01:20.522Z",
+    "timeFormatted": "11:01:20 PM",
+    "userMessage": "Hello",
+    "agentReply": "Marhaban! 🐪 Welcome to The Phoenix Desert Safari Dubai! How may I assist your Dubai vacation today?\n\n• Evening Desert Safari with 5-star BBQ (AED 120 / adult)\n• Private VIP Land Cruiser 300 Series (AED 850 flat rate)\n• Can-Am Maverick X3 1000cc Turbo Buggy & Quad Rentals\n• Sunrise Morning Safari & City Tours\n\nAll safari bookings feature 100% Pay on Arrival with complimentary 4x4 doorstep pickup across Dubai!",
+    "actionCard": null,
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "Knowledge Base Grounded Engine",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018880491_pfr4c",
+    "timestamp": "2026-10-14T23:01:20.491Z",
+    "timeFormatted": "11:01:20 PM",
+    "userMessage": "Hello",
+    "agentReply": "Marhaban! 🐪 Welcome to The Phoenix Desert Safari Dubai! How may I assist your Dubai vacation today?\n\n• Evening Desert Safari with 5-star BBQ (AED 120 / adult)\n• Private VIP Land Cruiser 300 Series (AED 850 flat rate)\n• Can-Am Maverick X3 1000cc Turbo Buggy & Quad Rentals\n• Sunrise Morning Safari & City Tours\n\nAll safari bookings feature 100% Pay on Arrival with complimentary 4x4 doorstep pickup across Dubai!",
+    "actionCard": null,
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "Knowledge Base Grounded Engine",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018824271_d2p5w",
+    "timestamp": "2026-10-14T23:00:24.271Z",
+    "timeFormatted": "11:00:24 PM",
+    "userMessage": "Tell me about the Secret Moonlight Bedouin Oasis experience",
+    "agentReply": "The Secret Moonlight Bedouin Oasis is an ultra-exclusive night retreat under the stars priced at AED 1,450 per couple with stargazing telescope and oud music.",
+    "actionCard": null,
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "tour",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018824258_no7ej",
+    "timestamp": "2026-10-14T23:00:24.258Z",
+    "timeFormatted": "11:00:24 PM",
+    "userMessage": "Can I book a submarine to Mars?",
+    "agentReply": "Top-tier Can-Am Maverick X3 Turbo off-road buggies in open red dunes:\n• Can-Am Maverick X3 2-Seater (1000cc Turbo): AED 1,000 for 30 minutes | AED 1,500 for 1 hour\n• Can-Am Maverick X3 Max 4-Seater: AED 1,350 for 30 minutes | AED 1,900 for 1 hour\n• Polaris RZR 1000cc 1-Seater: AED 600 for 30 minutes | AED 900 for 1 hour\nAll rentals include FIA roll-cage safety, fitted helmets, dust goggles, backup support team, and leader marshal guide escort. No driving license required! Drivers must be 16+. 100% Pay on Arrival.",
+    "actionCard": null,
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "tour",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018824218_dnvbm",
+    "timestamp": "2026-10-14T23:00:24.218Z",
+    "timeFormatted": "11:00:24 PM",
+    "userMessage": "What is the price of Evening Desert Safari for 2 adults?",
+    "agentReply": "Marhaban! For 2 adults, our Evening Desert Safari comes to a total of AED 240 (AED 120 per adult).\n\nThis includes complimentary 4x4 doorstep pickup and drop-off across Dubai and Sharjah, 45-minute red dune bashing in Lahbab, sandboarding, camel rides, a 5-star live BBQ dinner buffet (with vegetarian and vegan options), and live cultural shows (Tanoura dance, Fire show, and Belly dance).\n\nIf you prefer your own exclusive vehicle, our Private VIP Land Cruiser 300 Series is AED 850 flat rate (up to 6 guests). All safari bookings feature 100% Pay on Arrival!",
+    "actionCard": {
+      "type": "price_quote",
+      "data": {
+        "tour": "Evening Desert Safari (2 Guests)",
+        "total_aed": 240,
+        "breakdown": "2 Adult(s) @ AED 120 per person = AED 240 total • Free Doorstep 4x4 Pickup • 100% Pay on Arrival",
+        "payment_policy": "pay_on_arrival"
+      }
+    },
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "Quote & Pricing",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018796130_mpfu1",
+    "timestamp": "2026-10-14T22:59:56.130Z",
+    "timeFormatted": "10:59:56 PM",
+    "userMessage": "Price for 2 adults evening safari",
+    "agentReply": "Marhaban! For 2 adults, our Evening Desert Safari comes to a total of AED 240 (AED 120 per adult).\n\nThis includes complimentary 4x4 doorstep pickup and drop-off across Dubai and Sharjah, 45-minute red dune bashing in Lahbab, sandboarding, camel rides, a 5-star live BBQ dinner buffet (with vegetarian and vegan options), and live cultural shows (Tanoura dance, Fire show, and Belly dance).\n\nIf you prefer your own exclusive vehicle, our Private VIP Land Cruiser 300 Series is AED 850 flat rate (up to 6 guests). All safari bookings feature 100% Pay on Arrival!",
+    "actionCard": {
+      "type": "price_quote",
+      "data": {
+        "tour": "Evening Desert Safari (2 Guests)",
+        "total_aed": 240,
+        "breakdown": "2 Adult(s) @ AED 120 per person = AED 240 total • Free Doorstep 4x4 Pickup • 100% Pay on Arrival",
+        "payment_policy": "pay_on_arrival"
+      }
+    },
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "Quote & Pricing",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018796118_7k4fh",
+    "timestamp": "2026-10-14T22:59:56.118Z",
+    "timeFormatted": "10:59:56 PM",
+    "userMessage": "Is desert safari safe for pregnant women?",
+    "agentReply": "We take special care to ensure you and your family feel completely safe and comfortable. Because high-dune bashing is bumpy with sudden crest drops, it is not recommended for expectant mothers or toddlers under 3 years old.\n\nHowever, you certainly do not have to miss out on the magic of the desert! We can arrange a gentle, scenic direct transfer to our Bedouin camp along smooth, flat desert roads without any rough off-roading. While others do the dune drive, your family can relax comfortably in our shaded Majlis, watch the golden sunset, take gentle camel rides, take photos with our hunting falcon, and enjoy the live BBQ dinner and evening shows in complete peace of mind.",
+    "actionCard": null,
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "Safety & Policy",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018796113_oq0q1",
+    "timestamp": "2026-10-14T22:59:56.113Z",
+    "timeFormatted": "10:59:56 PM",
+    "userMessage": "Is Burj Khalifa available today?",
+    "agentReply": "Please share your tour, date, guest count and pickup area. Our team must confirm availability before a booking is confirmed. Contact us on WhatsApp at +971 56 150 5270.",
+    "actionCard": null,
+    "model": "Direct Operations Guard",
+    "source": "grounded-kb",
+    "category": "Availability Verification",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018796107_udt1p",
+    "timestamp": "2026-10-14T22:59:56.107Z",
+    "timeFormatted": "10:59:56 PM",
+    "userMessage": "Check availability for Evening Desert Safari for tomorrow",
+    "agentReply": "Please share your tour, date, guest count and pickup area. Our team must confirm availability before a booking is confirmed. Contact us on WhatsApp at +971 56 150 5270.",
+    "actionCard": null,
+    "model": "Direct Operations Guard",
+    "source": "grounded-kb",
+    "category": "Availability Verification",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018796052_hiwei",
+    "timestamp": "2026-10-14T22:59:56.052Z",
+    "timeFormatted": "10:59:56 PM",
+    "userMessage": "Hello",
+    "agentReply": "Marhaban! 🐪 Welcome to The Phoenix Desert Safari Dubai! How may I assist your Dubai vacation today?\n\n• Evening Desert Safari with 5-star BBQ (AED 120 / adult)\n• Private VIP Land Cruiser 300 Series (AED 850 flat rate)\n• Can-Am Maverick X3 1000cc Turbo Buggy & Quad Rentals\n• Sunrise Morning Safari & City Tours\n\nAll safari bookings feature 100% Pay on Arrival with complimentary 4x4 doorstep pickup across Dubai!",
+    "actionCard": null,
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "Knowledge Base Grounded Engine",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018796019_yqssc",
+    "timestamp": "2026-10-14T22:59:56.019Z",
+    "timeFormatted": "10:59:56 PM",
+    "userMessage": "Hello",
+    "agentReply": "Marhaban! 🐪 Welcome to The Phoenix Desert Safari Dubai! How may I assist your Dubai vacation today?\n\n• Evening Desert Safari with 5-star BBQ (AED 120 / adult)\n• Private VIP Land Cruiser 300 Series (AED 850 flat rate)\n• Can-Am Maverick X3 1000cc Turbo Buggy & Quad Rentals\n• Sunrise Morning Safari & City Tours\n\nAll safari bookings feature 100% Pay on Arrival with complimentary 4x4 doorstep pickup across Dubai!",
+    "actionCard": null,
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "Knowledge Base Grounded Engine",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018637110_stw5i",
+    "timestamp": "2026-10-14T22:57:17.110Z",
+    "timeFormatted": "10:57:17 PM",
+    "userMessage": "Price for 2 adults evening safari",
+    "agentReply": "Marhaban! For 2 adults, our Evening Desert Safari comes to a total of AED 240 (AED 120 per adult).\n\nThis includes complimentary 4x4 doorstep pickup and drop-off across Dubai and Sharjah, 45-minute red dune bashing in Lahbab, sandboarding, camel rides, a 5-star live BBQ dinner buffet (with vegetarian and vegan options), and live cultural shows (Tanoura dance, Fire show, and Belly dance).\n\nIf you prefer your own exclusive vehicle, our Private VIP Land Cruiser 300 Series is AED 850 flat rate (up to 6 guests). All safari bookings feature 100% Pay on Arrival!",
+    "actionCard": {
+      "type": "price_quote",
+      "data": {
+        "tour": "Evening Desert Safari (2 Guests)",
+        "total_aed": 240,
+        "breakdown": "2 Adult(s) @ AED 120 per person = AED 240 total • Free Doorstep 4x4 Pickup • 100% Pay on Arrival",
+        "payment_policy": "pay_on_arrival"
+      }
+    },
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "Quote & Pricing",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018637085_47e0r",
+    "timestamp": "2026-10-14T22:57:17.085Z",
+    "timeFormatted": "10:57:17 PM",
+    "userMessage": "Is desert safari safe for pregnant women?",
+    "agentReply": "We take special care to ensure you and your family feel completely safe and comfortable. Because high-dune bashing is bumpy with sudden crest drops, it is not recommended for expectant mothers or toddlers under 3 years old.\n\nHowever, you certainly do not have to miss out on the magic of the desert! We can arrange a gentle, scenic direct transfer to our Bedouin camp along smooth, flat desert roads without any rough off-roading. While others do the dune drive, your family can relax comfortably in our shaded Majlis, watch the golden sunset, take gentle camel rides, take photos with our hunting falcon, and enjoy the live BBQ dinner and evening shows in complete peace of mind.",
+    "actionCard": null,
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "Safety & Policy",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018637066_lem1s",
+    "timestamp": "2026-10-14T22:57:17.066Z",
+    "timeFormatted": "10:57:17 PM",
+    "userMessage": "Is Burj Khalifa available today?",
+    "agentReply": "Please share your tour, date, guest count and pickup area. Our team must confirm availability before a booking is confirmed. Contact us on WhatsApp at +971 56 150 5270.",
+    "actionCard": null,
+    "model": "Direct Operations Guard",
+    "source": "grounded-kb",
+    "category": "Availability Verification",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018637052_33xhj",
+    "timestamp": "2026-10-14T22:57:17.052Z",
+    "timeFormatted": "10:57:17 PM",
+    "userMessage": "Check availability for Evening Desert Safari for tomorrow",
+    "agentReply": "Please share your tour, date, guest count and pickup area. Our team must confirm availability before a booking is confirmed. Contact us on WhatsApp at +971 56 150 5270.",
+    "actionCard": null,
+    "model": "Direct Operations Guard",
+    "source": "grounded-kb",
+    "category": "Availability Verification",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018636958_m7gkx",
+    "timestamp": "2026-10-14T22:57:16.958Z",
+    "timeFormatted": "10:57:16 PM",
+    "userMessage": "Hello",
+    "agentReply": "Marhaban! 🐪 Welcome to The Phoenix Desert Safari Dubai! How may I assist your Dubai vacation today?\n\n• Evening Desert Safari with 5-star BBQ (AED 120 / adult)\n• Private VIP Land Cruiser 300 Series (AED 850 flat rate)\n• Can-Am Maverick X3 1000cc Turbo Buggy & Quad Rentals\n• Sunrise Morning Safari & City Tours\n\nAll safari bookings feature 100% Pay on Arrival with complimentary 4x4 doorstep pickup across Dubai!",
+    "actionCard": null,
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "Knowledge Base Grounded Engine",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018636917_t7prq",
+    "timestamp": "2026-10-14T22:57:16.917Z",
+    "timeFormatted": "10:57:16 PM",
+    "userMessage": "Hello",
+    "agentReply": "Marhaban! 🐪 Welcome to The Phoenix Desert Safari Dubai! How may I assist your Dubai vacation today?\n\n• Evening Desert Safari with 5-star BBQ (AED 120 / adult)\n• Private VIP Land Cruiser 300 Series (AED 850 flat rate)\n• Can-Am Maverick X3 1000cc Turbo Buggy & Quad Rentals\n• Sunrise Morning Safari & City Tours\n\nAll safari bookings feature 100% Pay on Arrival with complimentary 4x4 doorstep pickup across Dubai!",
+    "actionCard": null,
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "Knowledge Base Grounded Engine",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018387103_tbacr",
+    "timestamp": "2026-10-14T22:53:07.103Z",
+    "timeFormatted": "10:53:07 PM",
+    "userMessage": "Price for 2 adults evening safari",
+    "agentReply": "Marhaban! For 2 adults, our Evening Desert Safari comes to a total of AED 240 (AED 120 per adult).\n\nThis includes complimentary 4x4 doorstep pickup and drop-off across Dubai and Sharjah, 45-minute red dune bashing in Lahbab, sandboarding, camel rides, a 5-star live BBQ dinner buffet (with vegetarian and vegan options), and live cultural shows (Tanoura dance, Fire show, and Belly dance).\n\nIf you prefer your own exclusive vehicle, our Private VIP Land Cruiser 300 Series is AED 850 flat rate (up to 6 guests). All safari bookings feature 100% Pay on Arrival!",
+    "actionCard": {
+      "type": "price_quote",
+      "data": {
+        "tour": "Evening Desert Safari (2 Guests)",
+        "total_aed": 240,
+        "breakdown": "2 Adult(s) @ AED 120 per person = AED 240 total • Free Doorstep 4x4 Pickup • 100% Pay on Arrival",
+        "payment_policy": "pay_on_arrival"
+      }
+    },
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "Quote & Pricing",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018387095_8tnh3",
+    "timestamp": "2026-10-14T22:53:07.095Z",
+    "timeFormatted": "10:53:07 PM",
+    "userMessage": "Is desert safari safe for pregnant women?",
+    "agentReply": "We take special care to ensure you and your family feel completely safe and comfortable. Because high-dune bashing is bumpy with sudden crest drops, it is not recommended for expectant mothers or toddlers under 3 years old.\n\nHowever, you certainly do not have to miss out on the magic of the desert! We can arrange a gentle, scenic direct transfer to our Bedouin camp along smooth, flat desert roads without any rough off-roading. While others do the dune drive, your family can relax comfortably in our shaded Majlis, watch the golden sunset, take gentle camel rides, take photos with our hunting falcon, and enjoy the live BBQ dinner and evening shows in complete peace of mind.",
+    "actionCard": null,
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "Safety & Policy",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018387088_kxjjg",
+    "timestamp": "2026-10-14T22:53:07.088Z",
+    "timeFormatted": "10:53:07 PM",
+    "userMessage": "Is Burj Khalifa available today?",
+    "agentReply": "Please share your tour, date, guest count and pickup area. Our team must confirm availability before a booking is confirmed. Contact us on WhatsApp at +971 56 150 5270.",
+    "actionCard": null,
+    "model": "Direct Operations Guard",
+    "source": "grounded-kb",
+    "category": "Availability Verification",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018387083_qiotf",
+    "timestamp": "2026-10-14T22:53:07.083Z",
+    "timeFormatted": "10:53:07 PM",
+    "userMessage": "Check availability for Evening Desert Safari for tomorrow",
+    "agentReply": "Please share your tour, date, guest count and pickup area. Our team must confirm availability before a booking is confirmed. Contact us on WhatsApp at +971 56 150 5270.",
+    "actionCard": null,
+    "model": "Direct Operations Guard",
+    "source": "grounded-kb",
+    "category": "Availability Verification",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018387038_okto3",
+    "timestamp": "2026-10-14T22:53:07.038Z",
+    "timeFormatted": "10:53:07 PM",
+    "userMessage": "Hello",
+    "agentReply": "Marhaban! 🐪 Welcome to The Phoenix Desert Safari Dubai! How may I assist your Dubai vacation today?\n\n• Evening Desert Safari with 5-star BBQ (AED 120 / adult)\n• Private VIP Land Cruiser 300 Series (AED 850 flat rate)\n• Can-Am Maverick X3 1000cc Turbo Buggy & Quad Rentals\n• Sunrise Morning Safari & City Tours\n\nAll safari bookings feature 100% Pay on Arrival with complimentary 4x4 doorstep pickup across Dubai!",
+    "actionCard": null,
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "Knowledge Base Grounded Engine",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792018387003_k9nla",
+    "timestamp": "2026-10-14T22:53:07.003Z",
+    "timeFormatted": "10:53:07 PM",
+    "userMessage": "Hello",
+    "agentReply": "Marhaban! 🐪 Welcome to The Phoenix Desert Safari Dubai! How may I assist your Dubai vacation today?\n\n• Evening Desert Safari with 5-star BBQ (AED 120 / adult)\n• Private VIP Land Cruiser 300 Series (AED 850 flat rate)\n• Can-Am Maverick X3 1000cc Turbo Buggy & Quad Rentals\n• Sunrise Morning Safari & City Tours\n\nAll safari bookings feature 100% Pay on Arrival with complimentary 4x4 doorstep pickup across Dubai!",
+    "actionCard": null,
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "Knowledge Base Grounded Engine",
+    "ip": "::ffff:127.0.0.1"
+  },
+  {
+    "id": "chat_1792017755155_ybw50",
+    "timestamp": "2026-10-14T22:42:35.155Z",
+    "timeFormatted": "10:42:35 PM",
+    "userMessage": "What is your name and what do you do?",
+    "agentReply": "Marhaban! I am your Phoenix AI Desert Concierge. We offer official DTCM-licensed desert safaris in Lahbab Red Dunes, 1000cc Can-Am Maverick turbo buggies, Yamaha quad bikes, and VIP private convoys.\n\nAll our desert safaris include complimentary doorstep 4x4 hotel pickup and 100% Pay on Arrival (Cash or Card). Tell me your preferred tour, date, or party size and I will prepare a personalized quote and itinerary!",
+    "actionCard": null,
+    "model": "Knowledge Base Grounded Engine",
+    "source": "grounded-kb",
+    "category": "General Concierge Inquiry",
+    "ip": "::ffff:127.0.0.1"
+  }
+]

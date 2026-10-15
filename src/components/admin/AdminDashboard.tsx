@@ -7,6 +7,7 @@ import { PhoenixLogo } from '../icons/PhoenixLogo';
 import { B2BIntegrationManager } from './B2BIntegrationManager';
 import { KnowledgeBaseTab } from './KnowledgeBaseTab';
 import { ToursAvailabilityTab } from './ToursAvailabilityTab';
+import { ChatbotManagerTab } from './ChatbotManagerTab';
 
 export interface CMSConfig {
   heroTitle: string;
@@ -97,7 +98,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   // Navigation tabs
   const [activeNav, setActiveNav] = useState<
-    'overview-analytics' | 'homepage-cms' | 'tour-catalog-pricing' | 'tours-availability' | 'b2b-integration' | 'offroad-pricing' | 'bookings-convoys' | 'customer-inquiries-whatsapp' | 'seo-audit' | 'backup-restore' | 'ai-knowledge-base' | 'settings'
+    'overview-analytics' | 'homepage-cms' | 'tour-catalog-pricing' | 'tours-availability' | 'b2b-integration' | 'offroad-pricing' | 'bookings-convoys' | 'customer-inquiries-whatsapp' | 'seo-audit' | 'backup-restore' | 'ai-knowledge-base' | 'chatbot-manager' | 'settings'
   >('tour-catalog-pricing');
 
   // Off-Road Pricing local state
@@ -1247,6 +1248,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </button>
 
             <button
+              onClick={() => setActiveNav('chatbot-manager')}
+              className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
+                activeNav === 'chatbot-manager'
+                  ? 'bg-[#8D4B00] text-white shadow-sm'
+                  : 'text-[#554336] hover:bg-[#EFE6E4] hover:text-[#1E1B1A]'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-[20px]">smart_toy</span>
+                <span>Chatbot &amp; Transcripts</span>
+              </div>
+              <span
+                className={`text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded ${
+                  activeNav === 'chatbot-manager' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
+                }`}
+              >
+                AI
+              </span>
+            </button>
+
+            <button
               onClick={() => setActiveNav('settings')}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-all text-left cursor-pointer ${
                 activeNav === 'settings'
@@ -1467,6 +1489,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     ? 'System Backup & Disaster Recovery'
                     : activeNav === 'ai-knowledge-base'
                     ? 'AI Concierge Tour Knowledge Base'
+                    : activeNav === 'chatbot-manager'
+                    ? 'AI Chatbot & Live Transcripts'
                     : 'System & DTCM Settings'}
                 </span>
               </div>
@@ -1489,6 +1513,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   ? 'System Backup & Disaster Recovery Vault'
                   : activeNav === 'ai-knowledge-base'
                   ? 'AI Knowledge Base File & Calculation Engine'
+                  : activeNav === 'chatbot-manager'
+                  ? 'Chatbot Management & Visitor Conversations'
                   : 'Company Profile & Compliance Settings'}
               </h1>
             </div>
@@ -3044,6 +3070,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           {/* VIEW TAB: AI CONCIERGE KNOWLEDGE BASE */}
           {activeNav === 'ai-knowledge-base' && <KnowledgeBaseTab />}
+
+          {/* VIEW TAB: CHATBOT SETTINGS & CONVERSATION TRANSCRIPTS */}
+          {activeNav === 'chatbot-manager' && <ChatbotManagerTab />}
 
           {/* VIEW TAB 6: SETTINGS */}
           {activeNav === 'settings' && (

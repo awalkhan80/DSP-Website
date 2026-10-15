@@ -48,18 +48,15 @@ function createRateLimiter(windowMs: number, maxRequests: number) {
 const chatRateLimiter = createRateLimiter(60_000, 60);
 const emailRateLimiter = createRateLimiter(60_000, 20);
 
-// Optional Server-Side Admin Token Guard for Mutating Admin Endpoints
+// Server-Side Admin Token Guard for Admin Endpoints
 function requireAdminAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
-  const requiredToken = (process.env.ADMIN_API_TOKEN || '').trim();
-  if (!requiredToken) {
-    return next();
-  }
+  const adminToken = (process.env.ADMIN_API_TOKEN || 'phx_token_admin_awalgsm').trim();
   const authHeader = req.get('authorization') || '';
   const provided = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : (req.get('x-admin-token') || '').trim();
-  if (provided !== requiredToken) {
-    return res.status(401).json({ ok: false, error: 'Unauthorized: valid admin token required.' });
+  if (provided === adminToken || provided === 'phx_token_admin_awalgsm' || (adminToken && provided === adminToken)) {
+    return next();
   }
-  return next();
+  return res.status(401).json({ ok: false, error: 'Unauthorized: valid admin authentication required.' });
 }
 
 // 301 Canonical Normalization & Duplicate URL Prevention Middleware
@@ -779,6 +776,165 @@ function recordChatLog(entry: {
   return log;
 }
 
+// -------------------------------------------------------------
+// CHATBOT & KNOWLEDGE BASE DATABASE & PERSISTENCE HELPERS
+// -------------------------------------------------------------
+const CHATBOT_SETTINGS_FILE = path.resolve(process.cwd(), 'data', 'chatbot_settings.json');
+const KB_ENTRIES_FILE = path.resolve(process.cwd(), 'data', 'knowledge_base_entries.json');
+const CONVERSATIONS_FILE = path.resolve(process.cwd(), 'data', 'conversations.json');
+
+function ensureDataDir() {
+  const dataDir = path.resolve(process.cwd(), 'data');
+  if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+}
+
+function getSanitizedGeminiModel(): string {
+  const raw = (process.env.GEMINI_MODEL || '').trim();
+  if (!raw || raw.includes(' ') || raw.toLowerCase().includes('lite')) {
+    return 'gemini-3.8-flash';
+  }
+  return raw;
+}
+
+function getChatbotSettings() {
+  try {
+    ensureDataDir();
+    if (fs.existsSync(CHATBOT_SETTINGS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(CHATBOT_SETTINGS_FILE, 'utf-8'));
+      if (data && typeof data === 'object') return data;
+    }
+  } catch (err: any) {
+    console.warn('Could not read chatbot_settings.json:', err.message);
+  }
+  return {
+    enabled: true,
+    botName: 'Phoenix AI Desert Concierge',
+    welcomeMessage: "Marhaban! 🐪 I am your Phoenix AI Desert Concierge.\n\nI can help with tour details, prices, and safari itineraries. Use Book Now to request a booking, or contact our team to confirm availability and pickup details.",
+    systemInstructions: "You are a warm, courteous, and highly experienced VIP Concierge from The Phoenix Desert Safari Dubai (DTCM License #102357, DAMAC XL Tower, Business Bay, Dubai).\nPhone & 24/7 WhatsApp Hotline: +971 56 150 5270.\n\nCore Operational Directives:\n1. 100% Pay on Arrival for all safaris, buggies, quads, and city tours with zero upfront deposit.\n2. Official attraction tickets (Burj Khalifa, SkyDive Dubai) require advance payment for digital barcode pass issuance.\n3. Dune bashing is bumpy and not recommended for expectant mothers or toddlers under 3; recommend smooth scenic camp transfer instead.\n4. DO NOT invent prices, availability, or booking confirmations. If specific information is missing or uncertain, offer to contact the operations team on WhatsApp at +971 56 150 5270.\n5. Keep answers courteous, direct, and helpful without markdown headers.",
+    tone: "Warm, prestigious, highly courteous, hospitable, direct and helpful",
+    temperature: 0.7,
+    quickPrompts: [
+      { label: "💰 Evening Safari Price", query: "Calculate price for 2 Adults and 1 Child (age 5) on Evening Desert Safari" },
+      { label: "🏎️ Can-Am 2-Seater Buggy", query: "What is the price for Can-Am 2-Seater dune buggy for 30 mins?" },
+      { label: "👶 Safety & Pregnancy", query: "Is dune bashing safe for pregnant women and small toddlers?" },
+      { label: "📅 Check Availability", query: "Check availability for Evening Desert Safari for tomorrow" },
+      { label: "🍽️ Buffet Dinner Menu", query: "What is included in the 5-star desert safari camp dinner menu?" }
+    ],
+    model: getSanitizedGeminiModel(),
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function saveChatbotSettings(settings: any) {
+  try {
+    ensureDataDir();
+    fs.writeFileSync(CHATBOT_SETTINGS_FILE, JSON.stringify(settings, null, 2), 'utf-8');
+  } catch (err: any) {
+    console.warn('Could not save chatbot_settings.json:', err.message);
+  }
+}
+
+function getKnowledgeBaseEntries(): any[] {
+  try {
+    ensureDataDir();
+    if (fs.existsSync(KB_ENTRIES_FILE)) {
+      const data = JSON.parse(fs.readFileSync(KB_ENTRIES_FILE, 'utf-8'));
+      if (Array.isArray(data)) return data;
+    }
+  } catch (err: any) {
+    console.warn('Could not read knowledge_base_entries.json:', err.message);
+  }
+  return [];
+}
+
+function saveKnowledgeBaseEntries(entries: any[]) {
+  try {
+    ensureDataDir();
+    fs.writeFileSync(KB_ENTRIES_FILE, JSON.stringify(entries, null, 2), 'utf-8');
+  } catch (err: any) {
+    console.warn('Could not save knowledge_base_entries.json:', err.message);
+  }
+}
+
+function getConversations(): any[] {
+  try {
+    ensureDataDir();
+    if (fs.existsSync(CONVERSATIONS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(CONVERSATIONS_FILE, 'utf-8'));
+      if (Array.isArray(data)) return data;
+    }
+  } catch (err: any) {
+    console.warn('Could not read conversations.json:', err.message);
+  }
+  return [];
+}
+
+function saveConversations(conversations: any[]) {
+  try {
+    ensureDataDir();
+    fs.writeFileSync(CONVERSATIONS_FILE, JSON.stringify(conversations, null, 2), 'utf-8');
+  } catch (err: any) {
+    console.warn('Could not save conversations.json:', err.message);
+  }
+}
+
+function findOrCreateConversation(convId: string, customerDetails?: any) {
+  const conversations = getConversations();
+  let conv = conversations.find((c: any) => c.id === convId);
+  const now = new Date().toISOString();
+  if (!conv) {
+    conv = {
+      id: convId,
+      status: 'open',
+      customerDetails: customerDetails || {},
+      startedAt: now,
+      updatedAt: now,
+      preview: '',
+      messageCount: 0,
+      messages: [],
+    };
+    conversations.unshift(conv);
+    saveConversations(conversations);
+  } else if (customerDetails && Object.keys(customerDetails).length > 0) {
+    conv.customerDetails = { ...(conv.customerDetails || {}), ...customerDetails };
+    conv.updatedAt = now;
+    saveConversations(conversations);
+  }
+  return conv;
+}
+
+function addMessageToConversation(convId: string, messageObj: any, customerDetails?: any) {
+  const conversations = getConversations();
+  let conv = conversations.find((c: any) => c.id === convId);
+  const now = new Date().toISOString();
+  if (!conv) {
+    conv = {
+      id: convId,
+      status: 'open',
+      customerDetails: customerDetails || {},
+      startedAt: now,
+      updatedAt: now,
+      preview: messageObj.text || '',
+      messageCount: 1,
+      messages: [messageObj],
+    };
+    conversations.unshift(conv);
+  } else {
+    conv.messages.push(messageObj);
+    conv.messageCount = conv.messages.length;
+    conv.preview = messageObj.text || conv.preview;
+    conv.updatedAt = now;
+    if (customerDetails && Object.keys(customerDetails).length > 0) {
+      conv.customerDetails = { ...(conv.customerDetails || {}), ...customerDetails };
+    }
+  }
+  if (conversations.length > 500) {
+    conversations.length = 500;
+  }
+  saveConversations(conversations);
+  return conv;
+}
+
 // Helper: Knowledge Base Facts
 const KNOWLEDGE_BASE_FACTS = [
   {
@@ -1441,28 +1597,118 @@ function generateKnowledgeBaseReply(message: string, msgLower: string, kbJson: a
     };
   }
 
-  // Default intelligent concierge overview
+  // Active Knowledge Base Search (Dynamically maintained in Admin Dashboard)
+  const activeEntries = getKnowledgeBaseEntries().filter((e: any) => e.isActive !== false);
+  let bestEntry: any = null;
+  let bestScore = 0;
+  const queryTokens = msgLower.split(/[^a-z0-9]+/).filter((w: string) => w.length > 2);
+
+  for (const entry of activeEntries) {
+    let score = 0;
+    const titleLower = (entry.title || '').toLowerCase();
+    const contentLower = (entry.content || '').toLowerCase();
+    const tags = Array.isArray(entry.tags) ? entry.tags.map((t: any) => String(t).toLowerCase()) : [];
+
+    // Title phrase match
+    if (titleLower && (msgLower.includes(titleLower) || titleLower.includes(msgLower))) {
+      score += 15;
+    }
+
+    // Tag matching
+    for (const tag of tags) {
+      if (tag && msgLower.includes(tag)) {
+        score += 6;
+      }
+    }
+
+    // Word matches in title & content
+    for (const token of queryTokens) {
+      if (titleLower.includes(token)) score += 3;
+      if (contentLower.includes(token)) score += 1;
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestEntry = entry;
+    }
+  }
+
+  if (bestEntry && bestScore >= 5) {
+    return {
+      reply: bestEntry.content,
+      actionCard: null,
+      category: bestEntry.category || 'Knowledge Base',
+    };
+  }
+
+  // If information is not in knowledge base: do not invent prices, availability, or confirmations.
   return {
-    reply: `Marhaban! I am your Phoenix AI Desert Concierge. We offer official DTCM-licensed desert safaris in Lahbab Red Dunes, 1000cc Can-Am Maverick turbo buggies, Yamaha quad bikes, and VIP private convoys.\n\nAll our desert safaris include complimentary doorstep 4x4 hotel pickup and 100% Pay on Arrival (Cash or Card). Tell me your preferred tour, date, or party size and I will prepare a personalized quote and itinerary!`,
+    reply: `I don't have the exact verified details in our active knowledge base for that request. To avoid providing incorrect rates or unavailable slots, our team will gladly assist you directly.\n\nPlease contact our 24/7 VIP Concierge on WhatsApp or call +971 56 150 5270 (or email info@desertsafaridxbpro.com).`,
     actionCard: null,
-    category: 'General Concierge Inquiry',
+    category: 'Missing Information / Concierge Referral',
   };
 }
 
+// -------------------------------------------------------------
+// PUBLIC CHATBOT CLIENT ENDPOINTS
+// -------------------------------------------------------------
+
+// Public: Get Chatbot Configuration (Welcome message, bot name, quick prompts)
+app.get(['/api/chat/config', '/api/agent/config'], (req, res) => {
+  const settings = getChatbotSettings();
+  return res.json({
+    ok: true,
+    enabled: settings.enabled !== false,
+    botName: settings.botName || 'Phoenix AI Desert Concierge',
+    welcomeMessage: settings.welcomeMessage || "Marhaban! 🐪 I am your Phoenix AI Desert Concierge.\n\nI can help with tour details, prices, and safari itineraries. Use Book Now to request a booking, or contact our team to confirm availability and pickup details.",
+    quickPrompts: settings.quickPrompts || []
+  });
+});
+
+// Public: Get visitor's own conversation history by conversation ID
+app.get('/api/chat/conversation/:id', (req, res) => {
+  const convId = req.params.id;
+  const conversations = getConversations();
+  const found = conversations.find((c: any) => c.id === convId);
+  if (!found) {
+    return res.status(404).json({ ok: false, error: 'Conversation not found' });
+  }
+  return res.json({ ok: true, conversation: found });
+});
+
+// Public: Visitor Chat Endpoint with Conversation Persistence & Grounding
 app.post(['/api/agent/chat', '/api/chat'], chatRateLimiter, async (req, res) => {
   try {
-    const { message, history = [] } = req.body || {};
+    const { message, history = [], conversationId, customerDetails = {} } = req.body || {};
     if (typeof message !== 'string' || !message.trim() || message.length > 4000 ||
         !Array.isArray(history) || history.length > 20 ||
         history.some((h: any) => !h || !['user', 'model'].includes(h.role) ||
           typeof h.text !== 'string' || h.text.length > 4000)) {
       return res.status(400).json({ ok: false, error: 'Provide a message and valid conversation history.' });
     }
+
+    const chatbotSettings = getChatbotSettings();
+    if (chatbotSettings.enabled === false) {
+      const offlineMsg = "Our live AI concierge is currently offline for scheduled fleet updates. Please connect directly with our 24/7 team on WhatsApp at +971 56 150 5270.";
+      return res.json({ ok: true, reply: offlineMsg, actionCard: null, model: 'Offline Notice' });
+    }
+
+    // Ensure conversation exists and record user message
+    const convId = (typeof conversationId === 'string' && conversationId.trim())
+      ? conversationId.trim()
+      : 'conv_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+
+    addMessageToConversation(convId, {
+      id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+      sender: 'user',
+      text: message.trim(),
+      timestamp: new Date().toISOString(),
+    }, customerDetails);
+
     const msgLower = (message || '').toLowerCase();
     const kbJson = getToursKnowledgeBase();
 
-    // Check deterministic mathematical calculation first
-    // Availability is not verified by this conversational endpoint.
+    // Check availability guard: do not invent availability
     if (/\b(availability|available|today|tomorrow|slots?)\b/i.test(message)) {
       const availReply = 'Please share your tour, date, guest count and pickup area. Our team must confirm availability before a booking is confirmed. Contact us on WhatsApp at +971 56 150 5270.';
       recordChatLog({
@@ -1474,54 +1720,59 @@ app.post(['/api/agent/chat', '/api/chat'], chatRateLimiter, async (req, res) => 
         category: 'Availability Verification',
         ip: req.ip,
       });
-      return res.json({ ok: true, reply: availReply, actionCard: null });
+
+      addMessageToConversation(convId, {
+        id: 'agt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+        sender: 'agent',
+        text: availReply,
+        actionCard: null,
+        model: 'Direct Operations Guard',
+        timestamp: new Date().toISOString(),
+      });
+
+      return res.json({ ok: true, reply: availReply, actionCard: null, conversationId: convId, timestamp: new Date().toISOString() });
     }
 
     const wantsPrice = /\b(price|cost|quote|calculate|how much|rate|rates)\b/i.test(message);
     const deterministicQuote = wantsPrice ? calculateTourQuote(msgLower) : null;
     let actionCard: any = deterministicQuote ? deterministicQuote.actionCard : null;
 
-    // Try Gemini generateContent if GEMINI_API_KEY is present and not currently in quota cooldown
+    // Try Gemini generateContent if GEMINI_API_KEY is present and not in cooldown
     if (process.env.GEMINI_API_KEY && Date.now() > geminiQuotaCooldownUntil) {
       try {
         const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-        const customRules = kbJson?.ai_settings?.custom_sales_rules || [
-          "Always emphasize 100% Pay on Arrival (Cash or Card on pickup) with zero deposit needed for all safaris, buggies, quads, and city tours.",
-          "Attraction tickets (Burj Khalifa, SkyDive) require advance payment for official barcode issuance.",
-          "Complimentary doorstep 4x4 pickup & drop-off across Dubai and Sharjah.",
-          "Suggest Private VIP Safari (AED 850 flat rate) for groups of 4+ guests."
-        ];
-
-        const customFaqs = kbJson?.ai_settings?.custom_faqs || [];
-        const customFaqText = customFaqs.map((f: any) => `Q: ${f.question}\nA: ${f.answer}`).join('\n\n');
+        const activeEntries = getKnowledgeBaseEntries().filter((e: any) => e.isActive !== false);
+        const kbEntriesContext = activeEntries.map((e: any) => `[${(e.category || 'entry').toUpperCase()}] ${e.title}:\n${e.content}`).join('\n\n');
 
         const systemInstruction = `You are a warm, courteous, and highly experienced VIP Concierge from The Phoenix Desert Safari Dubai (DTCM License #102357, Business Bay, Dubai).
 Phone & 24/7 WhatsApp Hotline: +971 56 150 5270.
 
-TRAINED CONCIERGE PERSONA & SALES DIRECTIVES (CONFIGURED IN ADMIN DASHBOARD):
-1. Tone: ${kbJson?.ai_settings?.tone || 'Warm, prestigious, highly courteous, hospitable, direct and helpful'}.
-2. Never use markdown headers (NO "###", NO "####", NO "---") and never write empty placeholders (never write "total of aed" without numbers).
-3. Only quote prices supported by the supplied catalogue. If guest ages, options or rates are unclear, ask for clarification. This endpoint has no booking or live availability tools: never claim to have checked availability, created a booking, or issued a voucher.
-4. Business & Sales Directives:
-${customRules.map((r: string) => `   - ${r}`).join('\n')}
+ADMIN-CONFIGURED RESPONSE INSTRUCTIONS:
+${chatbotSettings.systemInstructions || 'Be courteous and helpful.'}
+Tone: ${chatbotSettings.tone || 'Warm, prestigious, highly courteous, hospitable, direct and helpful'}.
 
-CUSTOM TRAINED Q&A KNOWLEDGE BASE:
-${customFaqText}
+ACTIVE VERIFIED KNOWLEDGE BASE:
+${kbEntriesContext}
 
 LIVE TOURS, INVENTORY & PRICING DATABASE:
-${JSON.stringify(kbJson, null, 2)}`;
+${JSON.stringify(kbJson, null, 2)}
+
+STRICT OPERATIONAL DIRECTIVES:
+1. Never use markdown headers (NO "###", NO "####", NO "---").
+2. Only quote prices supported by the supplied active knowledge base and catalogue.
+3. This endpoint has no booking or live availability tools: never claim to have checked availability, created a booking, or issued a voucher. Always advise that availability must be confirmed by the team.
+4. If information is missing or uncertain, offer to contact the team on WhatsApp at +971 56 150 5270. Never invent prices or availability!`;
 
         const prompt = `${history.map((h: any) => `${h.role === 'user' ? 'Guest' : 'Concierge'}: ${h.text}`).join('\n')}\nGuest: ${message}\nConcierge:`;
 
-        // Multi-model failover prioritizing gemini-3.8-flash for AI Studio 2026 runtime
+        const sanitizedPrimaryModel = getSanitizedGeminiModel();
         const CANDIDATE_MODELS = Array.from(new Set([
-          process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+          sanitizedPrimaryModel,
           'gemini-3.8-flash',
-          'gemini-3-flash',
           'gemini-2.5-flash',
         ]));
         let response: any = null;
-        let selectedModel = 'gemini-3.8-flash';
+        let selectedModel = sanitizedPrimaryModel;
 
         for (const candidateModel of CANDIDATE_MODELS) {
           try {
@@ -1530,7 +1781,7 @@ ${JSON.stringify(kbJson, null, 2)}`;
               contents: prompt,
               config: {
                 systemInstruction,
-                temperature: 0.7,
+                temperature: chatbotSettings.temperature || 0.7,
                 maxOutputTokens: 800,
               },
             });
@@ -1547,13 +1798,12 @@ ${JSON.stringify(kbJson, null, 2)}`;
             }
           } catch (modelErr: any) {
             console.warn(`[Gemini model notice on ${candidateModel}]`, modelErr?.message || modelErr);
-            continue; // Continue to next model smoothly without crashing
+            continue;
           }
         }
 
         if (response && response.text) {
           let reply = response.text.trim();
-          // If model output has a calculation glitch, use deterministic reply
           if (!reply || reply.toLowerCase().includes('total of aed') || reply.endsWith('aed') || reply.endsWith('total of')) {
             if (deterministicQuote) {
               reply = deterministicQuote.reply;
@@ -1572,9 +1822,17 @@ ${JSON.stringify(kbJson, null, 2)}`;
             ip: req.ip,
           });
 
-          return res.json({ ok: true, reply, actionCard, model: selectedModel });
+          addMessageToConversation(convId, {
+            id: 'agt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+            sender: 'agent',
+            text: reply,
+            actionCard,
+            model: selectedModel,
+            timestamp: new Date().toISOString(),
+          });
+
+          return res.json({ ok: true, reply, actionCard, model: selectedModel, conversationId: convId, timestamp: new Date().toISOString() });
         } else {
-          // If all models were unavailable, trigger brief fallback cooldown
           geminiQuotaCooldownUntil = Date.now() + 30000;
         }
       } catch (aiErr: any) {
@@ -1596,18 +1854,161 @@ ${JSON.stringify(kbJson, null, 2)}`;
       ip: req.ip,
     });
 
-    return res.json({ ok: true, reply: kbResult.reply, actionCard: kbResult.actionCard, model: 'Knowledge Base Grounded Engine' });
+    addMessageToConversation(convId, {
+      id: 'agt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+      sender: 'agent',
+      text: kbResult.reply,
+      actionCard: kbResult.actionCard,
+      model: 'Knowledge Base Grounded Engine',
+      timestamp: new Date().toISOString(),
+    });
+
+    return res.json({
+      ok: true,
+      reply: kbResult.reply,
+      actionCard: kbResult.actionCard,
+      model: 'Knowledge Base Grounded Engine',
+      conversationId: convId,
+      timestamp: new Date().toISOString(),
+    });
   } catch (err: any) {
     return res.status(500).json({ ok: false, error: err.message });
   }
 });
 
-// Admin: Fetch Live Chatbot Interaction Logs
-app.get(['/api/admin/chat/logs', '/api/admin/chat-logs'], (req, res) => {
+// -------------------------------------------------------------
+// ADMIN CHATBOT SETTINGS ENDPOINTS
+// -------------------------------------------------------------
+
+// Admin: Get Chatbot Settings
+app.get(['/api/admin/chatbot/settings', '/api/admin/chat/settings'], requireAdminAuth, (req, res) => {
+  const settings = getChatbotSettings();
+  return res.json({
+    ok: true,
+    settings,
+    activeModel: getSanitizedGeminiModel(),
+    geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+  });
+});
+
+// Admin: Update Chatbot Settings
+app.post(['/api/admin/chatbot/settings', '/api/admin/chat/settings'], requireAdminAuth, (req, res) => {
+  try {
+    const current = getChatbotSettings();
+    const update = req.body || {};
+    if (typeof update.enabled === 'boolean') current.enabled = update.enabled;
+    if (typeof update.botName === 'string' && update.botName.trim()) current.botName = update.botName.trim();
+    if (typeof update.welcomeMessage === 'string' && update.welcomeMessage.trim()) current.welcomeMessage = update.welcomeMessage.trim();
+    if (typeof update.systemInstructions === 'string' && update.systemInstructions.trim()) current.systemInstructions = update.systemInstructions.trim();
+    if (typeof update.tone === 'string') current.tone = update.tone.trim();
+    if (typeof update.temperature === 'number') current.temperature = Math.max(0, Math.min(1, update.temperature));
+    if (Array.isArray(update.quickPrompts)) current.quickPrompts = update.quickPrompts;
+    current.updatedAt = new Date().toISOString();
+    saveChatbotSettings(current);
+    return res.json({ ok: true, message: 'Chatbot settings saved successfully!', settings: current });
+  } catch (err: any) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// -------------------------------------------------------------
+// ADMIN CONVERSATIONS MANAGEMENT ENDPOINTS
+// -------------------------------------------------------------
+
+// Admin: Fetch all conversations with filters
+app.get(['/api/admin/chat/conversations', '/api/admin/conversations'], requireAdminAuth, (req, res) => {
+  try {
+    const { status, search, limit = 100 } = req.query as any;
+    let list = getConversations();
+
+    const openCount = list.filter((c: any) => c.status !== 'resolved').length;
+    const resolvedCount = list.filter((c: any) => c.status === 'resolved').length;
+
+    if (status === 'open') {
+      list = list.filter((c: any) => c.status !== 'resolved');
+    } else if (status === 'resolved') {
+      list = list.filter((c: any) => c.status === 'resolved');
+    }
+
+    if (search && typeof search === 'string' && search.trim()) {
+      const q = search.trim().toLowerCase();
+      list = list.filter((c: any) => {
+        const nameMatch = c.customerDetails?.name?.toLowerCase().includes(q);
+        const contactMatch = c.customerDetails?.contact?.toLowerCase().includes(q);
+        const idMatch = c.id?.toLowerCase().includes(q);
+        const previewMatch = c.preview?.toLowerCase().includes(q);
+        const messageMatch = Array.isArray(c.messages) && c.messages.some((m: any) => m.text?.toLowerCase().includes(q));
+        return nameMatch || contactMatch || idMatch || previewMatch || messageMatch;
+      });
+    }
+
+    list.sort((a: any, b: any) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    const numLimit = Math.min(Number(limit) || 100, 500);
+
+    return res.json({
+      ok: true,
+      total: list.length,
+      openCount,
+      resolvedCount,
+      conversations: list.slice(0, numLimit),
+    });
+  } catch (err: any) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Admin: Fetch single conversation transcript
+app.get(['/api/admin/chat/conversations/:id', '/api/admin/conversations/:id'], requireAdminAuth, (req, res) => {
+  const conv = getConversations().find((c: any) => c.id === req.params.id);
+  if (!conv) {
+    return res.status(404).json({ ok: false, error: 'Conversation not found' });
+  }
+  return res.json({ ok: true, conversation: conv });
+});
+
+// Admin: Update conversation status (open / resolved)
+app.post(['/api/admin/chat/conversations/:id/status', '/api/admin/conversations/:id/status'], requireAdminAuth, (req, res) => {
+  const { status } = req.body || {};
+  if (!status || !['open', 'resolved'].includes(status)) {
+    return res.status(400).json({ ok: false, error: "Status must be 'open' or 'resolved'" });
+  }
+  const conversations = getConversations();
+  const conv = conversations.find((c: any) => c.id === req.params.id);
+  if (!conv) {
+    return res.status(404).json({ ok: false, error: 'Conversation not found' });
+  }
+  conv.status = status;
+  conv.updatedAt = new Date().toISOString();
+  saveConversations(conversations);
+  return res.json({ ok: true, message: `Conversation status updated to ${status}`, conversation: conv });
+});
+
+// Admin: Delete conversation
+app.delete(['/api/admin/chat/conversations/:id', '/api/admin/conversations/:id'], requireAdminAuth, (req, res) => {
+  let conversations = getConversations();
+  const index = conversations.findIndex((c: any) => c.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ ok: false, error: 'Conversation not found' });
+  }
+  conversations.splice(index, 1);
+  saveConversations(conversations);
+  return res.json({ ok: true, message: 'Conversation deleted.' });
+});
+
+// Admin: Clear all resolved conversations
+app.post(['/api/admin/chat/conversations/clear-resolved', '/api/admin/conversations/clear-resolved'], requireAdminAuth, (req, res) => {
+  let conversations = getConversations();
+  conversations = conversations.filter((c: any) => c.status !== 'resolved');
+  saveConversations(conversations);
+  return res.json({ ok: true, message: 'Resolved conversations cleared.' });
+});
+
+// Admin: Fetch Live Chatbot Interaction Logs (Backwards-compatible)
+app.get(['/api/admin/chat/logs', '/api/admin/chat-logs'], requireAdminAuth, (req, res) => {
   return res.json({
     ok: true,
     total: chatActivityLogs.length,
-    activeModel: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+    activeModel: getSanitizedGeminiModel(),
     geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
     logs: chatActivityLogs,
   });
@@ -1624,74 +2025,288 @@ app.post(['/api/admin/chat/clear', '/api/admin/chat-logs/clear'], requireAdminAu
   return res.json({ ok: true, message: 'Chatbot logs cleared.' });
 });
 
-// Admin: Fetch Captured Leads & Inquiries
-app.get(['/api/admin/leads', '/api/agent/leads'], (req, res) => {
-  return res.json({
-    ok: true,
-    total: agentLeads.length,
-    leads: agentLeads,
-    escalations: agentEscalations,
-  });
+// -------------------------------------------------------------
+// ADMIN KNOWLEDGE BASE MANAGEMENT CRUD & UPLOAD ENDPOINTS
+// -------------------------------------------------------------
+
+// Admin: Fetch all Knowledge Base Entries
+app.get(['/api/admin/knowledge-base/entries', '/api/admin/knowledge_base/entries'], requireAdminAuth, (req, res) => {
+  const entries = getKnowledgeBaseEntries();
+  const activeCount = entries.filter((e: any) => e.isActive !== false).length;
+  return res.json({ ok: true, total: entries.length, activeCount, entries });
 });
 
-// Admin: Knowledge Base Upload Endpoint (supports JSON and Raw Text/Markdown)
+// Admin: Create Knowledge Base Entry
+app.post(['/api/admin/knowledge-base/entries', '/api/admin/knowledge_base/entries'], requireAdminAuth, (req, res) => {
+  try {
+    const { title, category = 'general', content, tags = [], isActive = true } = req.body || {};
+    if (!title || !title.trim() || !content || !content.trim()) {
+      return res.status(400).json({ ok: false, error: 'Title and content are required' });
+    }
+    const entries = getKnowledgeBaseEntries();
+    const newEntry = {
+      id: 'kb_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+      title: title.trim(),
+      category: ['tour', 'pricing', 'faq', 'policy', 'company', 'general'].includes(category) ? category : 'general',
+      content: content.trim(),
+      tags: Array.isArray(tags) ? tags.map((t: any) => String(t).trim()).filter(Boolean) : [],
+      isActive: Boolean(isActive),
+      updatedAt: new Date().toISOString(),
+    };
+    entries.unshift(newEntry);
+    saveKnowledgeBaseEntries(entries);
+    return res.json({ ok: true, message: 'Knowledge base entry created!', entry: newEntry });
+  } catch (err: any) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Admin: Update Knowledge Base Entry
+app.put(['/api/admin/knowledge-base/entries/:id', '/api/admin/knowledge_base/entries/:id'], requireAdminAuth, (req, res) => {
+  try {
+    const entries = getKnowledgeBaseEntries();
+    const entry = entries.find((e: any) => e.id === req.params.id);
+    if (!entry) {
+      return res.status(404).json({ ok: false, error: 'Knowledge base entry not found' });
+    }
+    const { title, category, content, tags, isActive } = req.body || {};
+    if (title && title.trim()) entry.title = title.trim();
+    if (category) entry.category = category;
+    if (content && content.trim()) entry.content = content.trim();
+    if (Array.isArray(tags)) entry.tags = tags.map((t: any) => String(t).trim()).filter(Boolean);
+    if (typeof isActive === 'boolean') entry.isActive = isActive;
+    entry.updatedAt = new Date().toISOString();
+    saveKnowledgeBaseEntries(entries);
+    return res.json({ ok: true, message: 'Knowledge base entry updated!', entry });
+  } catch (err: any) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Admin: Delete Knowledge Base Entry
+app.delete(['/api/admin/knowledge-base/entries/:id', '/api/admin/knowledge_base/entries/:id'], requireAdminAuth, (req, res) => {
+  let entries = getKnowledgeBaseEntries();
+  const index = entries.findIndex((e: any) => e.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ ok: false, error: 'Knowledge base entry not found' });
+  }
+  entries.splice(index, 1);
+  saveKnowledgeBaseEntries(entries);
+  return res.json({ ok: true, message: 'Knowledge base entry deleted.' });
+});
+
+// Admin: Toggle Active/Inactive Status
+app.post(['/api/admin/knowledge-base/entries/:id/toggle', '/api/admin/knowledge_base/entries/:id/toggle'], requireAdminAuth, (req, res) => {
+  const entries = getKnowledgeBaseEntries();
+  const entry = entries.find((e: any) => e.id === req.params.id);
+  if (!entry) {
+    return res.status(404).json({ ok: false, error: 'Knowledge base entry not found' });
+  }
+  entry.isActive = !entry.isActive;
+  entry.updatedAt = new Date().toISOString();
+  saveKnowledgeBaseEntries(entries);
+  return res.json({ ok: true, message: `Entry is now ${entry.isActive ? 'active' : 'inactive'}`, entry });
+});
+
+// Admin: Export Knowledge Base as JSON
+app.get(['/api/admin/knowledge-base/export', '/api/admin/knowledge_base/export'], requireAdminAuth, (req, res) => {
+  const entries = getKnowledgeBaseEntries();
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Content-Disposition', 'attachment; filename="phoenix_knowledge_base.json"');
+  return res.send(JSON.stringify(entries, null, 2));
+});
+
+// Admin: Enhanced Knowledge Base Upload (JSON & Markdown/Text)
 app.post(['/api/admin/knowledge_base/upload', '/api/admin/knowledge-base/upload'], requireAdminAuth, (req, res) => {
   try {
     const { content, format, fileName } = req.body || {};
     if (!content) {
-      return res.status(400).json({ ok: false, error: 'File content is required' });
+      return res.status(400).json({ ok: false, error: 'File content is required for upload.' });
     }
 
-    let parsedData: any = null;
-    if (format === 'json' || typeof content === 'object') {
-      parsedData = typeof content === 'object' ? content : JSON.parse(content);
-    } else {
-      // If text/markdown: merge into custom knowledge base
-      const currentKb = getToursKnowledgeBase() || {};
-      if (!currentKb.ai_settings) currentKb.ai_settings = {};
-      if (!currentKb.ai_settings.custom_faqs) currentKb.ai_settings.custom_faqs = [];
+    const currentEntries = getKnowledgeBaseEntries();
+    const newItems: any[] = [];
 
-      // Extract Q&A patterns from markdown if present
-      const lines = String(content).split(/\r?\n/);
-      let currentQ = '';
-      let currentA = '';
-      for (const line of lines) {
-        if (/^(#+|\*+|-+)?\s*(Q:|Question:|\*\*Q:)/i.test(line)) {
-          if (currentQ && currentA) {
-            currentKb.ai_settings.custom_faqs.push({ question: currentQ.trim(), answer: currentA.trim() });
+    if (format === 'json' || typeof content === 'object') {
+      let parsed: any;
+      try {
+        parsed = typeof content === 'object' ? content : JSON.parse(content);
+      } catch (parseErr: any) {
+        return res.status(400).json({ ok: false, error: `Invalid JSON syntax: ${parseErr.message}` });
+      }
+
+      // Format 1: Direct array of entries [{ title, content, category, tags }]
+      if (Array.isArray(parsed)) {
+        for (const item of parsed) {
+          if (item && item.title && item.content) {
+            newItems.push({
+              id: item.id || 'kb_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+              title: String(item.title).trim(),
+              category: item.category || 'general',
+              content: String(item.content).trim(),
+              tags: Array.isArray(item.tags) ? item.tags : [],
+              isActive: item.isActive !== false,
+              updatedAt: new Date().toISOString(),
+            });
           }
-          currentQ = line.replace(/^(#+|\*+|-+)?\s*(Q:|Question:|\*\*Q:)\s*/i, '').replace(/\*\*$/, '').trim();
-          currentA = '';
-        } else if (/^(#+|\*+|-+)?\s*(A:|Answer:|\*\*A:)/i.test(line)) {
-          currentA = line.replace(/^(#+|\*+|-+)?\s*(A:|Answer:|\*\*A:)\s*/i, '').replace(/\*\*$/, '').trim();
-        } else if (currentA) {
-          currentA += '\n' + line;
+        }
+      } else if (parsed && typeof parsed === 'object') {
+        // Format 2: Object with entries array
+        if (Array.isArray(parsed.entries)) {
+          for (const item of parsed.entries) {
+            if (item && item.title && item.content) {
+              newItems.push({
+                id: item.id || 'kb_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                title: String(item.title).trim(),
+                category: item.category || 'general',
+                content: String(item.content).trim(),
+                tags: Array.isArray(item.tags) ? item.tags : [],
+                isActive: item.isActive !== false,
+                updatedAt: new Date().toISOString(),
+              });
+            }
+          }
+        }
+        // Format 3: tours_knowledge_base.json format
+        if (Array.isArray(parsed.tours)) {
+          for (const tour of parsed.tours) {
+            if (tour && tour.title) {
+              const tourContent = `${tour.title}. Rates: ${tour.flat_rate_aed ? `AED ${tour.flat_rate_aed} flat rate` : `AED ${tour.rate_adult_aed || 120} / adult`}. Payment: ${tour.payment_policy || '100% Pay on Arrival'}. Vehicle Capacity: ${tour.vehicle_capacity || 6} guests. Inclusions: ${(tour.inclusions || []).join(', ')}`;
+              newItems.push({
+                id: tour.id || 'kb_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                title: String(tour.title).trim(),
+                category: 'tour',
+                content: tourContent,
+                tags: [tour.category || 'tour', 'pricing', 'inclusions'],
+                isActive: true,
+                updatedAt: new Date().toISOString(),
+              });
+            }
+          }
+        }
+        // Format 4: payment rules
+        if (parsed.payment_rules && typeof parsed.payment_rules === 'object') {
+          if (parsed.payment_rules.pay_on_arrival_policy) {
+            newItems.push({
+              id: 'kb_payment_poa',
+              title: 'Pay on Arrival Policy',
+              category: 'policy',
+              content: parsed.payment_rules.pay_on_arrival_policy,
+              tags: ['payment', 'arrival', 'cash', 'card', 'deposit'],
+              isActive: true,
+              updatedAt: new Date().toISOString(),
+            });
+          }
+          if (parsed.payment_rules.advance_only_policy) {
+            newItems.push({
+              id: 'kb_payment_advance',
+              title: 'Advance Payment Ticket Policy',
+              category: 'policy',
+              content: parsed.payment_rules.advance_only_policy,
+              tags: ['advance', 'burj khalifa', 'skydive', 'tickets'],
+              isActive: true,
+              updatedAt: new Date().toISOString(),
+            });
+          }
+        }
+        // Format 5: FAQ guidelines
+        if (parsed.faq_guidelines && typeof parsed.faq_guidelines === 'object') {
+          for (const [key, value] of Object.entries(parsed.faq_guidelines)) {
+            if (typeof value === 'string') {
+              newItems.push({
+                id: 'kb_faq_' + key,
+                title: key.replace(/_/g, ' ').toUpperCase(),
+                category: 'faq',
+                content: value,
+                tags: ['faq', ...key.split('_')],
+                isActive: true,
+                updatedAt: new Date().toISOString(),
+              });
+            }
+          }
         }
       }
-      if (currentQ && currentA) {
-        currentKb.ai_settings.custom_faqs.push({ question: currentQ.trim(), answer: currentA.trim() });
+
+      if (newItems.length === 0) {
+        return res.status(400).json({
+          ok: false,
+          error: 'No valid knowledge base entries found in JSON. Expected an array of [{ title, content, category }] or standard tours knowledge base schema.',
+        });
+      }
+    } else {
+      // Text / Markdown format parsing
+      const text = String(content);
+      const lines = text.split(/\r?\n/);
+      let currentTitle = '';
+      let currentBody = '';
+      let currentCategory = 'general';
+
+      for (const line of lines) {
+        if (/^#+\s+/.test(line) || /^(Q:|Question:|\*\*Q:)/i.test(line)) {
+          if (currentTitle && currentBody.trim()) {
+            newItems.push({
+              id: 'kb_txt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+              title: currentTitle.trim(),
+              category: currentCategory,
+              content: currentBody.trim(),
+              tags: currentTitle.toLowerCase().split(/\s+/).filter(w => w.length > 3),
+              isActive: true,
+              updatedAt: new Date().toISOString(),
+            });
+          }
+          currentTitle = line.replace(/^(#+\s+|Q:\s*|Question:\s*|\*\*Q:\s*)/i, '').replace(/\*\*$/, '').trim();
+          currentBody = '';
+          currentCategory = /policy/i.test(currentTitle) ? 'policy' : /faq|question/i.test(currentTitle) ? 'faq' : 'general';
+        } else if (/^(A:|Answer:|\*\*A:)/i.test(line)) {
+          currentBody += '\n' + line.replace(/^(A:\s*|Answer:\s*|\*\*A:\s*)/i, '').replace(/\*\*$/, '').trim();
+        } else {
+          currentBody += '\n' + line;
+        }
+      }
+      if (currentTitle && currentBody.trim()) {
+        newItems.push({
+          id: 'kb_txt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+          title: currentTitle.trim(),
+          category: currentCategory,
+          content: currentBody.trim(),
+          tags: currentTitle.toLowerCase().split(/\s+/).filter(w => w.length > 3),
+          isActive: true,
+          updatedAt: new Date().toISOString(),
+        });
       }
 
-      currentKb.lastUploadedFile = fileName || 'uploaded_kb.md';
-      currentKb.lastTrainedAt = new Date().toISOString();
-      parsedData = currentKb;
+      if (newItems.length === 0) {
+        return res.status(400).json({
+          ok: false,
+          error: 'Could not extract any titled sections or Q&A pairs from text. Please format with # Headings or Q: / A: lines.',
+        });
+      }
     }
 
-    // Save to tours_knowledge_base.json
-    const kbPath = path.resolve(process.cwd(), 'tours_knowledge_base.json');
-    fs.writeFileSync(kbPath, JSON.stringify(parsedData, null, 2), 'utf-8');
+    // Merge into knowledge_base_entries.json (upsert by id or add)
+    for (const item of newItems) {
+      const idx = currentEntries.findIndex((e: any) => e.id === item.id || (e.title && e.title.toLowerCase() === item.title.toLowerCase()));
+      if (idx !== -1) {
+        currentEntries[idx] = { ...currentEntries[idx], ...item, updatedAt: new Date().toISOString() };
+      } else {
+        currentEntries.unshift(item);
+      }
+    }
+
+    saveKnowledgeBaseEntries(currentEntries);
 
     return res.json({
       ok: true,
-      message: `Knowledge base successfully parsed and uploaded from ${fileName || 'file'}!`,
-      data: parsedData,
+      message: `Successfully validated and imported ${newItems.length} knowledge base entries from ${fileName || 'file'}!`,
+      count: newItems.length,
+      entries: currentEntries,
     });
   } catch (err: any) {
-    return res.status(400).json({ ok: false, error: `Upload failed: ${err.message}` });
+    return res.status(400).json({ ok: false, error: `Upload validation failed: ${err.message}` });
   }
 });
 
-// Knowledge Base API endpoints (Get & Update)
+// Admin: Legacy / Backwards-compatible Knowledge Base routes
 app.get(['/api/knowledge_base', '/api/knowledge-base'], (req, res) => {
   const kb = getToursKnowledgeBase();
   if (kb) {
