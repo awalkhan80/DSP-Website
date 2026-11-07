@@ -1,0 +1,692 @@
+[
+  {
+    "id": "evening-desert-safari",
+    "category": "desert-safaris",
+    "categoryLabel": "Desert Safaris",
+    "title": "Evening Desert Safari",
+    "subtitle": "Full Evening Experience",
+    "badge": "Best Seller",
+    "badgeColor": "from-[#EA580C] to-[#D97706]",
+    "duration": "7 Hours",
+    "priceAED": 120,
+    "priceUnit": "From",
+    "description": "The quintessential Dubai safari. Thrilling dune bashing in Red Lahbab sands, traditional Bedouin camp hospitality, live BBQ dinner buffet, and captivating cultural shows.",
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAnHfQ_xD50mSdKpb_AX87krGRMEnUDwIXco_BEGwEs4j-EpVpiuGkmIUB5RwaW2iC42DL2UjCqzYVjEnvSEtZA-pMdChCLUsegIFFlflTsUd2y3BvsvfP5Q2Qunr7sWjRY9BCYTi9ANBMbBZ2SZ2Ps4ve8rYtJGe19JPv4az0YV1li5eXxA6Qd7PkZWZ3hpkfjU0G-jePPYEo66vWaKMQgeOdgBW4H_xBquYIVqQu8oHMDw6l00wWd8g",
+    "altText": "A luxury 4x4 desert safari convoy resting on high dunes during golden sunset in Dubai, with passengers enjoying sandboarding and camel caravans walking gently in the background with soft amber twilight glow",
+    "highlights": [
+      "45-min Dune Bashing",
+      "Sunset Photo Stop",
+      "Camel Trek Experience",
+      "Sandboarding Thrill",
+      "BBQ Buffet & Drinks",
+      "Fire & Belly Dancing"
+    ],
+    "departureTime": "02:30 PM - 03:15 PM",
+    "returnTime": "09:30 PM",
+    "hotelPickup": true,
+    "featured": true,
+    "vehicleType": "Toyota Land Cruiser 4x4",
+    "itinerary": [
+      {
+        "time": "03:00 PM",
+        "title": "Home & Hotel Chauffeur Pickup",
+        "description": "Air-conditioned 4x4 Land Cruiser picks you up directly from your Dubai home villa, apartment, or hotel lobby."
+      },
+      {
+        "time": "04:15 PM",
+        "title": "Red Lahbab High Dune Bashing",
+        "description": "Experience 45 minutes of adrenaline-filled roller-coaster dune driving with DTCM certified desert marshals."
+      },
+      {
+        "time": "05:30 PM",
+        "title": "Golden Sunset & Sandboarding",
+        "description": "Capture panoramic golden-hour photographs and glide down towering silky sand dunes on custom boards."
+      },
+      {
+        "time": "06:30 PM",
+        "title": "Bedouin Oasis Camp Welcome",
+        "description": "Traditional Arabic coffee (Gahwa), sweet dates, complimentary henna hand painting, and camel rides."
+      },
+      {
+        "time": "07:30 PM",
+        "title": "5-Star Live BBQ Buffet & Shows",
+        "description": "Gourmet grilled meats, vegetarian delicacies, live Tanoura whirling dervish, and thrilling fire dancer show."
+      },
+      {
+        "time": "09:15 PM",
+        "title": "Starlit Convoy Return",
+        "description": "Relaxed return drive dropping you comfortably back at your home or hotel doorstep."
+      }
+    ]
+  },
+  {
+    "id": "morning-desert-safari",
+    "category": "desert-safaris",
+    "categoryLabel": "Desert Safaris",
+    "title": "Morning Desert Safari",
+    "subtitle": "Crisp Sunrise Vibes",
+    "badge": "Morning Escape",
+    "badgeColor": "from-[#0284C7] to-[#0EA5E9]",
+    "duration": "3 Hours",
+    "priceAED": 450,
+    "priceUnit": "From",
+    "description": "Ideal for travelers tight on schedule or those wishing to beat the midday warmth. Witness magical first light over pristine windswept crests with coffee and dates.",
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuDhLKdZSpsI-THhAJCLrcsZPNj-gOSpy8oKdNCLk_Zbr7pJwpG0jCxyp74F-3k7VZkmFRWFZbnaUpoPIH789ox6geGZguTZMFP8P0kNyi2i-PY8OU5uSU2q5W64R-ZCeVSYZ9fkU-5ow2gcgYY9c06-rE3xXfSpfRXLh6fhnP4-y4kRs2vLFL-8TPusZfPXu8neq_IKYLv0jhNER6PQK0Ng-Ijnzn4LL0IgWfLjrxBHGnr51csBfKnYPg",
+    "altText": "Serene Dubai desert dunes at sunrise with golden morning rays glistening over untouched sand ridges, accompanied by a luxury white 4x4 vehicle parked quietly and an adventurer sandboarding down a dune",
+    "highlights": [
+      "Sunrise Golden Dune Run",
+      "Camel Ride Experience",
+      "High Dune Sandboarding",
+      "Arabic Coffee & Dates",
+      "Chilled Refreshments",
+      "Pickup 05:00 - 05:30 AM"
+    ],
+    "departureTime": "05:00 AM - 05:30 AM",
+    "returnTime": "09:00 AM - 09:30 AM",
+    "hotelPickup": true,
+    "featured": true,
+    "vehicleType": "Luxury 4x4 Land Cruiser",
+    "itinerary": [
+      {
+        "time": "05:00 AM",
+        "title": "Dawn Hotel Pickup",
+        "description": "Early morning pickup in fresh desert-ready 4x4 luxury fleet."
+      },
+      {
+        "time": "06:00 AM",
+        "title": "Sunrise Sand Crest Arrival",
+        "description": "Watch the sun rise over endless ripple dunes while sipping freshly brewed Arabic coffee and enjoying dates."
+      },
+      {
+        "time": "06:45 AM",
+        "title": "Morning Dune Drive & Sandboard",
+        "description": "Smooth morning dune bash on cool untouched sand followed by crest-to-valley sandboarding."
+      },
+      {
+        "time": "08:00 AM",
+        "title": "Desert Camel Trek",
+        "description": "Gentle sunrise camel ride through the quiet dunes before the heat begins."
+      },
+      {
+        "time": "09:00 AM",
+        "title": "Return Before Noon",
+        "description": "Comfortable drop-off back at your hotel in time for brunch or daytime meetings."
+      }
+    ]
+  },
+  {
+    "id": "private-vip-safari",
+    "category": "private-convoys",
+    "categoryLabel": "Private Royal Convoys",
+    "title": "Private Desert Safari VIP",
+    "subtitle": "Royal White Glove Treatment",
+    "badge": "VIP Private",
+    "badgeColor": "from-purple-700 to-amber-600",
+    "duration": "Bespoke",
+    "priceAED": 850,
+    "priceUnit": "Car Price",
+    "description": "An exclusive private Land Cruiser solely reserved for your family or group. Includes dedicated desert guide, custom pickup schedules, VIP camp seating and table-side service.",
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuCx_MJlPnOvvZCL_s2zXsDSpcSN6vCQpxufteJb1bM_5-NVXfaords45N_89yoBdvN9ELQdxN1lG50G0JsJz15rDhvgko9ZnSSFWHFLz3VdIhPKnIo5JIhnAfc740WHCXOxbZNwRfu3CDgTLn1aBsVqF83pWND5oLGG4dooQb8M72CEGZbFObEhwNxsx2ztAsP4DyPYRlOhy_BgPer9UBdAhphRmdqxfei8IwYL5LcIisMgN4wJrtrePw",
+    "altText": "Exclusive VIP desert camp setup in Dubai under star-lit evening sky with private table dining, warm lantern illumination, luxurious cushions, carpets on the sand and private 4x4 parked nearby",
+    "highlights": [
+      "Dedicated Private 4x4",
+      "Custom Pick-up Timing",
+      "VIP Table Dining Service",
+      "Falcon Photography",
+      "Shisha on Table Included",
+      "Up to 6 Guests Total"
+    ],
+    "departureTime": "Flexible (Your Choice)",
+    "returnTime": "Flexible (Up to 10:00 PM)",
+    "hotelPickup": true,
+    "featured": true,
+    "vehicleType": "Private VIP Land Cruiser 300 Series",
+    "itinerary": [
+      {
+        "time": "Custom",
+        "title": "Private VIP Chauffeur",
+        "description": "Private Land Cruiser exclusively dedicated to your party with bottled water and cold scented towels."
+      },
+      {
+        "time": "Flexible",
+        "title": "Personalized Dune Experience",
+        "description": "Tailor dune bashing intensity to your preference from gentle panoramic cruising to high-adrenaline drops."
+      },
+      {
+        "time": "Sunset",
+        "title": "Private Falcon Encounter",
+        "description": "Hold and photograph the majestic hunting falcon against the setting Arabian sun with falconer guidance."
+      },
+      {
+        "time": "Evening",
+        "title": "VIP Table-side Dining & Shisha",
+        "description": "Reserved cushioned majlis seating with dedicated personal waiter serving fresh barbecue skewers directly to your table."
+      }
+    ]
+  },
+  {
+    "id": "quad-bike-atv",
+    "category": "buggies",
+    "categoryLabel": "Buggies & Quad Biking",
+    "title": "Quad Bike ATV Rental",
+    "subtitle": "No Driving License Required",
+    "badge": "Popular Adrenaline",
+    "duration": "Session",
+    "priceAED": 150,
+    "priceUnit": "/ Session",
+    "description": "Conquer open desert dunes on high-performance 250 CC to 350 CC Quad Bikes. Full freedom in open desert dunes with helmet, goggles, and safety guide escort. Direct desert meeting point (free) or private 4x4 luxury transfer available.",
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuD3cf4jPrAC-DN5Da2vJ3_AGbHbR6Yx83Fa8N81kJ0Fe0oD87a2N_uLVWQbZW2Io8MdPi1Es_1bU7roSmN9lCjyb1fdk2uGtp0bKsod3-IPm9wxDqwXqvCZrgiEsYThx1JacNiHRBxVqp-EGOmKVV_iunEJuG04GQ9ta38QwMXXZBq_-KSto8HJDqypGth8xvt_T1PEBAqCFfEc9mE_AXABwf3Xc1lWLQKokQycJqqd6cGJtc6buc96jg",
+    "altText": "An ATV rider powering a high-speed quad bike through Dubai red dunes carving sand trails during sunny daylight with protective helmet and gear",
+    "highlights": [
+      "250 CC & 350 CC Quad Bikes",
+      "Helmet & Goggles Included",
+      "Direct Meeting Point (Free)",
+      "Private 4x4 Chauffeur Option",
+      "Lead Desert Marshall",
+      "Comprehensive Safety Brief"
+    ],
+    "hotelPickup": false,
+    "vehicleType": "250 CC Quad Bike ATV",
+    "itinerary": [
+      {
+        "time": "0-15 Min",
+        "title": "Gear Fitting & Safety Brief",
+        "description": "Professional briefing on throttle, brakes, body weight shifting and safety perimeter."
+      },
+      {
+        "time": "15-45 Min",
+        "title": "Open Dune Riding",
+        "description": "Ride through sweeping open red sand tracks with a lead marshall guiding you along safe, thrilling lines."
+      },
+      {
+        "time": "45-60 Min",
+        "title": "High Ridge Photo Stop",
+        "description": "Rest on top of towering sand peaks for dramatic photos and cooling refreshments."
+      }
+    ]
+  },
+  {
+    "id": "can-am-buggy-safari",
+    "category": "buggies",
+    "categoryLabel": "Buggies & Quad Biking",
+    "title": "Can-Am Dune Buggy Safari",
+    "subtitle": "Turbo High Performance",
+    "badge": "High-Horsepower",
+    "duration": "Buggy",
+    "priceAED": 1000,
+    "priceUnit": "From / 30m",
+    "description": "Drive 2-seater or 4-seater Can-Am Maverick X3 Turbo buggies with roll cages, 4-point harnesses, and desert guides. Direct meeting point at Lahbab camp or private 4x4 luxury transfer available.",
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuBmUuhU2zvZss3m2z-biFjAJWSc-FFBbo1m6ZnN3dfwWCVNQG6SnfV_9_rKM4lG_4ZxVczonwj4fFA8ROhBmd3wkntbAFTYyWk5iVKcvLmfug4xiWYsSITDwsR4KLWVGBghcaRz5lIZ-3lZl4hKk4yEG5pD_1nxWvvUe2jR7HOnv1ZMSUb2WelPbcAkCKqeglh2mmFr64taMzfh-Z42tEhCHT2lzyKMiOgMV3-AEgDrmDbgWeGZEJmFPw",
+    "altText": "A customized high-performance Can-Am Maverick dune buggy racing over the crest of high desert dunes near Dubai kicking up sand with passengers wearing protective helmets",
+    "highlights": [
+      "Can-Am Maverick X3 Turbo",
+      "2-Seater & 4-Seater Options",
+      "Direct Meeting Point (Free)",
+      "Private 4x4 Chauffeur Option",
+      "Roll-Cage & Race Harness",
+      "Full Tank High-Octane Fuel"
+    ],
+    "hotelPickup": false,
+    "vehicleType": "Can-Am Maverick X3 Turbo 1000cc",
+    "itinerary": [
+      {
+        "time": "Arrival",
+        "title": "Race Suit & Harness Adjustment",
+        "description": "Fitted with professional helmets, dust goggles, and secure 4-point seatbelt harness."
+      },
+      {
+        "time": "Warm-up",
+        "title": "Controls & Handling Drill",
+        "description": "Learn power-steering response, 4WD crawl modes, and turbo throttle control."
+      },
+      {
+        "time": "Expedition",
+        "title": "Conquer the Big Red Dunes",
+        "description": "Follow the lead desert marshal car deep into untouched remote dune territory inaccessible to ordinary vehicles."
+      }
+    ]
+  },
+  {
+    "id": "dubai-half-day-city-tour",
+    "category": "city-tours",
+    "categoryLabel": "City Sightseeing",
+    "title": "Dubai Half-Day City Tour",
+    "subtitle": "Discover Dubai's Marvels",
+    "badge": "Popular Sightseeing",
+    "duration": "6 Hours",
+    "priceAED": 75,
+    "priceUnit": "From",
+    "description": "Witness the transformation from ancient fishing village to glittering metropolis. Includes Burj Al Arab photo stop, Dubai Frame, Gold & Spice Souk, and Dubai Mall.",
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuARCbBpC3G8-XasRWNmQgIyiyUnRKLJL4-VhxY964UAMEY-euFzP9c059Leon7MvPMCsQWJmlEeOx8wotquLmqoHznSUNq6ZpGD2lRzJn1CByeHLfvNvwhcgMDvP6zUuXuQ_oKIiAHIkRzFoDB-oPzTLVzP09IhOOyLkZC3qpS1-mNXEqQESQanEoVxVXzA67Lk6wGogsA0GciEgZte8xmr28piUdxYxqsuNj-yTGC4z4JBJml0RbCVfg",
+    "altText": "Panoramic view of modern Dubai skyline including Burj Al Arab, luxury yachts in Dubai Marina and the historic Dubai Creek in golden afternoon sunlight",
+    "highlights": [
+      "AC Transport & Tour Guide",
+      "Abra Boat Crossing at Creek",
+      "Burj Al Arab & Jumeirah Beach",
+      "Gold & Spice Souk Walk",
+      "Dubai Frame Panorama Stop",
+      "Zabeel Palace Pass"
+    ],
+    "departureTime": "08:30 AM - 09:00 AM",
+    "returnTime": "02:30 PM",
+    "hotelPickup": true,
+    "vehicleType": "Luxury AC Mini-Coach",
+    "itinerary": [
+      {
+        "time": "09:00 AM",
+        "title": "Pickup & Jumeirah Mosque Drive",
+        "description": "Scenic drive past Dubai coastline and iconic white stone Jumeirah Mosque."
+      },
+      {
+        "time": "10:00 AM",
+        "title": "Burj Al Arab & Palm Jumeirah",
+        "description": "Exclusive stop on Jumeirah Beach overlooking the sail-shaped 7-star hotel."
+      },
+      {
+        "time": "11:15 AM",
+        "title": "Old Dubai & Historic Abra Crossing",
+        "description": "Glide across Dubai Creek on a traditional wooden Abra to the bustling Spice and Gold Souks."
+      },
+      {
+        "time": "01:00 PM",
+        "title": "Dubai Frame & Downtown Mall",
+        "description": "Marvel at the architectural bridge between Old and New Dubai before final drop-off."
+      }
+    ]
+  },
+  {
+    "id": "abu-dhabi-tour-from-dubai",
+    "category": "city-tours",
+    "categoryLabel": "City Sightseeing",
+    "title": "Abu Dhabi Tour from Dubai",
+    "subtitle": "UAE Capital Odyssey",
+    "badge": "Full Day Odyssey",
+    "duration": "8h 30m",
+    "priceAED": 150,
+    "priceUnit": "From",
+    "description": "Full-day capital journey featuring the awe-inspiring Sheikh Zayed Grand Mosque, Emirates Palace photo opportunity, Abu Dhabi Corniche, and Ferrari World Yas Island.",
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuBXPfyCuA5lyqU7evGIb2FceRF2y2FoioBzdAuIqxMsH48LLUKlgG5P2ofNMkB-E6HZHfEYuEphGo-1Q8LoFxAR5ZqqRnc2MQlPitOEVPLZ0Qy864vW2VSgx9i5Ctq1lAuSbIjdzOP6AgOGCL58LVqUfVZNbu7APd8EHMqvmqg8LChbSb6LXbmBXhDqzWzSTO4zVbZGHdkNcKXt9CxjZJJoFt_TsAOdQ75HDJfnMg-oTswWYenH5_iuIw",
+    "altText": "Majestic Sheikh Zayed Grand Mosque in Abu Dhabi with white marble domes, reflective pools, ornate gold minarets under a clear sky",
+    "highlights": [
+      "Mosque Entry Pass & Dress Assistance",
+      "Roundtrip Dubai Hotel Pick & Drop",
+      "Emirates Palace & Etihad Towers",
+      "Abu Dhabi Corniche Promenade",
+      "Heritage Village Cultural Visit",
+      "Ferrari World Yas Island Stop"
+    ],
+    "departureTime": "08:00 AM - 08:30 AM",
+    "returnTime": "05:00 PM",
+    "hotelPickup": true,
+    "vehicleType": "Executive Coach with Free WiFi",
+    "itinerary": [
+      {
+        "time": "08:30 AM",
+        "title": "Highway Highway Drive to Capital",
+        "description": "Comfortable 90-minute drive down Sheikh Zayed Road connecting Dubai and Abu Dhabi."
+      },
+      {
+        "time": "10:30 AM",
+        "title": "Sheikh Zayed Grand Mosque Tour",
+        "description": "2 hours inside the architectural masterpiece featuring the world largest hand-knotted carpet and crystal chandeliers."
+      },
+      {
+        "time": "01:00 PM",
+        "title": "Corniche & Emirates Palace",
+        "description": "Breathtaking coastal skyline views and photo stop at the golden Emirates Palace."
+      },
+      {
+        "time": "02:30 PM",
+        "title": "Heritage Village & Date Market",
+        "description": "Explore authentic pre-oil desert craftsmanship and sample premium Emirati dates."
+      },
+      {
+        "time": "03:45 PM",
+        "title": "Ferrari World Yas Island Photo Stop",
+        "description": "Visit the futuristic Yas Island entertainment hub before returning to Dubai."
+      }
+    ]
+  },
+  {
+    "id": "marina-luxury-dhow-cruise",
+    "category": "city-tours",
+    "categoryLabel": "City Sightseeing",
+    "title": "Marina Luxury Dhow Cruise",
+    "subtitle": "Waterfront Dining",
+    "badge": "Evening Cruise",
+    "duration": "2 Hours",
+    "priceAED": 110,
+    "priceUnit": "From",
+    "description": "Sail along Dubai Marina's world-renowned skyline. Enjoy an international 5-star buffet dinner, soft drinks, ambient music, and live Tanoura dance performances.",
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAh1wX_W7KyozasE7f5-naObZ1gSRbV0UoV5qbhv32sk_Je7mGVmOxIdApZheVHWu33ILWAsdN6BbWT8O5LcGE3nu9LucMxHsZR4z6t2SrYDG5rjURmUHdSB6HcCPK98rqG2Um8ax7igChKltv3zVa6mXz2vFdkjM7QCeSf21AM9lZa7u5O3J7mVgsDjgvG2fblTUJ31fyCfWxKcc126CYryVuth49kZTs-j2b_hiQ-w7yfCgXCYbhwog",
+    "altText": "Traditional illuminated wooden Arabian dhow cruising along the illuminated skyscraper canal of Dubai Marina during night with ambient lighting",
+    "highlights": [
+      "International Multi-Cuisine Buffet",
+      "Upper Deck Open Air Sightseeing",
+      "Ain Dubai & Marina Mall Views",
+      "Live Tanoura Folk Performance",
+      "Unlimited Soft Drinks, Tea & Coffee",
+      "Red Carpet Welcome Drink"
+    ],
+    "departureTime": "08:00 PM (Boarding 07:30 PM)",
+    "returnTime": "10:30 PM",
+    "hotelPickup": true,
+    "vehicleType": "Traditional Double-Decker Wooden Dhow",
+    "itinerary": [
+      {
+        "time": "07:30 PM",
+        "title": "Marina Promenade Boarding",
+        "description": "Warm Arabic coffee, cold juices, and red carpet welcome onto the luxury dhow."
+      },
+      {
+        "time": "08:15 PM",
+        "title": "Dhow Cruise Departure",
+        "description": "Set sail through the 3km Dubai Marina canal surrounded by illuminated skyscrapers."
+      },
+      {
+        "time": "08:45 PM",
+        "title": "Grand Buffet Dinner Opens",
+        "description": "Enjoy multi-course delicacies prepared by 5-star culinary chefs with fresh salads, kebabs, and desserts."
+      },
+      {
+        "time": "09:30 PM",
+        "title": "Live Tanoura Dancing Show",
+        "description": "Mesmerizing hypnotic spinning dancer with glowing illuminated skirts on the open deck."
+      }
+    ]
+  },
+  {
+    "id": "burj-khalifa-124-125",
+    "category": "city-tours",
+    "categoryLabel": "Sightseeing & Attractions",
+    "title": "Burj Khalifa At The Top (124th & 125th Floor)",
+    "subtitle": "World's Tallest Tower",
+    "badge": "124th & 125th Floor",
+    "duration": "1.5 Hours",
+    "priceAED": 175,
+    "priceUnit": "/ Person",
+    "description": "Ascend to the 124th and 125th floors of the iconic Burj Khalifa in high-speed double-deck elevators at 10m/s. Experience 360-degree panoramic glass views over Dubai, Arabian Gulf, outdoor observation terrace, and state-of-the-art telescopes.",
+    "image": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1200&q=80",
+    "altText": "Burj Khalifa skyscraper towering over downtown Dubai with observation decks illuminated against clear sky",
+    "highlights": [
+      "Levels 124 & 125 Admission (AED 175)",
+      "Fastest Double-Deck Elevators (10m/s)",
+      "360° Glass Panoramic Views of Dubai",
+      "Outdoor Observation Terrace Access",
+      "High-Powered Digital Telescopes",
+      "Direct Dubai Mall Ground Floor Entry"
+    ],
+    "departureTime": "Daily (Every 30 mins from 08:30 AM)",
+    "returnTime": "Flexible Visit",
+    "hotelPickup": false,
+    "vehicleType": "Direct Gate (Dubai Mall LG Floor)",
+    "itinerary": [
+      {
+        "time": "0-15 Min",
+        "title": "Dubai Mall Ground Level Entry",
+        "description": "Walk through the At The Top reception with multimedia displays showcasing Burj Khalifa construction."
+      },
+      {
+        "time": "15-20 Min",
+        "title": "10m/s High-Speed Elevator",
+        "description": "Experience the world fastest double-deck elevators climbing 456 meters in under 60 seconds."
+      },
+      {
+        "time": "20-75 Min",
+        "title": "124th & 125th Floor Observation",
+        "description": "Step onto the open-air terrace, use interactive view-finders, and capture unobstructed 360-degree photos."
+      },
+      {
+        "time": "75-90 Min",
+        "title": "Souvenir Gallery & Exit",
+        "description": "Browse official Burj Khalifa souvenirs and descend smoothly back to Dubai Mall."
+      }
+    ]
+  },
+  {
+    "id": "burj-khalifa-fountain-lake-ride",
+    "category": "city-tours",
+    "categoryLabel": "Sightseeing & Attractions",
+    "title": "Burj Khalifa Fountain Lake Ride",
+    "subtitle": "Front-Row Aquatic Spectacle",
+    "badge": "Fountain Abra Ride",
+    "duration": "30 Minutes",
+    "priceAED": 100,
+    "priceUnit": "/ Person",
+    "description": "Glide across the 30-acre Burj Lake on a traditional wooden motorized Abra. Witness the world largest choreographed fountain dancing to Arabic and international hits right next to your boat with illuminated water jets rising 140 meters high.",
+    "image": "https://images.unsplash.com/photo-1580674684081-7617fbf3d745?auto=format&fit=crop&w=1200&q=80",
+    "altText": "Dubai Fountain show illuminated at night with water jets shooting in front of Burj Khalifa on the lake",
+    "highlights": [
+      "Front-Row Fountain Lake Cruise (AED 100)",
+      "Traditional Wooden Abra Boat Experience",
+      "Towering 140m Water Jets Up Close",
+      "Direct Sightline to Burj Khalifa LED Show",
+      "Best Photography Angles Guaranteed",
+      "Dedicated Express Boarding Pontoon"
+    ],
+    "departureTime": "05:45 PM - 11:15 PM (Every 30 Mins)",
+    "returnTime": "30 Min Session",
+    "hotelPickup": false,
+    "vehicleType": "Traditional Electric Lake Abra",
+    "itinerary": [
+      {
+        "time": "Boarding",
+        "title": "Fountain Promenade Check-in",
+        "description": "Arrive at the Waterfront Promenade pontoon near Dubai Mall for VIP priority boarding."
+      },
+      {
+        "time": "Departure",
+        "title": "Burj Lake Navigation",
+        "description": "Cruise into the center of Burj Lake as the surrounding Dubai downtown skyline lights up."
+      },
+      {
+        "time": "Showtime",
+        "title": "Choreographed Fountain Performance",
+        "description": "Experience the roaring music and 22,000 gallons of illuminated dancing water right beside your boat."
+      }
+    ]
+  },
+  {
+    "id": "skydive-dubai-tandem-palm",
+    "category": "city-tours",
+    "categoryLabel": "Adrenaline & Bucket List",
+    "title": "Sky Dive Dubai Tandem Palm Jumeirah",
+    "subtitle": "Freefall Over Palm Island",
+    "badge": "2700 AED Tandem",
+    "duration": "3 Hours",
+    "priceAED": 2700,
+    "priceUnit": "/ Person",
+    "description": "The pinnacle of skydiving in Dubai. Freefall at over 120 mph (190 km/h) harnessed to a world-class USPA-licensed tandem master from 13,000 feet directly above the legendary Palm Jumeirah. Includes dedicated camera flyer with high-definition video and photo package.",
+    "image": "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=1200&q=80",
+    "altText": "Tandem skydiver in freefall over the Palm Jumeirah island in Dubai with blue ocean and skyline in the background",
+    "highlights": [
+      "13,000 Feet Tandem Skydiving (AED 2700)",
+      "Iconic Palm Jumeirah Dropzone (Premium DZ)",
+      "60-Second 120mph Freefall Thrill",
+      "Dedicated Video & Photo Package Included",
+      "USPA-Certified Master Instructor",
+      "Commemorative Flight Certificate"
+    ],
+    "departureTime": "Morning Slots (07:00 AM - 11:30 AM)",
+    "returnTime": "Flexible",
+    "hotelPickup": false,
+    "vehicleType": "Twin Otter Drop Aircraft",
+    "itinerary": [
+      {
+        "time": "0-45 Min",
+        "title": "Dropzone Check-in & Gear Fitting",
+        "description": "Weigh-in, harness fitting, and 1-on-1 briefing with your dedicated tandem master and cameraman."
+      },
+      {
+        "time": "45-65 Min",
+        "title": "Scenic Flight to 13,000 Feet",
+        "description": "Breathtaking 20-minute plane ascent over Dubai Marina, Bluewaters Island, and the Arabian Gulf."
+      },
+      {
+        "time": "65-70 Min",
+        "title": "60-Second Freefall & Parachute Ride",
+        "description": "Leap from the plane at 120mph followed by a smooth 5-minute canopy ride gliding over the Palm fronds."
+      },
+      {
+        "time": "70-90 Min",
+        "title": "Soft Landing & Video Delivery",
+        "description": "Celebrate landing on the dropzone turf and receive your edited full HD video and photos."
+      }
+    ]
+  },
+  {
+    "id": "miracle-garden-global-village-combo",
+    "category": "city-tours",
+    "categoryLabel": "City Sightseeing & Culture",
+    "title": "Miracle Garden + Global Village Combo",
+    "subtitle": "Private Car (AED 500) + Tickets (AED 130/pp)",
+    "badge": "Combo Special",
+    "duration": "7 Hours",
+    "priceAED": 500,
+    "priceUnit": "Car + Tkts",
+    "description": "Dual iconic Dubai attraction combo featuring a dedicated private luxury vehicle (AED 500 base for up to 2 pax, +AED 50 for each extra pax after 2) and official combo entry tickets (AED 130 per person). Explore 150 million blooming flowers at Dubai Miracle Garden in the afternoon, followed by 90+ cultural country pavilions and night shows at Global Village.",
+    "image": "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=1200&q=80",
+    "altText": "Dubai Miracle Garden giant flower sculptures and arched floral walkways under sunny sky",
+    "highlights": [
+      "Private Dedicated Car for Your Group (AED 500 for 1-2 Pax)",
+      "+AED 50 for Each Additional Pax after 2 Pax",
+      "Combo Entry Tickets Included (AED 130 / Person)",
+      "150 Million Blooming Flowers & Emirates A380",
+      "Global Village 90+ Country Pavilions & Shows",
+      "Doorstep Hotel / Residence Pick-Up & Drop-Off",
+      "Flexible Chauffeur Waiting Time"
+    ],
+    "departureTime": "02:00 PM - 03:00 PM",
+    "returnTime": "09:30 PM - 10:00 PM",
+    "hotelPickup": true,
+    "vehicleType": "Private AC Executive Car / SUV",
+    "itinerary": [
+      {
+        "time": "02:30 PM",
+        "title": "Doorstep Hotel Pickup in Private Car",
+        "description": "Chauffeur picks you up in a private air-conditioned car from your hotel or residence."
+      },
+      {
+        "time": "03:15 PM",
+        "title": "Dubai Miracle Garden Exploration",
+        "description": "2.5 hours exploring heart-shaped floral tunnels, giant Disney topiaries, and the floral Emirates A380."
+      },
+      {
+        "time": "06:00 PM",
+        "title": "Transfer to Global Village",
+        "description": "Short scenic drive arriving at Global Village as evening illumination begins."
+      },
+      {
+        "time": "06:30 PM",
+        "title": "Global Village Cultural Pavilions",
+        "description": "3.5 hours sampling street delicacies, shopping authentic crafts from 90+ cultures, and enjoying cultural stage shows."
+      },
+      {
+        "time": "10:00 PM",
+        "title": "Comfortable Private Drop-off",
+        "description": "Relax in your dedicated private car with direct drop-off back at your doorstep."
+      }
+    ]
+  },
+  {
+    "id": "alexandra-dhow-cruise-dubai-marina",
+    "category": "city-tours",
+    "categoryLabel": "B2B Partner Attractions",
+    "title": "Alexandra Dhow Cruise Dubai Marina",
+    "subtitle": "5-Star Dinner Cruise & Live Show",
+    "badge": "B2B Supplier Sync",
+    "badgeColor": "from-blue-600 to-indigo-600",
+    "duration": "2 Hours",
+    "priceAED": 165,
+    "priceUnit": "/ Person",
+    "description": "Luxury wooden dhow dinner cruise gliding along the illuminated Dubai Marina skyline, JBR, and Ain Dubai. Includes full international buffet, live vocal singer, and panoramic upper deck seating.",
+    "image": "https://traveldesk-djbmfrc9edfxb9ec.z01.azurefd.net/photos/3666-fhd.webp",
+    "altText": "Alexandra Dhow Cruise gliding through Dubai Marina skyline at night",
+    "highlights": [
+      "5-Star International Buffet Dinner",
+      "Dubai Marina & Ain Dubai Skyline Views",
+      "Live Vocalist & Cultural Entertainment",
+      "Instant B2B Supplier E-Voucher",
+      "Direct Reporting at Dubai Marina Yacht Club"
+    ],
+    "departureTime": "08:30 PM",
+    "returnTime": "10:45 PM",
+    "hotelPickup": false,
+    "inventorySource": "b2b_tickets",
+    "b2bTourId": 5,
+    "b2bOfferId": 1221,
+    "b2bSupplierPriceAED": 125,
+    "b2bMarkupPercent": 32,
+    "b2bStatus": "active",
+    "itinerary": [
+      {
+        "time": "08:15 PM",
+        "title": "Boarding at Dubai Marina Yacht Club",
+        "description": "Welcome drinks and priority boarding to your reserved upper deck table."
+      },
+      {
+        "time": "09:00 PM",
+        "title": "Marina Cruise Departure & Buffet Dinner",
+        "description": "Sail past luxury yachts, towering skyscrapers, and JBR beachfront while enjoying chef-curated cuisine."
+      },
+      {
+        "time": "10:00 PM",
+        "title": "Live Entertainment & Sightseeing",
+        "description": "Live singer performance under the illuminated stars with views of Ain Dubai Ferris Wheel."
+      },
+      {
+        "time": "10:45 PM",
+        "title": "Return & Disembarkation",
+        "description": "Gentle docking back at Dubai Marina promenade."
+      }
+    ]
+  },
+  {
+    "id": "aya-universe-dubai-experience",
+    "category": "city-tours",
+    "categoryLabel": "B2B Partner Attractions",
+    "title": "AYA Universe Dubai",
+    "subtitle": "Immersive Futuristic Light & Sound Park",
+    "badge": "B2B Live Ticket",
+    "badgeColor": "from-purple-600 to-indigo-600",
+    "duration": "2 Hours",
+    "priceAED": 135,
+    "priceUnit": "/ Person",
+    "description": "Step into an ethereal realm of light, sound, and cosmic wonders across 12 unique interactive immersive zones located at WAFI City Mall Dubai.",
+    "image": "https://traveldesk-djbmfrc9edfxb9ec.z01.azurefd.net/photos/4354-fhd.webp",
+    "altText": "AYA Universe Dubai luminous glowing chambers and interactive light installations",
+    "highlights": [
+      "12 Interactive Sensory Cosmos Zones",
+      "State-of-the-Art Sound & Projection Mapping",
+      "Instant Mobile Barcode Entry Ticket",
+      "Located at WAFI City Mall Dubai",
+      "All Ages Welcomed"
+    ],
+    "departureTime": "Flexible Open Timings",
+    "returnTime": "10:00 PM Close",
+    "hotelPickup": false,
+    "inventorySource": "b2b_tickets",
+    "b2bTourId": 20,
+    "b2bOfferId": 1310,
+    "b2bSupplierPriceAED": 115,
+    "b2bMarkupPercent": 17,
+    "b2bStatus": "active",
+    "itinerary": [
+      {
+        "time": "Zone 1 - Aurora",
+        "description": "Walk through cascading gesture-controlled cosmic pools and luminous waves.",
+        "title": "Aurora Gateway"
+      },
+      {
+        "time": "Zone 2 - Flora & Fauna",
+        "description": "Interactive bio-luminescent gardens reacting to human movement.",
+        "title": "The Source"
+      },
+      {
+        "time": "Zone 3 - Harmonia & Cosmos",
+        "description": "360-degree mirrored infinity spectacle with celestial symphonies.",
+        "title": "Cosmic Chamber"
+      }
+    ]
+  }
+]
